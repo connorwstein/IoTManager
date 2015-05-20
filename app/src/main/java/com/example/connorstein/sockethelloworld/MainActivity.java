@@ -27,10 +27,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String host="192.168.4.1";
-        int port=80;
-        String data="hello from android\r\n";
-        SendDataViaSocket req=new SendDataViaSocket(host,port,data);
+        setTitle(R.string.default_page_name);
+//        String host="74.125.226.120";
+//        int port=80;
+//        String data="GET / HTTP/1.1\r\n\r\n";
+//        SendDataViaSocket req=new SendDataViaSocket(host,port,data);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         scanForNetworks();
         //req.execute();

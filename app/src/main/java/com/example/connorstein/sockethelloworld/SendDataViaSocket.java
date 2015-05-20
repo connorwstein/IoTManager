@@ -26,6 +26,7 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
 
     @Override
     protected String doInBackground(Void... args) {
+
         send(data);
         Log.i(TAG, "Sent: " + data);
         String response=receive();
@@ -48,7 +49,8 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
             }
         }
         catch (IOException e) {
-            Log.i(TAG, "IO Exeception");
+            Log.i(TAG, "IO Exeception trying to connect");
+            return;
         }
         Log.i(TAG, "Connected");
     }
@@ -73,7 +75,9 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
             connect();
             out.write(message);
             out.flush();
+            return;
         }
+        Log.i(TAG,"send failed");
     }
 
     public String receive() {
