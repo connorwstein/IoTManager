@@ -1,25 +1,40 @@
 package com.example.connorstein.sockethelloworld;
 
-import android.support.v7.app.ActionBarActivity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
-
+public class MainActivity extends AppCompatActivity {
+    private WifiManager manager;
+    private ListView listView;
     private static final String TAG="sure2015test";
+    private static final String NETWORK_PREFIX="ESP";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String host="74.125.226.119";
+        String host="192.168.4.1";
         int port=80;
-        String data="GET / HTTP/1.1\r\n\r\n";
+        String data="hello from android\r\n";
         SendDataViaSocket req=new SendDataViaSocket(host,port,data);
-        req.execute();
+        manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
+        scanForNetworks();
+        //req.execute();
+
     }
 
     @Override
@@ -34,13 +49,43 @@ public class MainActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(item.getItemId()) {
+            case R.id.actionRefresh:
+                scanForNetworks();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+    public void scanForNetworks(){
+        boolean scanSuccess=manager.startScan();
+        if(!scanSuccess){
+            Log.i(TAG,"Unable to scan.");
+        }
+        List<ScanResult> networks=manager.getScanResults();
+        List <String> ssids=new ArrayList<String>();
+        for(int i=0;i<networks.size();i++){
+            if(networks.get(i).SSID.contains(NETWORK_PREFIX)) {
+                ssids.add(networks.get(i).SSID);
+            }
+        }
+        listView=(ListView)findViewById(R.id.networkList);
+        ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                ssids
+        );
+        listView.setAdapter(arrayAdapter);
+        listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i(TAG, "clicked item");
+                Intent newActivity = new Intent(MainActivity.this, Device.class);
+                newActivity.putExtra("Device", (String) listView.getItemAtPosition(position));
+                startActivity(newActivity);
+            }
+        });
     }
 }
