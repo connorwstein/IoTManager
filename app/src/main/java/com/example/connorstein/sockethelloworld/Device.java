@@ -114,6 +114,11 @@ public class Device extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final String ssid=listNetworks.getItemAtPosition(position).toString();
                 Log.i(TAG, "clicked item: " + ssid);
+                if(isEnterprise(ssid)){
+                    Log.i(TAG,"Enterprise network selected");
+                    Toast.makeText(getApplicationContext(),"No support for enterprise networks", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if(hasPassword(ssid)){
                     //Toast.makeText(getApplicationContext(),"",Toast.LENGTH_LONG).show();
                     AlertDialog.Builder builder=new AlertDialog.Builder(Device.this);
@@ -131,6 +136,7 @@ public class Device extends AppCompatActivity {
                             Log.i(TAG, "Password Inputed: " + networkPassword);
                             SendDataViaSocket req=new SendDataViaSocket(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n");
                             req.execute();
+                            //SendDataViaSocket req2=new SendDataViaSocket(255.255.255.255,1025,"hello iot"+"\r\n");
                         }
                     });
                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -158,5 +164,25 @@ public class Device extends AppCompatActivity {
             }
         }
         return true;
+    }
+    public boolean isEnterprise(String ssid){
+        manager.startScan();
+        List<ScanResult>results=manager.getScanResults();
+        for(ScanResult i:results){
+            //Log.i(TAG,i.SSID+": "+i.capabilities);
+            if(i.capabilities.contains("WPA")&&(!i.capabilities.contains("PSK"))&&i.SSID.equals(ssid)){
+                //Log.i(TAG,"Open network"+i.SSID);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void listCapabilities(){
+        manager.startScan();
+        List<ScanResult>results=manager.getScanResults();
+        for(ScanResult i:results){
+            Log.i(TAG,"SSID: "+i.SSID+" ,Capabilities: "+i.capabilities);
+        }
     }
 }

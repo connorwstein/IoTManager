@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
 //        SendDataViaSocket req=new SendDataViaSocket(host,port,data);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         scanForNetworks();
+        udpClient test=new udpClient();
+        test.execute();
         //req.execute();
 
     }
