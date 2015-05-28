@@ -16,25 +16,31 @@ public class udpClient extends AsyncTask<Void,Void,String> {
     private static final String TAG="sure2015test";
     @Override
     protected String doInBackground(Void... args) {
+        String received=null;
+        while(received==null) {
+            try {
 
-        try{
+                DatagramSocket ds = new DatagramSocket();
+                Log.i(TAG, "Created datagram socket");
+                InetAddress addr = InetAddress.getByName("255.255.255.255");
+                Log.i(TAG, "IP: " + addr);
+                byte sendbuf[] = "HELLO 18:fe:34:9f:d7:ca".getBytes();
+                DatagramPacket dp = new DatagramPacket(sendbuf, sendbuf.length, addr, 1025);
+                byte result[] = new byte[256];
+                DatagramPacket dpresp = new DatagramPacket(result, result.length);
+                Log.i(TAG, "Sending mac address");
+                ds.setSoTimeout(2000);
+                ds.setBroadcast(true);
+                ds.send(dp);
+                ds.receive(dpresp);
+                Log.i(TAG, "Past received");
+                received = new String(dpresp.getData(), 0, dpresp.getLength());
 
-            DatagramSocket ds=new DatagramSocket();
-            Log.i(TAG,"Created datagram socket");
-            InetAddress addr=InetAddress.getByName("255.255.255.255");
-            Log.i(TAG,"IP: "+addr);
-            byte sendbuf[]="HELLO 18:fe:34:9f:d7:ca".getBytes();
-
-            DatagramPacket dp=new DatagramPacket(sendbuf,sendbuf.length,addr,1025);
-            Log.i(TAG, "Sending: "+"hello".getBytes());
-            ds.setBroadcast(true);
-            ds.send(dp);
-
+            } catch (Exception e) {
+                Log.i(TAG, "Exception has occured: " + e.getMessage());
+            }
         }
-        catch(Exception e){
-            Log.i(TAG,"Exception has occured: "+e.getMessage());
-        }
-        return "done";
+        return received;
 
     }
     @Override
