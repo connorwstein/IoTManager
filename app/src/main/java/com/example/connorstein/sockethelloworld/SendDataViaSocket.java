@@ -1,7 +1,9 @@
 package com.example.connorstein.sockethelloworld;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -17,17 +19,19 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
     private int port = 0;
     private String host = null;
     private String data=null;
-
-    public SendDataViaSocket(String host,int port,String data) {
+    private Context context;
+    public SendDataViaSocket(String host,int port,String data,Context context) {
         this.host=host;
         this.port=port;
         this.data=data;
+        this.context=context;
     }
 
     @Override
     protected String doInBackground(Void... args) {
 
         send(data);
+        publishProgress(null);
         Log.i(TAG, "Sent: " + data);
         String response=receive();
         return response;
@@ -38,6 +42,12 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
         super.onPostExecute(response);
         Log.i(TAG, "Received: " + response);
         disconnect();
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+        Toast.makeText(context,"Telling device to connect ... ", Toast.LENGTH_LONG).show();
     }
 
     private void connect() {

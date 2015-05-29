@@ -7,4 +7,6 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="configureRouter">Configure</string>
+    <string name="title_activity_add_device">AddDevice</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>

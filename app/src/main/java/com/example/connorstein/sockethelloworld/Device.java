@@ -33,7 +33,6 @@ public class Device extends AppCompatActivity {
     private static final String defaultIP="192.168.4.1";
     private static final int defaultPort=80;
     private WifiManager manager;
-    private boolean connected=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,37 +41,9 @@ public class Device extends AppCompatActivity {
         setTitle(selectedDevice);
         Log.i(TAG, "Device: " + selectedDevice);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
-        connected=connect(selectedDevice);
-        if(!connected){
-            Log.i(TAG,"Not connected");
-            return;
-        }
         listAllNetworks();
     }
-    private boolean connect(String device){
-        final WifiConfiguration conf = new WifiConfiguration();
-        conf.SSID = "\"" + device + "\"";
-        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        if(manager.addNetwork(conf)==-1){
-            Log.i(TAG,"Add network fail");
-            return false;
-        }
-        List<WifiConfiguration> configs = manager.getConfiguredNetworks();
-        for (WifiConfiguration i : configs) {
-            if (i.SSID != null && i.SSID.equals("\"" + device + "\"")) {
-                manager.disconnect();
-                if(manager.enableNetwork(i.networkId, true)==false){
-                    Log.i(TAG,"Enable Network fail ");
-                    return false;
-                }
-                if(manager.reconnect()==false) {
-                    Log.i(TAG, "Reconnect fail");
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -85,11 +56,13 @@ public class Device extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        switch(id){
-
+        switch(item.getItemId()) {
+            case R.id.actionRefresh:
+                listAllNetworks();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
     public void listAllNetworks(){
         boolean scanSuccess=manager.startScan();
@@ -134,9 +107,9 @@ public class Device extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             networkPassword = input.getText().toString();
                             Log.i(TAG, "Password Inputed: " + networkPassword);
-                            SendDataViaSocket req=new SendDataViaSocket(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n");
+                            SendDataViaSocket req=new SendDataViaSocket(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
                             req.execute();
-                            //SendDataViaSocket req2=new SendDataViaSocket(255.255.255.255,1025,"hello iot"+"\r\n");
+                            connect(ssid,networkPassword); //Also connect android device to same network
                         }
                     });
                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -147,10 +120,47 @@ public class Device extends AppCompatActivity {
                     });
                     builder.show();
                 }
+                else{
+                    SendDataViaSocket req=new SendDataViaSocket(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
+                    req.execute();
+                    connect(ssid,null);
+
+                }
 
 
             }
         });
+    }
+    public boolean connect(String device,String password){
+        final WifiConfiguration conf = new WifiConfiguration();
+        Toast.makeText(getApplicationContext(),"Connecting to same network as device ...",Toast.LENGTH_LONG).show();
+        conf.SSID = "\"" + device + "\"";
+        if(password!=null){
+            conf.preSharedKey = "\""+ password +"\"";
+        }
+        else{
+            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+        }
+
+        if(manager.addNetwork(conf)==-1){
+            Log.i(TAG,"Add network fail");
+            return false;
+        }
+        List<WifiConfiguration> configs = manager.getConfiguredNetworks();
+        for (WifiConfiguration i : configs) {
+            if (i.SSID != null && i.SSID.equals("\"" + device + "\"")) {
+                manager.disconnect();
+                if(manager.enableNetwork(i.networkId, true)==false){
+                    Log.i(TAG,"Enable Network fail ");
+                    return false;
+                }
+                if(manager.reconnect()==false) {
+                    Log.i(TAG, "Reconnect fail");
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public boolean hasPassword(String ssid){
