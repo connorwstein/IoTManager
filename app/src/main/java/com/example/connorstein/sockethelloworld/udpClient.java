@@ -1,8 +1,11 @@
 package com.example.connorstein.sockethelloworld;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -19,8 +22,13 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
     private static final String TAG="sure2015test";
     private int socketTimeout = 3000;
     private int maximumNumberSendPackets=5;
-    public String deviceIPAddress=null;
+    private final String SAVED_DEVICES_FILE="ESP_DEVICES";
 
+    public String deviceIPAddress=null;
+    private Context context;
+    public UdpClient(Context context){
+        this.context=context;
+    }
     @Override
     protected String doInBackground(Void... args) {
         String responsePacketData=null;
@@ -56,8 +64,18 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
     protected void onPostExecute(String responsePacketData) {
         super.onPostExecute(responsePacketData);
         Log.i(TAG, "Received: " + responsePacketData);
-
+        Toast.makeText(context, "Received IP ", Toast.LENGTH_LONG).show();
+        FileOutputStream fos;
+        try{
+            fos=context.openFileOutput(SAVED_DEVICES_FILE,Context.MODE_APPEND);
+            fos.write(getIPAddressFromResponsePacket(responsePacketData).getBytes());
+            fos.close();
+        }
+        catch(Exception e){
+            Log.i(TAG,"UDP ON POST Exception: "+e.getMessage());
+        }
     }
+
 
     private static String getIPAddressFromResponsePacket(String responsePacketData){
         return responsePacketData.substring(2,responsePacketData.length());

@@ -107,6 +107,7 @@ public class Device extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             networkPassword = input.getText().toString();
                             Log.i(TAG, "Password Inputed: " + networkPassword);
+
                             TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
                             req.execute();
                             connect(ssid, networkPassword); //Also connect android device to same network
@@ -133,9 +134,6 @@ public class Device extends AppCompatActivity {
         });
     }
 
-    public boolean saveConfiguration(){
-        return true;
-    }
     public boolean connect(String device,String password){
         final WifiConfiguration conf = new WifiConfiguration();
         Toast.makeText(getApplicationContext(),"Connecting to same network as device ...",Toast.LENGTH_LONG).show();

@@ -34,8 +34,6 @@ public class MainActivity extends AppCompatActivity {
         }
         catch(FileNotFoundException e){
             Log.i(TAG,"File does not exist yet, must create");
-            File savedDevices=new File(Context.getFilesDir(),)
-            createNewFile();
         }
         catch(Exception e){
             Log.i(TAG, "Exception: " + e.getMessage());
@@ -43,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

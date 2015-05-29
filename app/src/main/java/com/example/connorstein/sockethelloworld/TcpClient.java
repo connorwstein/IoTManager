@@ -41,15 +41,16 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
     protected void onPostExecute(String response) {
         super.onPostExecute(response);
         Log.i(TAG, "Received: " + response);
+        Toast.makeText(context,"Told device to connect", Toast.LENGTH_LONG).show();
         disconnect();
-        UdpClient clientToGetIP=new UdpClient();
+
+        UdpClient clientToGetIP=new UdpClient(context);
         clientToGetIP.execute();
     }
 
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        Toast.makeText(context,"Telling device to connect ... ", Toast.LENGTH_LONG).show();
     }
 
     private void connect() {
