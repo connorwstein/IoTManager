@@ -107,10 +107,9 @@ public class Device extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             networkPassword = input.getText().toString();
                             Log.i(TAG, "Password Inputed: " + networkPassword);
-
-                            TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
+                            Toast.makeText(getApplicationContext(),"Told device to connect", Toast.LENGTH_LONG).show();
+                            TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
                             req.execute();
-                            connect(ssid, networkPassword); //Also connect android device to same network
 
                         }
                     });
@@ -123,10 +122,8 @@ public class Device extends AppCompatActivity {
                     builder.show();
                 }
                 else{
-                    TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
+                    TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
                     req.execute();
-                    connect(ssid,null);
-
                 }
 
 
@@ -134,37 +131,7 @@ public class Device extends AppCompatActivity {
         });
     }
 
-    public boolean connect(String device,String password){
-        final WifiConfiguration conf = new WifiConfiguration();
-        Toast.makeText(getApplicationContext(),"Connecting to same network as device ...",Toast.LENGTH_LONG).show();
-        conf.SSID = "\"" + device + "\"";
-        if(password!=null){
-            conf.preSharedKey = "\""+ password +"\"";
-        }
-        else{
-            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        }
 
-        if(manager.addNetwork(conf)==-1){
-            Log.i(TAG,"Add network fail");
-            return false;
-        }
-        List<WifiConfiguration> configs = manager.getConfiguredNetworks();
-        for (WifiConfiguration i : configs) {
-            if (i.SSID != null && i.SSID.equals("\"" + device + "\"")) {
-                manager.disconnect();
-                if(manager.enableNetwork(i.networkId, true)==false){
-                    Log.i(TAG,"Enable Network fail ");
-                    return false;
-                }
-                if(manager.reconnect()==false) {
-                    Log.i(TAG, "Reconnect fail");
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
     public boolean hasPassword(String ssid){
         manager.startScan();

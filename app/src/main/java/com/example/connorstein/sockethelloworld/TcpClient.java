@@ -1,6 +1,7 @@
 package com.example.connorstein.sockethelloworld;
 
 import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,20 +21,28 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
     private String host = null;
     private String data=null;
     private Context context;
-    public TcpClient(String host,int port,String data,Context context) {
+    private String ssid=null;
+    private String password=null;
+    private WifiManager manager=null;
+    public TcpClient(String host,int port,String data,Context context, String ssid,String password,WifiManager manager) {
         this.host=host;
         this.port=port;
         this.data=data;
         this.context=context;
+        this.password=password;
+        this.ssid=ssid;
+        this.manager=manager;
     }
 
     @Override
     protected String doInBackground(Void... args) {
 
-        send(data);
-        publishProgress(null);
+        if(send(data)!=0){
+            return null;
+        }
         Log.i(TAG, "Sent: " + data);
         String response=receive();
+
         return response;
     }
 
@@ -41,9 +50,11 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
     protected void onPostExecute(String response) {
         super.onPostExecute(response);
         Log.i(TAG, "Received: " + response);
-        Toast.makeText(context,"Told device to connect", Toast.LENGTH_LONG).show();
+        if(response==null){
+            return;
+        }
         disconnect();
-
+        AddDevice.connect(ssid, password, context, manager); //Blocks until connected
         UdpClient clientToGetIP=new UdpClient(context);
         clientToGetIP.execute();
     }
@@ -51,9 +62,11 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
+        if(values==null)Toast.makeText(context,"Unable to connect, ensure password is correct",Toast.LENGTH_LONG).show();
+
     }
 
-    private void connect() {
+    private int connect() {
         try {
             if (socket == null) {
                 socket = new Socket(this.host, this.port);
@@ -63,9 +76,11 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
         }
         catch (IOException e) {
             Log.i(TAG, "IO Exeception trying to connect");
-            return;
+            publishProgress(null);
+            return -1;
         }
         Log.i(TAG, "Connected");
+        return 0;
     }
 
     private void disconnect() {
@@ -83,14 +98,17 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
         Log.i(TAG, "Disconnected");
     }
 
-    public void send(String message) {
+    public int send(String message) {
         if (message != null) {
-            connect();
+            if(connect()!=0){
+                return -1;
+            }
             out.write(message);
             out.flush();
-            return;
+            return 0;
         }
         Log.i(TAG,"send failed");
+        return -1;
     }
 
     public String receive() {
@@ -102,7 +120,7 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
             return new String(buf,0,i,"UTF-8"); //return a String created from the non-null chars received
         } catch (IOException e) {
             Log.i(TAG,"IO Error in receiving message");
-            return "Error receiving response";
+            return null;
         }
     }
 }

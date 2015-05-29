@@ -2,10 +2,14 @@ package com.example.connorstein.sockethelloworld;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.DhcpInfo;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
+import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,6 +19,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,27 +84,24 @@ public class AddDevice extends AppCompatActivity {
         listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i(TAG, "clicked item");
-                String desiredNetwork=(String) listView.getItemAtPosition(position);
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
 
-                connected=connect(desiredNetwork);
-                if(!connected){
-                    Log.i(TAG,"Not connected");
-                    return;
-                }
-                WifiInfo wifiInfo=manager.getConnectionInfo();
-                while(!wifiInfo.getSSID().equals("\""+desiredNetwork+"\"")){
-                    wifiInfo=manager.getConnectionInfo();
-                    Log.i(TAG,"Current SSID: "+wifiInfo.getSSID()+"Desired SSID: "+desiredNetwork);
+//                Log.i(TAG, "clicked item");
+                final String desiredNetwork=(String) listView.getItemAtPosition(position);
+//                Log.i(TAG, "Pre toast");
+//                Log.i(TAG, "Post toast");
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        connect(desiredNetwork, null, getApplicationContext(), manager); //this method blocks until connected
 
-                    try{
-                        Thread.sleep(1000);
                     }
-                    catch(InterruptedException e){
-                        Log.i(TAG,"Interrupted exception");
-                    }
-                }
+                });
+//                if(!connected){
+//                    Log.i(TAG,"Not connected");
+//                    return;
+//                }
                 Intent newActivity = new Intent(AddDevice.this, Device.class);
                 newActivity.putExtra("Device", (String) listView.getItemAtPosition(position));
                 startActivity(newActivity);
@@ -107,10 +109,18 @@ public class AddDevice extends AppCompatActivity {
         });
     }
 
-    public boolean connect(String device){
+
+    public static boolean connect(String device,String password,Context context,WifiManager manager){
         final WifiConfiguration conf = new WifiConfiguration();
+
         conf.SSID = "\"" + device + "\"";
-        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+        if(password!=null){
+            conf.preSharedKey = "\""+ password +"\"";
+        }
+        else{
+            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+        }
+
         if(manager.addNetwork(conf)==-1){
             Log.i(TAG,"Add network fail");
             return false;
@@ -129,6 +139,24 @@ public class AddDevice extends AppCompatActivity {
                 }
             }
         }
+
+        WifiInfo info=manager.getConnectionInfo();
+        while((info.getIpAddress())==0){
+            //Wait until non-zero IP address (once a non-zero ip address is obtained, you are connected to the network)
+            //Tried to use NetworkInfo.DetailedState to check if it was CONNECTED
+            //However the api method said it remained in OBTAINING_IPADDR state even after it obtained an ip (must be bug)
+            info=manager.getConnectionInfo();
+            try{
+                Thread.sleep(100);
+            }
+            catch(InterruptedException e){
+                Log.i(TAG,"Interrupted exception");
+            }
+        }
         return true;
     }
+
+
+
+
 }

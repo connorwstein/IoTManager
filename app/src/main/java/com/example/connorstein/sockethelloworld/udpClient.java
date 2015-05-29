@@ -33,11 +33,20 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
     protected String doInBackground(Void... args) {
         String responsePacketData=null;
         int sentPackets=0;
+        DatagramSocket ds=null;
+        try{
+            ds = new DatagramSocket();
+            Log.i(TAG, "Created datagram socket");
+        }
+        catch(Exception e){
+            Log.i(TAG,"Exception "+e.getMessage());
+        }
+
         while(responsePacketData==null&&sentPackets<maximumNumberSendPackets) {
             try {
-                DatagramSocket ds = new DatagramSocket();
-                Log.i(TAG, "Created datagram socket");
+
                 byte sendBuffer[] = broadcastMessage.getBytes();
+                sentPackets++;
                 DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, InetAddress.getByName(broadcastAddress), broadCastPort);
                 byte receiveBuffer[] = new byte[RECEIVE_BUFFER_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
@@ -45,13 +54,14 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
                 ds.setSoTimeout(socketTimeout);
                 ds.setBroadcast(true);
                 ds.send(sendPacket);
-                sentPackets++;
+
                 ds.receive(receivePacket);
                 Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
                 responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
 
             } catch (Exception e) {
                 Log.i(TAG, "Exception has occured: " + e.getMessage());
+
             }
         }
         if(sentPackets==maximumNumberSendPackets){
@@ -67,8 +77,8 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
         Toast.makeText(context, "Received IP ", Toast.LENGTH_LONG).show();
         FileOutputStream fos;
         try{
-            fos=context.openFileOutput(SAVED_DEVICES_FILE,Context.MODE_APPEND);
-            fos.write(getIPAddressFromResponsePacket(responsePacketData).getBytes());
+            fos=context.openFileOutput(SAVED_DEVICES_FILE,Context.MODE_PRIVATE);
+            fos.write((getIPAddressFromResponsePacket(responsePacketData)+"\n").getBytes());
             fos.close();
         }
         catch(Exception e){
