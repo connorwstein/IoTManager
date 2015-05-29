@@ -49,6 +49,7 @@ public class AddDevice extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()) {
             case R.id.actionRefresh:
+                Log.i(TAG,"Clicked refresh");
                 scanForNetworks();
                 return true;
             default:

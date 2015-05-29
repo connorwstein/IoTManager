@@ -11,7 +11,7 @@ import java.net.InetAddress;
 /**
  * Created by connorstein on 15-05-28.
  */
-public class udpClient extends AsyncTask<Void,Void,String> {
+public class UdpClient extends AsyncTask<Void,Void,String> {
     private String broadcastAddress="255.255.255.255";
     private int broadCastPort=1025 ; //must be greater than 1024
     private String broadcastMessage="HELLO 18:fe:34:9f:d7:ca";

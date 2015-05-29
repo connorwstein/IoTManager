@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
+public class TcpClient extends AsyncTask<Void, Integer, String> {
     public static final int BUFFER_SIZE = 4096;
     private static final String TAG="sure2015test";
     private Socket socket = null;
@@ -20,7 +20,7 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
     private String host = null;
     private String data=null;
     private Context context;
-    public SendDataViaSocket(String host,int port,String data,Context context) {
+    public TcpClient(String host,int port,String data,Context context) {
         this.host=host;
         this.port=port;
         this.data=data;
@@ -42,6 +42,8 @@ public class SendDataViaSocket extends AsyncTask<Void, Integer, String> {
         super.onPostExecute(response);
         Log.i(TAG, "Received: " + response);
         disconnect();
+        UdpClient clientToGetIP=new UdpClient();
+        clientToGetIP.execute();
     }
 
     @Override

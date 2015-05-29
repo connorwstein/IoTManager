@@ -9,4 +9,5 @@
     <string name="configureRouter">Configure</string>
     <string name="title_activity_add_device">AddDevice</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="add_device">Add</string>
 </resources>

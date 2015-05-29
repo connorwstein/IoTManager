@@ -107,9 +107,10 @@ public class Device extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             networkPassword = input.getText().toString();
                             Log.i(TAG, "Password Inputed: " + networkPassword);
-                            SendDataViaSocket req=new SendDataViaSocket(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
+                            TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
                             req.execute();
-                            connect(ssid,networkPassword); //Also connect android device to same network
+                            connect(ssid, networkPassword); //Also connect android device to same network
+
                         }
                     });
                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -121,7 +122,7 @@ public class Device extends AppCompatActivity {
                     builder.show();
                 }
                 else{
-                    SendDataViaSocket req=new SendDataViaSocket(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
+                    TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext());
                     req.execute();
                     connect(ssid,null);
 
@@ -130,6 +131,10 @@ public class Device extends AppCompatActivity {
 
             }
         });
+    }
+
+    public boolean saveConfiguration(){
+        return true;
     }
     public boolean connect(String device,String password){
         final WifiConfiguration conf = new WifiConfiguration();
