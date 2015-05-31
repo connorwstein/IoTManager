@@ -1,6 +1,7 @@
 package com.example.connorstein.sockethelloworld;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,7 +30,7 @@ public class Device extends AppCompatActivity {
     private static final String TAG="sure2015test";
     private String selectedDevice;
     private String networkPassword="";
-    private ListView listNetworks;
+    private ListView networkListView;
     private static final String defaultIP="192.168.4.1";
     private static final int defaultPort=80;
     private WifiManager manager;
@@ -75,57 +76,51 @@ public class Device extends AppCompatActivity {
             ssids.add(networks.get(i).SSID);
 
         }
-        listNetworks=(ListView)findViewById(R.id.listNetworks);
+        networkListView=(ListView)findViewById(R.id.listNetworks);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
                 ssids
         );
-        listNetworks.setAdapter(arrayAdapter);
-        listNetworks.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+        networkListView.setAdapter(arrayAdapter);
+        networkListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final String ssid=listNetworks.getItemAtPosition(position).toString();
-//                Log.i(TAG, "clicked item: " + ssid);
-//                if(isEnterprise(ssid)){
-//                    Log.i(TAG,"Enterprise network selected");
-//                    Toast.makeText(getApplicationContext(),"No support for enterprise networks", Toast.LENGTH_LONG).show();
-//                    return;
-//                }
-//                if(hasPassword(ssid)){
-//                    //Toast.makeText(getApplicationContext(),"",Toast.LENGTH_LONG).show();
-//                    AlertDialog.Builder builder=new AlertDialog.Builder(Device.this);
-//                    builder.setTitle("Enter Password:");
-//                    // Set up the input
-//                    final EditText input = new EditText(Device.this);
-//                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-//                    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-//                    builder.setView(input);
-//                    // Set up the buttons
-//                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            networkPassword = input.getText().toString();
-//                            Log.i(TAG, "Password Inputed: " + networkPassword);
-//                            Toast.makeText(getApplicationContext(),"Told device to connect", Toast.LENGTH_LONG).show();
-//                            TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
-//                            req.execute();
-//
-//                        }
-//                    });
-//                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            dialog.cancel();
-//                        }
-//                    });
-//                    builder.show();
-//                }
-//                else{
-//                    TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
-//                    req.execute();
-//                }
+                final ProgressDialog progressDialog=new ProgressDialog(Device.this);
+                progressDialog.setMessage("Telling device to connect ...");
+                progressDialog.show();
+                String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
+                final Network network = new Network(selectedNetworkSSID, getApplicationContext());
 
+                Log.i(TAG, "clicked item: " + network.ssid);
+                if (network.isEnterprise()) {
+                    Log.i(TAG, "Enterprise network selected");
+                    Toast.makeText(getApplicationContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                if (network.hasPassword()) {
+                    final EditText passwordInput = new EditText(Device.this);
+                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Device.this)
+                            .setMessage("Enter password for network")
+                            .setView(passwordInput)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    network.setPassword(passwordInput.getText().toString());
+                                    ConnectDeviceToRouter tellDeviceToConnect=new ConnectDeviceToRouter();
+                                    tellDeviceToConnect.execute(network,getApplicationContext(),progressDialog);
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                    builder.show();
+                } else {
+
+                }
 
             }
         });

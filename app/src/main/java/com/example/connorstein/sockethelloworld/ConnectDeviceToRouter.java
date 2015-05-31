@@ -1,5 +1,6 @@
 package com.example.connorstein.sockethelloworld;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -11,38 +12,30 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class TcpClient extends AsyncTask<Void, Integer, String> {
+public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, String> {
     public static final int BUFFER_SIZE = 4096;
     private static final String TAG="sure2015test";
     private Socket socket = null;
     private PrintWriter out = null;
     private BufferedInputStream in = null;
-    private int port = 0;
-    private String host = null;
+    private int defaultDevicePort = 80;
+    private String defaultDeviceIP = "192.168.4.1";
     private String data=null;
-    private Context context;
-    private String ssid=null;
-    private String password=null;
-    private WifiManager manager=null;
-    public TcpClient(String host,int port,String data,Context context, String ssid,String password,WifiManager manager) {
-        this.host=host;
-        this.port=port;
-        this.data=data;
-        this.context=context;
-        this.password=password;
-        this.ssid=ssid;
-        this.manager=manager;
-    }
-
+    private Context context=null;
+    private Network network=null;
+    private ProgressDialog progressDialog=null;
     @Override
-    protected String doInBackground(Void... args) {
-
+    protected String doInBackground(Object... args) {
+        network=(Network)args[0];
+        context=(Context)args[1];
+        progressDialog=(ProgressDialog)args[2];
+        data=network.ssid+";"+network.password;
         if(send(data)!=0){
+            progressDialog.dismiss();
             return null;
         }
         Log.i(TAG, "Sent: " + data);
         String response=receive();
-
         return response;
     }
 
@@ -51,32 +44,27 @@ public class TcpClient extends AsyncTask<Void, Integer, String> {
         super.onPostExecute(response);
         Log.i(TAG, "Received: " + response);
         if(response==null){
+            Toast.makeText(context,"Unable to tell device to connect",Toast.LENGTH_LONG).show();
             return;
         }
         disconnect();
-        AddDevice.connect(ssid, password, context, manager); //Blocks until connected
-        UdpClient clientToGetIP=new UdpClient(context);
-        clientToGetIP.execute();
+        //Now device is connected to desired router, now connect phone to router and get ip
+        Connect connectRequest=new Connect();
+        connectRequest.execute(network,context,progressDialog,true);
     }
 
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
-        if(values==null)Toast.makeText(context,"Unable to connect, ensure password is correct",Toast.LENGTH_LONG).show();
 
-    }
 
     private int connect() {
         try {
             if (socket == null) {
-                socket = new Socket(this.host, this.port);
+                socket = new Socket(defaultDeviceIP,defaultDevicePort);
                 out = new PrintWriter(socket.getOutputStream());
                 in = new BufferedInputStream(socket.getInputStream());
             }
         }
         catch (IOException e) {
             Log.i(TAG, "IO Exeception trying to connect");
-            publishProgress(null);
             return -1;
         }
         Log.i(TAG, "Connected");

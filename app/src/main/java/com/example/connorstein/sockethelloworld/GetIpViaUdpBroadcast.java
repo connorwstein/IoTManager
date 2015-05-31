@@ -1,5 +1,6 @@
 package com.example.connorstein.sockethelloworld;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -14,7 +15,7 @@ import java.net.InetAddress;
 /**
  * Created by connorstein on 15-05-28.
  */
-public class UdpClient extends AsyncTask<Void,Void,String> {
+public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
     private String broadcastAddress="255.255.255.255";
     private int broadCastPort=1025 ; //must be greater than 1024
     private String broadcastMessage="HELLO 18:fe:34:9f:d7:ca";
@@ -23,14 +24,13 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
     private int socketTimeout = 3000;
     private int maximumNumberSendPackets=5;
     private final String SAVED_DEVICES_FILE="ESP_DEVICES";
-
-    public String deviceIPAddress=null;
+    private ProgressDialog progressDialog;
     private Context context;
-    public UdpClient(Context context){
-        this.context=context;
-    }
+
     @Override
-    protected String doInBackground(Void... args) {
+    protected String doInBackground(Object... args) {
+        context=(Context)args[0];
+        progressDialog=(ProgressDialog)args[1];
         String responsePacketData=null;
         int sentPackets=0;
         DatagramSocket ds=null;
@@ -74,6 +74,7 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
     protected void onPostExecute(String responsePacketData) {
         super.onPostExecute(responsePacketData);
         Log.i(TAG, "Received: " + responsePacketData);
+        progressDialog.dismiss();
         Toast.makeText(context, "Received IP ", Toast.LENGTH_LONG).show();
         FileOutputStream fos;
         try{
@@ -84,6 +85,7 @@ public class UdpClient extends AsyncTask<Void,Void,String> {
         catch(Exception e){
             Log.i(TAG,"UDP ON POST Exception: "+e.getMessage());
         }
+
     }
 
 

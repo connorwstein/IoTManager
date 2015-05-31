@@ -94,8 +94,8 @@ public class AddDevice extends AppCompatActivity {
                 final ProgressDialog progressDialog=new ProgressDialog(AddDevice.this);
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.show();
-
-                Log.i(TAG, "Created network");
+                final Connect connectRequest=new Connect();
+                final boolean tellDeviceToConnectAndGetIP=false;
                 if(network.isEnterprise()){
                     Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
                     return;
@@ -110,8 +110,7 @@ public class AddDevice extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     network.setPassword(passwordInput.getText().toString());
-                                    Connect connectRequest=new Connect();
-                                    connectRequest.execute(network, getApplicationContext(),progressDialog);
+                                    connectRequest.execute(network, getApplicationContext(),progressDialog,tellDeviceToConnectAndGetIP);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -121,64 +120,10 @@ public class AddDevice extends AppCompatActivity {
                             });
                     builder.show();
                 }
-
-
-//                Intent newActivity = new Intent(AddDevice.this, Device.class);
-//                newActivity.putExtra("Device", (String) listView.getItemAtPosition(position));
-//                startActivity(newActivity);
+                else{
+                    connectRequest.execute(network,getApplicationContext(),progressDialog);
+                }
             }
         });
     }
-
-
-
-    public static boolean connect(String device,String password,Context context,WifiManager manager){
-        final WifiConfiguration conf = new WifiConfiguration();
-
-        conf.SSID = "\"" + device + "\"";
-        if(password!=null){
-            conf.preSharedKey = "\""+ password +"\"";
-        }
-        else{
-            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        }
-
-        if(manager.addNetwork(conf)==-1){
-            Log.i(TAG,"Add network fail");
-            return false;
-        }
-        List<WifiConfiguration> configs = manager.getConfiguredNetworks();
-        for (WifiConfiguration i : configs) {
-            if (i.SSID != null && i.SSID.equals("\"" + device + "\"")) {
-                manager.disconnect();
-                if(manager.enableNetwork(i.networkId, true)==false){
-                    Log.i(TAG,"Enable Network fail ");
-                    return false;
-                }
-                if(manager.reconnect()==false) {
-                    Log.i(TAG, "Reconnect fail");
-                    return false;
-                }
-            }
-        }
-
-        WifiInfo info=manager.getConnectionInfo();
-        while((info.getIpAddress())==0){
-            //Wait until non-zero IP address (once a non-zero ip address is obtained, you are connected to the network)
-            //Tried to use NetworkInfo.DetailedState to check if it was CONNECTED
-            //However the api method said it remained in OBTAINING_IPADDR state even after it obtained an ip (must be bug)
-            info=manager.getConnectionInfo();
-            try{
-                Thread.sleep(100);
-            }
-            catch(InterruptedException e){
-                Log.i(TAG,"Interrupted exception");
-            }
-        }
-        return true;
-    }
-
-
-
-
 }
