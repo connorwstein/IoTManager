@@ -86,45 +86,45 @@ public class Device extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final String ssid=listNetworks.getItemAtPosition(position).toString();
-                Log.i(TAG, "clicked item: " + ssid);
-                if(isEnterprise(ssid)){
-                    Log.i(TAG,"Enterprise network selected");
-                    Toast.makeText(getApplicationContext(),"No support for enterprise networks", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                if(hasPassword(ssid)){
-                    //Toast.makeText(getApplicationContext(),"",Toast.LENGTH_LONG).show();
-                    AlertDialog.Builder builder=new AlertDialog.Builder(Device.this);
-                    builder.setTitle("Enter Password:");
-                    // Set up the input
-                    final EditText input = new EditText(Device.this);
-                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    builder.setView(input);
-                    // Set up the buttons
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            networkPassword = input.getText().toString();
-                            Log.i(TAG, "Password Inputed: " + networkPassword);
-                            Toast.makeText(getApplicationContext(),"Told device to connect", Toast.LENGTH_LONG).show();
-                            TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
-                            req.execute();
-
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                        }
-                    });
-                    builder.show();
-                }
-                else{
-                    TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
-                    req.execute();
-                }
+//                Log.i(TAG, "clicked item: " + ssid);
+//                if(isEnterprise(ssid)){
+//                    Log.i(TAG,"Enterprise network selected");
+//                    Toast.makeText(getApplicationContext(),"No support for enterprise networks", Toast.LENGTH_LONG).show();
+//                    return;
+//                }
+//                if(hasPassword(ssid)){
+//                    //Toast.makeText(getApplicationContext(),"",Toast.LENGTH_LONG).show();
+//                    AlertDialog.Builder builder=new AlertDialog.Builder(Device.this);
+//                    builder.setTitle("Enter Password:");
+//                    // Set up the input
+//                    final EditText input = new EditText(Device.this);
+//                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//                    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+//                    builder.setView(input);
+//                    // Set up the buttons
+//                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            networkPassword = input.getText().toString();
+//                            Log.i(TAG, "Password Inputed: " + networkPassword);
+//                            Toast.makeText(getApplicationContext(),"Told device to connect", Toast.LENGTH_LONG).show();
+//                            TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
+//                            req.execute();
+//
+//                        }
+//                    });
+//                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            dialog.cancel();
+//                        }
+//                    });
+//                    builder.show();
+//                }
+//                else{
+//                    TcpClient req=new TcpClient(defaultIP,defaultPort,ssid+";"+networkPassword+"\r\n",getApplicationContext(),ssid,networkPassword,manager);
+//                    req.execute();
+//                }
 
 
             }
@@ -133,36 +133,5 @@ public class Device extends AppCompatActivity {
 
 
 
-    public boolean hasPassword(String ssid){
-        manager.startScan();
-        List<ScanResult>results=manager.getScanResults();
-        for(ScanResult i:results){
-           //Log.i(TAG,i.SSID+": "+i.capabilities);
-            if(i.capabilities.equals("[ESS]")&&i.SSID.equals(ssid)){
-                //Log.i(TAG,"Open network"+i.SSID);
-                return false;
-            }
-        }
-        return true;
-    }
-    public boolean isEnterprise(String ssid){
-        manager.startScan();
-        List<ScanResult>results=manager.getScanResults();
-        for(ScanResult i:results){
-            //Log.i(TAG,i.SSID+": "+i.capabilities);
-            if(i.capabilities.contains("WPA")&&(!i.capabilities.contains("PSK"))&&i.SSID.equals(ssid)){
-                //Log.i(TAG,"Open network"+i.SSID);
-                return true;
-            }
-        }
-        return false;
-    }
 
-    public void listCapabilities(){
-        manager.startScan();
-        List<ScanResult>results=manager.getScanResults();
-        for(ScanResult i:results){
-            Log.i(TAG,"SSID: "+i.SSID+" ,Capabilities: "+i.capabilities);
-        }
-    }
 }

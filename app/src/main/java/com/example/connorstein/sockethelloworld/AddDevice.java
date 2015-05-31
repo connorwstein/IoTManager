@@ -1,23 +1,27 @@
 package com.example.connorstein.sockethelloworld;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.DhcpInfo;
-import android.net.NetworkInfo;
+
 import android.net.wifi.ScanResult;
-import android.net.wifi.SupplicantState;
+
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -70,9 +74,9 @@ public class AddDevice extends AppCompatActivity {
         List<ScanResult> networks=manager.getScanResults();
         List <String> ssids=new ArrayList<String>();
         for(int i=0;i<networks.size();i++){
-            if(networks.get(i).SSID.contains(NETWORK_PREFIX)) {
+            //if(networks.get(i).SSID.contains(NETWORK_PREFIX)) {
                 ssids.add(networks.get(i).SSID);
-            }
+            //}
         }
         listView=(ListView)findViewById(R.id.networkList);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
@@ -85,29 +89,47 @@ public class AddDevice extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
+                String selectedNetworkSSID=(String) listView.getItemAtPosition(position);
+                final Network network=new Network(selectedNetworkSSID,getApplicationContext());
+                final ProgressDialog progressDialog=new ProgressDialog(AddDevice.this);
+                progressDialog.setMessage("Connecting ...");
+                progressDialog.show();
 
-//                Log.i(TAG, "clicked item");
-                final String desiredNetwork=(String) listView.getItemAtPosition(position);
-//                Log.i(TAG, "Pre toast");
-//                Log.i(TAG, "Post toast");
-                new Thread(new Runnable(){
-                    @Override
-                    public void run() {
-                        connect(desiredNetwork, null, getApplicationContext(), manager); //this method blocks until connected
+                Log.i(TAG, "Created network");
+                if(network.isEnterprise()){
+                    Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                else if(network.hasPassword()) {
+                    final EditText passwordInput=new EditText(AddDevice.this);
+                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(AddDevice.this)
+                            .setMessage("Enter password for network")
+                            .setView(passwordInput)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    network.setPassword(passwordInput.getText().toString());
+                                    Connect connectRequest=new Connect();
+                                    connectRequest.execute(network, getApplicationContext(),progressDialog);
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                    builder.show();
+                }
 
-                    }
-                });
-//                if(!connected){
-//                    Log.i(TAG,"Not connected");
-//                    return;
-//                }
-                Intent newActivity = new Intent(AddDevice.this, Device.class);
-                newActivity.putExtra("Device", (String) listView.getItemAtPosition(position));
-                startActivity(newActivity);
+
+//                Intent newActivity = new Intent(AddDevice.this, Device.class);
+//                newActivity.putExtra("Device", (String) listView.getItemAtPosition(position));
+//                startActivity(newActivity);
             }
         });
     }
+
 
 
     public static boolean connect(String device,String password,Context context,WifiManager manager){
