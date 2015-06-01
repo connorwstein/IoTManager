@@ -44,7 +44,8 @@ public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, Integer> {
     protected void onPostExecute(Integer success) {
         super.onPostExecute(success);
         if(success==-1){
-            Toast.makeText(context,"Unable to tell device to connect",Toast.LENGTH_LONG).show();
+            progressDialog.dismiss();
+            Toast.makeText(context,"Unable to tell device to connect, ensure password is correct. It may be required to reconnect to the device again on the previous page.",Toast.LENGTH_LONG).show();
             return;
         }
         disconnect();

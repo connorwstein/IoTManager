@@ -28,8 +28,8 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
     private static final int RECEIVE_BUFFER_SIZE=1024;
     private int MAX_NUM_RECEIVE_PACKETS=10;
     private static final String TAG="sure2015test";
-    private int socketTimeout = 1000;
-    private int maximumNumberSendPackets=2;
+    private int socketTimeout = 250;
+    private int maximumNumberSendPackets=3;
     private final String SAVED_DEVICES_FILE="ESP_DEVICES";
     private ProgressDialog progressDialog;
     private Context context;
@@ -70,11 +70,6 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
         if(devices.size()==0){
             return -1;
         }
-//        if(sentPackets==maximumNumberSendPackets){
-//            Log.i(TAG, "Unable to obtain ip address");
-//            progressDialog.dismiss();
-//            return -1;
-//        }
         return 0;
     }
 
@@ -82,7 +77,9 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
     protected void onPostExecute(Integer success) {
         super.onPostExecute(success);
         progressDialog.dismiss();
-        if(devices==null){
+        if(success==-1){
+            Log.i(TAG,"No devices on this network");
+            Toast.makeText(context,"No devices on this network.",Toast.LENGTH_LONG).show();
             return;
         }
         Set<String> hs=new HashSet<>();
@@ -98,8 +95,7 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
                 devices
         );
         devicesListView.setAdapter(arrayAdapter);
-
-
+        
     }
 
     private void receiveMultiplePackets(DatagramSocket ds){

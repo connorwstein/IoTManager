@@ -93,7 +93,6 @@ public class AddDevice extends AppCompatActivity {
                 final Network network=new Network(selectedNetworkSSID,getApplicationContext());
                 final ProgressDialog progressDialog=new ProgressDialog(AddDevice.this);
                 progressDialog.setMessage("Connecting ...");
-                progressDialog.setCancelable(false);
                 progressDialog.show();
                 final Connect connectRequest=new Connect();
                 final boolean connectAndStartDeviceActivity=true;
@@ -116,7 +115,9 @@ public class AddDevice extends AppCompatActivity {
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
+                                    progressDialog.dismiss();
                                     dialog.cancel();
+
                                 }
                             });
                     builder.show();

@@ -83,7 +83,7 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
         progressDialog.dismiss();
         super.onPostExecute(validNetworkData);
         if(!validNetworkData){
-            Toast.makeText(context,"Not valid network parameters, make sure password is correct",Toast.LENGTH_LONG).show();
+            Toast.makeText(context,"Invalid network parameters, make sure password is correct. It may be required to reconnect to the device on the previous page.",Toast.LENGTH_LONG).show();
         }
         else if(connectAndStartDeviceActivity){
             Intent newActivity = new Intent(context, Device.class);

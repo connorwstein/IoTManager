@@ -88,7 +88,6 @@ public class Device extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final ProgressDialog progressDialog=new ProgressDialog(Device.this);
                 progressDialog.setMessage("Telling device to connect ...");
-                progressDialog.setCancelable(false);
                 progressDialog.show();
                 String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
                 final Network network = new Network(selectedNetworkSSID, getApplicationContext());

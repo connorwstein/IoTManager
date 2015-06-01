@@ -31,16 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         devicesListView=(ListView)findViewById(R.id.devices);
-//        ArrayList<String>devices=new ArrayList<String>();
-//        devices.add("Hello world");
-//        ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
-//                this,
-//                android.R.layout.simple_list_item_1,
-//                devices
-//        );
-
         broadcastForDevices();
-//        devicesListView.setAdapter(arrayAdapter);
     }
 
 
@@ -58,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()) {
             case R.id.add_device:
-                Intent intent=new Intent(MainActivity.this,AddDevice.class);
+                Intent intent=new Intent(this,AddDevice.class);
                 startActivity(intent);
                 return true;
             case R.id.broadcast_for_device_ips:
@@ -70,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void broadcastForDevices(){
         GetIpViaUdpBroadcast getDevicesInfo= new GetIpViaUdpBroadcast();
-        final ProgressDialog progressDialog=new ProgressDialog(this);
-        progressDialog.setMessage("Broadcasting for device info ...");
+        ProgressDialog progressDialog=new ProgressDialog(this);
+        progressDialog.setMessage("Broadcasting for device info");
         progressDialog.show();
         getDevicesInfo.execute(this,progressDialog,devicesListView);
 
