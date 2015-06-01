@@ -16,9 +16,9 @@ import java.net.InetAddress;
  * Created by connorstein on 15-05-28.
  */
 public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
-    private String broadcastAddress="255.255.255.255";
+    private String broadcastAddress="192.168.7.255";
     private int broadCastPort=1025 ; //must be greater than 1024
-    private String broadcastMessage="HELLO 18:fe:34:9f:d7:ca";
+    private String broadcastMessage="Hello Espressif Devices?";
     private static final int RECEIVE_BUFFER_SIZE=1024;
     private static final String TAG="sure2015test";
     private int socketTimeout = 3000;
@@ -31,6 +31,7 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
     protected String doInBackground(Object... args) {
         context=(Context)args[0];
         progressDialog=(ProgressDialog)args[1];
+        progressDialog.setMessage("Broadcasting to get IP of device ...");
         String responsePacketData=null;
         int sentPackets=0;
         DatagramSocket ds=null;
@@ -54,7 +55,6 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
                 ds.setSoTimeout(socketTimeout);
                 ds.setBroadcast(true);
                 ds.send(sendPacket);
-
                 ds.receive(receivePacket);
                 Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
                 responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
@@ -66,7 +66,7 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
         }
         if(sentPackets==maximumNumberSendPackets){
             Log.i(TAG,"Unable to obtain ip address");
-
+            return null;
         }
         return responsePacketData;
     }
@@ -74,12 +74,18 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
     protected void onPostExecute(String responsePacketData) {
         super.onPostExecute(responsePacketData);
         Log.i(TAG, "Received: " + responsePacketData);
+        byte buf[]=new byte[1024];
         progressDialog.dismiss();
-        Toast.makeText(context, "Received IP ", Toast.LENGTH_LONG).show();
+        if(responsePacketData!=null){
+            Toast.makeText(context, "Received IP ", Toast.LENGTH_LONG).show();
+        }
         FileOutputStream fos;
         try{
             fos=context.openFileOutput(SAVED_DEVICES_FILE,Context.MODE_PRIVATE);
-            fos.write((getIPAddressFromResponsePacket(responsePacketData)+"\n").getBytes());
+            buf=(getIPAddressFromResponsePacket(responsePacketData)+"\n").getBytes();
+            int i=0;
+            while(buf[i]!='\0') i++; //loop until null char
+            fos.write(buf);
             fos.close();
         }
         catch(Exception e){

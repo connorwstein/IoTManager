@@ -74,9 +74,9 @@ public class AddDevice extends AppCompatActivity {
         List<ScanResult> networks=manager.getScanResults();
         List <String> ssids=new ArrayList<String>();
         for(int i=0;i<networks.size();i++){
-            //if(networks.get(i).SSID.contains(NETWORK_PREFIX)) {
+            if(networks.get(i).SSID.contains(NETWORK_PREFIX)) {
                 ssids.add(networks.get(i).SSID);
-            //}
+            }
         }
         listView=(ListView)findViewById(R.id.networkList);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
@@ -95,7 +95,7 @@ public class AddDevice extends AppCompatActivity {
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.show();
                 final Connect connectRequest=new Connect();
-                final boolean tellDeviceToConnectAndGetIP=false;
+                final boolean connectAndStartDeviceActivity=true;
                 if(network.isEnterprise()){
                     Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
                     return;
@@ -110,7 +110,7 @@ public class AddDevice extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     network.setPassword(passwordInput.getText().toString());
-                                    connectRequest.execute(network, getApplicationContext(),progressDialog,tellDeviceToConnectAndGetIP);
+                                    connectRequest.execute(network, getApplicationContext(),progressDialog,connectAndStartDeviceActivity);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -121,7 +121,7 @@ public class AddDevice extends AppCompatActivity {
                     builder.show();
                 }
                 else{
-                    connectRequest.execute(network,getApplicationContext(),progressDialog);
+                    connectRequest.execute(network,getApplicationContext(),progressDialog,connectAndStartDeviceActivity);
                 }
             }
         });

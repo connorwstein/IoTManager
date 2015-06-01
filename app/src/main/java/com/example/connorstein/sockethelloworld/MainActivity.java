@@ -1,5 +1,6 @@
 package com.example.connorstein.sockethelloworld;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
@@ -64,6 +65,12 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent=new Intent(MainActivity.this,AddDevice.class);
                 startActivity(intent);
                 return true;
+            case R.id.broadcast_for_device_ips:
+                GetIpViaUdpBroadcast getDevicesInfo= new GetIpViaUdpBroadcast();
+                final ProgressDialog progressDialog=new ProgressDialog(this);
+                progressDialog.setMessage("Broadcasting for device info ...");
+                progressDialog.show();
+                getDevicesInfo.execute(getApplicationContext(),progressDialog);
             default:
                 return super.onOptionsItemSelected(item);
         }

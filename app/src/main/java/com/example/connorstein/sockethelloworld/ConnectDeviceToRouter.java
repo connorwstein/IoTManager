@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, String> {
+public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, Integer> {
     public static final int BUFFER_SIZE = 4096;
     private static final String TAG="sure2015test";
     private Socket socket = null;
@@ -25,32 +25,36 @@ public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, String> {
     private Network network=null;
     private ProgressDialog progressDialog=null;
     @Override
-    protected String doInBackground(Object... args) {
+    protected Integer doInBackground(Object... args) {
         network=(Network)args[0];
         context=(Context)args[1];
         progressDialog=(ProgressDialog)args[2];
         data=network.ssid+";"+network.password;
         if(send(data)!=0){
             progressDialog.dismiss();
-            return null;
+            return -1;
         }
         Log.i(TAG, "Sent: " + data);
         String response=receive();
-        return response;
+        Log.i(TAG, "Received: " + response);
+        return 0;
     }
 
     @Override
-    protected void onPostExecute(String response) {
-        super.onPostExecute(response);
-        Log.i(TAG, "Received: " + response);
-        if(response==null){
+    protected void onPostExecute(Integer success) {
+        super.onPostExecute(success);
+        if(success==-1){
             Toast.makeText(context,"Unable to tell device to connect",Toast.LENGTH_LONG).show();
+            progressDialog.dismiss();
             return;
         }
         disconnect();
-        //Now device is connected to desired router, now connect phone to router and get ip
+        //progressDialog.setMessage("Device connected to router");
+        Log.i(TAG,"device connected to router");
+        boolean connectAndStartDeviceActivity=false;
+        //Now device is connected to desired router, now connect phone to router
         Connect connectRequest=new Connect();
-        connectRequest.execute(network,context,progressDialog,true);
+        connectRequest.execute(network,context,progressDialog,connectAndStartDeviceActivity);
     }
 
 
@@ -106,7 +110,8 @@ public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, String> {
             int i;
             for(i=0;i<BUFFER_SIZE&&buf[i]!=0;i++){} //Loop until null char
             return new String(buf,0,i,"UTF-8"); //return a String created from the non-null chars received
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             Log.i(TAG,"IO Error in receiving message");
             return null;
         }

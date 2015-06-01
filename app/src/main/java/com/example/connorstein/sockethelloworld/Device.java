@@ -114,12 +114,14 @@ public class Device extends AppCompatActivity {
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
+                                    progressDialog.cancel();
                                     dialog.cancel();
                                 }
                             });
                     builder.show();
                 } else {
-
+                    ConnectDeviceToRouter tellDeviceToConnect=new ConnectDeviceToRouter();
+                    tellDeviceToConnect.execute(network,getApplicationContext(),progressDialog);
                 }
 
             }

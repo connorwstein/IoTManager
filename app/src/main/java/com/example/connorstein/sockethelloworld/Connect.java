@@ -20,14 +20,18 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
     private Context context;
     private Network network;
     private ProgressDialog progressDialog;
-    private boolean connectThenGetDeviceIP;
+    private boolean connectAndStartDeviceActivity;
 
     @Override
     protected Boolean doInBackground(Object... args) {
         network=(Network)args[0];
         context=(Context)args[1];
         progressDialog=(ProgressDialog)args[2];
-        connectThenGetDeviceIP=(boolean) args[3];
+        connectAndStartDeviceActivity=(boolean) args[3];
+        if(!connectAndStartDeviceActivity){
+            Log.i(TAG,"Connected android to same network ..");
+            //progressDialog.setMessage("Connecting android device to same network ... ");
+        }
         final WifiConfiguration conf = new WifiConfiguration();
         conf.SSID = "\"" + network.ssid + "\"";
         if(network.password!=null){
@@ -74,32 +78,21 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
         return true;
     }
 
-
-    @Override
-    protected void onProgressUpdate(Void... values) {
-        super.onProgressUpdate(values);
-    }
-
     @Override
     protected void onPostExecute(Boolean validNetworkData) {
-//        progressDialog.dismiss();
+        progressDialog.dismiss();
         super.onPostExecute(validNetworkData);
-        if(validNetworkData && !connectThenGetDeviceIP){
+        if(!validNetworkData){
+            Toast.makeText(context,"Not valid network parameters, make sure password is correct",Toast.LENGTH_LONG).show();
+        }
+        else if(connectAndStartDeviceActivity){
             Intent newActivity = new Intent(context, Device.class);
             newActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             newActivity.putExtra("Device", network.ssid);
             context.startActivity(newActivity);
         }
-        else if(validNetworkData && connectThenGetDeviceIP){
-            Log.i(TAG,"tell device to connect");
-            GetIpViaUdpBroadcast clientToGetIP=new GetIpViaUdpBroadcast();
-            clientToGetIP.execute(context,progressDialog);
-        }
         else{
-            Toast.makeText(context,"Not valid network parameters, make sure password is correct",Toast.LENGTH_LONG).show();
-            progressDialog.dismiss();
+            Toast.makeText(context,"Successful connection",Toast.LENGTH_LONG).show();
         }
-
-
     }
 }

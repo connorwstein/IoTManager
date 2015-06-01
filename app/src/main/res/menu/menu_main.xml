@@ -5,4 +5,9 @@
         android:title="@string/add_device"
         android:orderInCategory="100"
         app:showAsAction="always" />
+    <item android:id="@+id/broadcast_for_device_ips"
+        android:title="@string/broadcast_for_device_ips"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
+
 </menu>
