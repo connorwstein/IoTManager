@@ -88,6 +88,7 @@ public class Device extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final ProgressDialog progressDialog=new ProgressDialog(Device.this);
                 progressDialog.setMessage("Telling device to connect ...");
+                progressDialog.setCancelable(false);
                 progressDialog.show();
                 String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
                 final Network network = new Network(selectedNetworkSSID, getApplicationContext());
@@ -95,6 +96,7 @@ public class Device extends AppCompatActivity {
                 Log.i(TAG, "clicked item: " + network.ssid);
                 if (network.isEnterprise()) {
                     Log.i(TAG, "Enterprise network selected");
+                    progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -114,7 +116,7 @@ public class Device extends AppCompatActivity {
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
-                                    progressDialog.cancel();
+                                    progressDialog.dismiss();
                                     dialog.cancel();
                                 }
                             });

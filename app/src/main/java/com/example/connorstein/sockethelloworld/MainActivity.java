@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,35 +18,29 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG="sure2015test";
     private static final String SAVED_DEVICES_FILE="ESP_DEVICES";
     private static final int FILE_READ_BUF_SIZE=1024;
-    private TextView textView;
+    private ListView devicesListView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textView=(TextView)findViewById(R.id.ip);
-        byte readBuf[]=new byte[FILE_READ_BUF_SIZE];
-        try{
-            FileInputStream fis=openFileInput(SAVED_DEVICES_FILE);
-            fis.read(readBuf,0,FILE_READ_BUF_SIZE);
-            Log.i(TAG, "Reading back data from file " + new String(readBuf, "UTF-8"));
-            textView.setText(new String(readBuf,"UTF-8"));
-            fis.close();
-        }
-        catch(FileNotFoundException e){
-            Log.i(TAG,"File does not exist yet, must create");
-        }
-        catch(Exception e){
-            Log.i(TAG, "Exception: " + e.getMessage());
-            Toast.makeText(getApplicationContext(),"No saved devices",Toast.LENGTH_LONG).show();
+        devicesListView=(ListView)findViewById(R.id.devices);
+//        ArrayList<String>devices=new ArrayList<String>();
+//        devices.add("Hello world");
+//        ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
+//                this,
+//                android.R.layout.simple_list_item_1,
+//                devices
+//        );
 
-        }
-
+        broadcastForDevices();
+//        devicesListView.setAdapter(arrayAdapter);
     }
 
 
@@ -66,13 +62,18 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case R.id.broadcast_for_device_ips:
-                GetIpViaUdpBroadcast getDevicesInfo= new GetIpViaUdpBroadcast();
-                final ProgressDialog progressDialog=new ProgressDialog(this);
-                progressDialog.setMessage("Broadcasting for device info ...");
-                progressDialog.show();
-                getDevicesInfo.execute(getApplicationContext(),progressDialog);
+                broadcastForDevices();
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void broadcastForDevices(){
+        GetIpViaUdpBroadcast getDevicesInfo= new GetIpViaUdpBroadcast();
+        final ProgressDialog progressDialog=new ProgressDialog(this);
+        progressDialog.setMessage("Broadcasting for device info ...");
+        progressDialog.show();
+        getDevicesInfo.execute(this,progressDialog,devicesListView);
+
     }
 }

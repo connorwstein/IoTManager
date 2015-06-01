@@ -93,6 +93,7 @@ public class AddDevice extends AppCompatActivity {
                 final Network network=new Network(selectedNetworkSSID,getApplicationContext());
                 final ProgressDialog progressDialog=new ProgressDialog(AddDevice.this);
                 progressDialog.setMessage("Connecting ...");
+                progressDialog.setCancelable(false);
                 progressDialog.show();
                 final Connect connectRequest=new Connect();
                 final boolean connectAndStartDeviceActivity=true;

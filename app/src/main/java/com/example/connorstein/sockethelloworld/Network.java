@@ -27,7 +27,7 @@ public class Network {
         manager.startScan();
         List<ScanResult> results=manager.getScanResults();
         for(ScanResult i:results){
-            Log.i(TAG,i.SSID+": "+i.capabilities);
+            //Log.i(TAG,i.SSID+": "+i.capabilities);
             if(i.capabilities.equals("[ESS]")&&i.SSID.equals(ssid)){
                 //Log.i(TAG,"Open network"+i.SSID);
                 return false;
