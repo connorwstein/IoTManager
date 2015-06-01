@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 
 /**
  * Created by connorstein on 15-05-28.
@@ -26,6 +27,7 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
     private final String SAVED_DEVICES_FILE="ESP_DEVICES";
     private ProgressDialog progressDialog;
     private Context context;
+    private ArrayList<String> devices=null;
 
     @Override
     protected String doInBackground(Object... args) {
@@ -43,7 +45,7 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
             Log.i(TAG,"Exception "+e.getMessage());
         }
 
-        while(responsePacketData==null&&sentPackets<maximumNumberSendPackets) {
+        while(sentPackets<maximumNumberSendPackets) {
             try {
 
                 byte sendBuffer[] = broadcastMessage.getBytes();
@@ -65,7 +67,7 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
             }
         }
         if(sentPackets==maximumNumberSendPackets){
-            Log.i(TAG,"Unable to obtain ip address");
+            Log.i(TAG, "Unable to obtain ip address");
             return null;
         }
         return responsePacketData;
@@ -74,28 +76,9 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,String> {
     protected void onPostExecute(String responsePacketData) {
         super.onPostExecute(responsePacketData);
         Log.i(TAG, "Received: " + responsePacketData);
-        byte buf[]=new byte[1024];
         progressDialog.dismiss();
-        if(responsePacketData!=null){
-            Toast.makeText(context, "Received IP ", Toast.LENGTH_LONG).show();
-        }
-        FileOutputStream fos;
-        try{
-            fos=context.openFileOutput(SAVED_DEVICES_FILE,Context.MODE_PRIVATE);
-            buf=(getIPAddressFromResponsePacket(responsePacketData)+"\n").getBytes();
-            int i=0;
-            while(buf[i]!='\0') i++; //loop until null char
-            fos.write(buf);
-            fos.close();
-        }
-        catch(Exception e){
-            Log.i(TAG,"UDP ON POST Exception: "+e.getMessage());
-        }
 
     }
 
 
-    private static String getIPAddressFromResponsePacket(String responsePacketData){
-        return responsePacketData.substring(2,responsePacketData.length());
-    }
 }
