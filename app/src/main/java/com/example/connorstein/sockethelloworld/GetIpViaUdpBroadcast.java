@@ -28,9 +28,8 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
     private static final int RECEIVE_BUFFER_SIZE=1024;
     private int MAX_NUM_RECEIVE_PACKETS=10;
     private static final String TAG="sure2015test";
-    private int socketTimeout = 250;
+    private int socketTimeout = 100;
     private int maximumNumberSendPackets=3;
-    private final String SAVED_DEVICES_FILE="ESP_DEVICES";
     private ProgressDialog progressDialog;
     private Context context;
     private ArrayList<String> devices;
@@ -64,7 +63,6 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
                 receiveMultiplePackets(ds);
             } catch (Exception e) {
                 Log.i(TAG, "Exception has occured: " + e.getMessage());
-
             }
         }
         if(devices.size()==0){

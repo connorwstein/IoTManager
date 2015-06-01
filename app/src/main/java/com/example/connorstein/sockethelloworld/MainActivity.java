@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,6 +34,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         devicesListView=(ListView)findViewById(R.id.devices);
         broadcastForDevices();
+        devicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent deviceConfigurationIntent=new Intent(MainActivity.this,DeviceConfiguration.class);
+                deviceConfigurationIntent.putExtra("Device", devicesListView.getItemAtPosition(position).toString());
+                startActivity(deviceConfigurationIntent);
+
+            }
+        });
     }
 
 
@@ -49,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()) {
             case R.id.add_device:
-                Intent intent=new Intent(this,AddDevice.class);
+                Intent intent=new Intent(this,AvailableDevices.class);
                 startActivity(intent);
                 return true;
             case R.id.broadcast_for_device_ips:
@@ -65,6 +76,5 @@ public class MainActivity extends AppCompatActivity {
         progressDialog.setMessage("Broadcasting for device info");
         progressDialog.show();
         getDevicesInfo.execute(this,progressDialog,devicesListView);
-
     }
 }

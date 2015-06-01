@@ -27,9 +27,7 @@ public class Network {
         manager.startScan();
         List<ScanResult> results=manager.getScanResults();
         for(ScanResult i:results){
-            //Log.i(TAG,i.SSID+": "+i.capabilities);
             if(i.capabilities.equals("[ESS]")&&i.SSID.equals(ssid)){
-                //Log.i(TAG,"Open network"+i.SSID);
                 return false;
             }
         }
@@ -39,20 +37,10 @@ public class Network {
         manager.startScan();
         List<ScanResult>results=manager.getScanResults();
         for(ScanResult i:results){
-            //Log.i(TAG,i.SSID+": "+i.capabilities);
             if(i.capabilities.contains("WPA")&&(!i.capabilities.contains("PSK"))&&i.SSID.equals(ssid)){
-                //Log.i(TAG,"Open network"+i.SSID);
                 return true;
             }
         }
         return false;
-    }
-
-    public void listCapabilities(){
-        manager.startScan();
-        List<ScanResult>results=manager.getScanResults();
-        for(ScanResult i:results){
-            Log.i(TAG, "SSID: " + i.SSID + " ,Capabilities: " + i.capabilities);
-        }
     }
 }

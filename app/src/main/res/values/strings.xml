@@ -11,4 +11,5 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="add_device">Add</string>
     <string name="broadcast_for_device_ips">Broadcast</string>
+    <string name="title_activity_device_configuration">DeviceConfiguration</string>
 </resources>
