@@ -78,9 +78,8 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
         super.onPostExecute(success);
         progressDialog.dismiss();
         if(success==-1){
-            Log.i(TAG,"No devices on this network");
+            Log.i(TAG, "No devices on this network");
             Toast.makeText(context,"No devices on this network.",Toast.LENGTH_LONG).show();
-            return;
         }
         Set<String> hs=new HashSet<>();
         hs.addAll(devices);
@@ -91,11 +90,11 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
         }
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.device_list,
                 devices
         );
         devicesListView.setAdapter(arrayAdapter);
-        
+
     }
 
     private void receiveMultiplePackets(DatagramSocket ds){
