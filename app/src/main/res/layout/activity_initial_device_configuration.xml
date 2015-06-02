@@ -12,18 +12,26 @@
         android:text="Name"
         android:id="@+id/nameDeviceSubmit"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="137dp" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/nameDevice"
+        android:inputType="text"
+        android:hint="Name the device"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/nameDeviceSubmit"
-        android:layout_toLeftOf="@+id/nameDeviceSubmit"
-        android:layout_toStartOf="@+id/nameDeviceSubmit"
-        android:inputType="text" />
+        android:layout_alignParentStart="true" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/deviceType"
+        android:layout_alignBottom="@+id/nameDevice"
+        android:layout_toEndOf="@+id/nameDeviceSubmit"
+        android:layout_toRightOf="@+id/nameDeviceSubmit"
+        android:contentDescription="Type" />
 
 </RelativeLayout>

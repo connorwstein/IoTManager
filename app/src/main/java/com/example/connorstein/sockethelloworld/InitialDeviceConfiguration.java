@@ -9,24 +9,39 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 
 public class InitialDeviceConfiguration extends AppCompatActivity {
     private EditText nameDevice;
     private Button nameDeviceSubmit;
     private static final String TAG="sure2015test";
-
+    private Spinner deviceType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_initial_device_configuration);
         //Name:
         setTitle("Initial Configuration");
+        deviceType=(Spinner)findViewById(R.id.deviceType);
+        ArrayList<String> types=new ArrayList<String>();
+        types.add("Temperature");
+        types.add("Lights");
+
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(
+                this,
+                R.layout.support_simple_spinner_dropdown_item,
+                types
+        );
+        deviceType.setAdapter(adapter);
+
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
         nameDeviceSubmit.setOnClickListener(new View.OnClickListener() {
@@ -43,7 +58,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                         try {
                             s = new Socket("192.168.4.1", 80);
                             out = new PrintWriter(s.getOutputStream());
-                            out.write("Name:" + nameDevice.getText().toString());
+                            out.write("Name:" + nameDevice.getText().toString()+" "+"Type:"+deviceType.getSelectedItem());
                             out.flush();
                         } catch (Exception e) {
                             Log.i(TAG, "Exception " + e.getMessage());
