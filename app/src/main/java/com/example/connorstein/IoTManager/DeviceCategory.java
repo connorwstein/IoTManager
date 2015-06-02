@@ -1,7 +1,6 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.app.ProgressDialog;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -9,13 +8,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-import java.util.List;
-
 
 public class DeviceCategory extends AppCompatActivity {
     private ListView devicesListView;
     private static final String TAG="sure2015test";
-    private String category;
+    private String deviceType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,17 +20,17 @@ public class DeviceCategory extends AppCompatActivity {
         devicesListView=(ListView)findViewById(R.id.devicesListView);
         switch(getIntent().getStringExtra("Position")){
             case "0":
-                category="Lighting Devices";
+                deviceType="Lighting";
                 break;
             case "1":
-                category="Temperature Devices";
+                deviceType="Temperature";
                 break;
             default:
                 Log.i(TAG,"Error selecting category");
 
         }
-        setTitle(category);
-        broadcastForDevices();
+        setTitle(deviceType);
+        broadcastForDevices(deviceType);
 
     }
 
@@ -51,16 +48,16 @@ public class DeviceCategory extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()){
             case R.id.broadcast_for_device_ips:
-                broadcastForDevices();
+                broadcastForDevices(deviceType);
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-    private void broadcastForDevices() {
+    private void broadcastForDevices(String deviceType) {
         GetIpViaUdpBroadcast getDevicesInfo= new GetIpViaUdpBroadcast();
         ProgressDialog progressDialog=new ProgressDialog(this);
         progressDialog.setMessage("Broadcasting for devices");
         progressDialog.show();
-        getDevicesInfo.execute(this,progressDialog,devicesListView);
+        getDevicesInfo.execute(this,progressDialog,devicesListView,deviceType);
     }
 }

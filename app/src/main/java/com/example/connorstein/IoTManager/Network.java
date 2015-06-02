@@ -1,9 +1,8 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

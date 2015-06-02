@@ -1,9 +1,6 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,10 +9,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-
-import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {

@@ -1,4 +1,4 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;

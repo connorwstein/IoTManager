@@ -1,4 +1,4 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,14 +8,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,7 +22,7 @@ import java.util.Set;
 public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
     private String broadcastAddress="255.255.255.255";
     private int broadCastPort=1025 ; //must be greater than 1024
-    private String broadcastMessage="Hello Espressif Devices?";
+    private String broadcastMessage;
     private static final int RECEIVE_BUFFER_SIZE=1024;
     private int MAX_NUM_RECEIVE_PACKETS=10;
     private static final String TAG="sure2015test";
@@ -34,12 +32,14 @@ public class GetIpViaUdpBroadcast extends AsyncTask<Object,Void,Integer> {
     private Context context;
     private ArrayList<String> devices;
     private ListView devicesListView;
-
+    private String deviceType;
     @Override
     protected Integer doInBackground(Object... args) {
         context=(Context)args[0];
         progressDialog=(ProgressDialog)args[1];
         devicesListView=(ListView)args[2];
+        deviceType=(String)args[3];
+        broadcastMessage="Hello "+deviceType+" Devices?";
         devices=new ArrayList<String>();
         int sentPackets=0;
         DatagramSocket ds=null;

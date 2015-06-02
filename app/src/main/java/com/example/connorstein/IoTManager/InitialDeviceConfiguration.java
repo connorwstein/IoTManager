@@ -1,8 +1,7 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -33,7 +32,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         deviceType=(Spinner)findViewById(R.id.deviceType);
         ArrayList<String> types=new ArrayList<String>();
         types.add("Temperature");
-        types.add("Lights");
+        types.add("Lighting");
 
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(
                 this,

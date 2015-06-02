@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.connorstein.sockethelloworld" >
+    package="com.example.connorstein.IoTManager" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.connorstein.IoTManager.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/app_name" >
             <intent-filter>
@@ -23,32 +23,32 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AvailableNetworks"
+            android:name="com.example.connorstein.IoTManager.AvailableNetworks"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_device"
-            android:parentActivityName=".InitialDeviceConfiguration" >
+            android:parentActivityName="com.example.connorstein.IoTManager.InitialDeviceConfiguration" >
         </activity>
         <activity
-            android:name=".AvailableDevices"
+            android:name="com.example.connorstein.IoTManager.AvailableDevices"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_add_device"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
         </activity>
         <activity
-            android:name=".DeviceConfiguration"
+            android:name="com.example.connorstein.IoTManager.DeviceConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_device_configuration"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
         </activity>
         <activity
-            android:name=".DeviceCategory"
+            android:name="com.example.connorstein.IoTManager.DeviceCategory"
             android:label="@string/title_activity_device_category"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
         </activity>
         <activity
-            android:name=".InitialDeviceConfiguration"
+            android:name="com.example.connorstein.IoTManager.InitialDeviceConfiguration"
             android:label="@string/title_activity_initial_device_configuration"
-            android:parentActivityName=".AvailableDevices">
+            android:parentActivityName="com.example.connorstein.IoTManager.AvailableDevices">
         </activity>
     </application>
 

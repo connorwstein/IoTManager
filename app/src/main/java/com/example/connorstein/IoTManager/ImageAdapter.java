@@ -1,4 +1,4 @@
-package com.example.connorstein.sockethelloworld;
+package com.example.connorstein.IoTManager;
 
 import android.content.Context;
 import android.view.View;
