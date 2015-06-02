@@ -29,7 +29,7 @@ public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, Integer> {
         network=(Network)args[0];
         context=(Context)args[1];
         progressDialog=(ProgressDialog)args[2];
-        data=network.ssid+";"+network.password;
+        data="Connect:"+network.ssid+";"+network.password;
         if(send(data)!=0){
             progressDialog.dismiss();
             return -1;

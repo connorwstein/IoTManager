@@ -38,7 +38,7 @@ public class AvailableNetworks extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
-        selectedDevice=getIntent().getStringExtra("Device");
+        selectedDevice=getIntent().getStringExtra("Name");
         setTitle(selectedDevice);
         Log.i(TAG, "Device: " + selectedDevice);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);

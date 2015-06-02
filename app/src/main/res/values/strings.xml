@@ -12,4 +12,6 @@
     <string name="add_device">Add</string>
     <string name="broadcast_for_device_ips">Broadcast</string>
     <string name="title_activity_device_configuration">DeviceConfiguration</string>
+    <string name="title_activity_device_category">DeviceCategory</string>
+    <string name="title_activity_initial_device_configuration">InitialDeviceConfiguration</string>
 </resources>

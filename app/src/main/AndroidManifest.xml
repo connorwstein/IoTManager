@@ -15,7 +15,6 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,20 +26,29 @@
             android:name=".AvailableNetworks"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_device"
-            android:parentActivityName=".AvailableDevices" >
+            android:parentActivityName=".InitialDeviceConfiguration" >
         </activity>
         <activity
             android:name=".AvailableDevices"
-            android:label="@string/title_activity_add_device"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_add_device"
             android:parentActivityName=".MainActivity" >
         </activity>
         <activity
             android:name=".DeviceConfiguration"
-            android:label="@string/title_activity_device_configuration"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_device_configuration"
             android:parentActivityName=".MainActivity" >
-
+        </activity>
+        <activity
+            android:name=".DeviceCategory"
+            android:label="@string/title_activity_device_category"
+            android:parentActivityName=".MainActivity" >
+        </activity>
+        <activity
+            android:name=".InitialDeviceConfiguration"
+            android:label="@string/title_activity_initial_device_configuration"
+            android:parentActivityName=".AvailableDevices">
         </activity>
     </application>
 
