@@ -49,8 +49,8 @@ public class ConnectDeviceToRouter extends AsyncTask<Object, Integer, Integer> {
         Log.i(TAG,"device connected to router");
         boolean connectAndStartDeviceActivity=false;
         //Now device is connected to desired router, now connect phone to router
-        ConnectAndroid connectRequest=new ConnectAndroid();
-        connectRequest.execute(network,context,progressDialog,connectAndStartDeviceActivity);
+//        ConnectAndroid connectRequest=new ConnectAndroid();
+//        connectRequest.execute(network,context,progressDialog,connectAndStartDeviceActivity);
     }
 
 

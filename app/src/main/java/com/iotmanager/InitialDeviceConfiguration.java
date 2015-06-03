@@ -50,6 +50,8 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 p.setMessage("Sending name..");
                 p.show();
                 Log.i(TAG, "Clicked name button");
+                Thread sendConfigurationInformation=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(),DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT);
+                sendConfigurationInformation.start();
                 new Thread(new Runnable() {
                     public void run() {
                         Socket s = null;

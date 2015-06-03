@@ -4,12 +4,15 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Handler;
 
 import android.net.wifi.ScanResult;
 
 import android.net.wifi.WifiManager;
 
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -24,6 +27,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 
 public class AvailableDevices extends AppCompatActivity {
@@ -92,10 +96,9 @@ public class AvailableDevices extends AppCompatActivity {
                 final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.show();
-                final ConnectAndroid connectRequest=new ConnectAndroid();
-                final boolean connectAndStartDeviceActivity=true;
+                Log.i(TAG,"Progress dialog should be showing");
                 if(network.isEnterprise()){
-                    Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
+                    Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
                 }
                 else if(network.hasPassword()) {
@@ -108,7 +111,8 @@ public class AvailableDevices extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     network.setPassword(passwordInput.getText().toString());
-                                    connectRequest.execute(network, getApplicationContext(),progressDialog,connectAndStartDeviceActivity);
+                                    dialog.cancel();
+
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -120,9 +124,18 @@ public class AvailableDevices extends AppCompatActivity {
                             });
                     builder.show();
                 }
-                else{
-                    connectRequest.execute(network,getApplicationContext(),progressDialog,connectAndStartDeviceActivity);
-                }
+                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+                    //Handle what happens when thread has completed
+                    @Override
+                    public void handleMessage(Message msg){
+                        Log.i(TAG, "Received message from thread");
+                        Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
+                        startActivity(initialDeviceConfigurationIntent);
+                        progressDialog.dismiss();
+                    }
+                });
+                connectThread.start();
+
             }
         });
     }
