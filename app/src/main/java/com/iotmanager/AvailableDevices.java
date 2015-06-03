@@ -131,6 +131,7 @@ public class AvailableDevices extends AppCompatActivity {
                         Log.i(TAG, "Received message from thread");
                         Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
                         AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
+                        //test
                         progressDialog.dismiss();
                     }
                 });
