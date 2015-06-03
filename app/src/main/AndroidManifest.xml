@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.connorstein.IoTManager" >
+    package="com.iotmanager" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.example.connorstein.IoTManager.MainActivity"
+            android:name="com.iotmanager.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/app_name" >
             <intent-filter>
@@ -23,34 +23,34 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.connorstein.IoTManager.AvailableNetworks"
+            android:name="com.iotmanager.AvailableNetworks"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_device"
-            android:parentActivityName="com.example.connorstein.IoTManager.InitialDeviceConfiguration" >
+            android:parentActivityName="com.iotmanager.InitialDeviceConfiguration" >
         </activity>
         <activity
-            android:name="com.example.connorstein.IoTManager.AvailableDevices"
+            android:name="com.iotmanager.AvailableDevices"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_add_device"
-            android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
+            android:parentActivityName="com.iotmanager.MainActivity" >
         </activity>
         <activity
-            android:name="com.example.connorstein.IoTManager.DeviceConfiguration"
+            android:name="com.iotmanager.DeviceConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_device_configuration"
-            android:parentActivityName="com.example.connorstein.IoTManager.DeviceCategory" >
+            android:parentActivityName="com.iotmanager.DeviceCategory" >
         </activity>
         <activity
-            android:name="com.example.connorstein.IoTManager.DeviceCategory"
+            android:name="com.iotmanager.DeviceCategory"
             android:label="@string/title_activity_device_category"
             android:launchMode="singleTop"
-            android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
+            android:parentActivityName="com.iotmanager.MainActivity" >
         </activity>
         <!-- Note that launchMode Single Top allows this activity to remain the same when the back button is pressed from device configuration-->
         <activity
-            android:name="com.example.connorstein.IoTManager.InitialDeviceConfiguration"
+            android:name="com.iotmanager.InitialDeviceConfiguration"
             android:label="@string/title_activity_initial_device_configuration"
-            android:parentActivityName="com.example.connorstein.IoTManager.AvailableDevices">
+            android:parentActivityName="com.iotmanager.AvailableDevices">
         </activity>
     </application>
 

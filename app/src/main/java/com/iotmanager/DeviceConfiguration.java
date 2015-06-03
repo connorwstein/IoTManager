@@ -1,20 +1,16 @@
-package com.example.connorstein.IoTManager;
+package com.iotmanager;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.TextView;
 
 
 public class DeviceConfiguration extends AppCompatActivity {
 
-    private static final String TAG="sure2015test";
+    private static final String TAG="Connors Debug";
     private TextView ipAddress;
     private TextView macAddress;
 
@@ -23,15 +19,14 @@ public class DeviceConfiguration extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_configuration);
         Intent deviceInformation=getIntent();
-        String name=deviceInformation.getStringExtra("NAME");
-        setTitle(getIntent().getStringExtra("NAME"));//display only the device IP for now
-        Log.i(TAG, "IP " + getIntent().getStringExtra("IP"));
-        Log.i(TAG, "MAC " + getIntent().getStringExtra("MAC"));
+        setTitle(deviceInformation.getStringExtra("NAME"));//display only the device IP for now
         ipAddress=(TextView)findViewById(R.id.ipAddress);
         macAddress=(TextView)findViewById(R.id.macAddress);
         ipAddress.setText(deviceInformation.getStringExtra("IP"));
         macAddress.setText(deviceInformation.getStringExtra("MAC"));
 
+        //TO DO be able to configure more detailed settings here
+        //i.e. open socket with ip and send data
     }
 
     @Override

@@ -1,5 +1,5 @@
-package com.example.connorstein.IoTManager;
-
+package com.iotmanager;
+import static com.iotmanager.Constants.*;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,12 +17,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-
 public class InitialDeviceConfiguration extends AppCompatActivity {
+    private static final String TAG="Connors Debug";
     private EditText nameDevice;
     private Button nameDeviceSubmit;
-    private static final String TAG="sure2015test";
     private Spinner deviceType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,11 +55,11 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                         Socket s = null;
                         PrintWriter out;
                         try {
-                            s = new Socket("192.168.4.1", 80);
+                            s = new Socket(DEFAULT_DEVICE_IP, DEFAULT_DEVICE_PORT);
                             out = new PrintWriter(s.getOutputStream());
                             out.write("Name:" + nameDevice.getText().toString());
                             out.flush();
-                            out.write("Type:"+deviceType.getSelectedItem().toString());
+                            out.write("Type:" + deviceType.getSelectedItem().toString());
                             out.flush();
                         } catch (Exception e) {
                             Log.i(TAG, "Exception " + e.getMessage());

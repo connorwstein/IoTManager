@@ -1,4 +1,4 @@
-package com.example.connorstein.IoTManager;
+package com.iotmanager;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -12,34 +12,35 @@ import android.widget.ListView;
 
 public class DeviceCategory extends AppCompatActivity {
     private ListView devicesListView;
-    private static final String TAG="sure2015test";
-    private String deviceType;
+    private static final String TAG="Connors Debug";
+    private String deviceCategory;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //Not this onCreate is only called when coming from the main activity
+        //Not called from back button in child activity, see manifest
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_category);
         devicesListView=(ListView)findViewById(R.id.devicesListView);
 
         switch(getIntent().getStringExtra("Position")){
             case "0":
-                deviceType="Lighting";
+                deviceCategory="Lighting";
                 break;
             case "1":
-                deviceType="Temperature";
+                deviceCategory="Temperature";
                 break;
             default:
                 Log.i(TAG,"Error selecting category");
 
         }
-        setTitle(deviceType);
-        broadcastForDevices(deviceType);
-
+        setTitle(deviceCategory);
+        broadcastForDevices(deviceCategory);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
-
     }
 
     @Override
@@ -56,13 +57,14 @@ public class DeviceCategory extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()){
             case R.id.broadcast_for_device_ips:
-                broadcastForDevices(deviceType);
+                broadcastForDevices(deviceCategory);
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
     private void broadcastForDevices(String deviceType) {
-        GetIpViaUdpBroadcast getDevicesInfo= new GetIpViaUdpBroadcast();
+        UdpBroadcast getDevicesInfo= new UdpBroadcast();
         ProgressDialog progressDialog=new ProgressDialog(this);
         progressDialog.setMessage("Broadcasting for devices");
         progressDialog.show();

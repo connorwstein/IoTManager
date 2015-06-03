@@ -1,4 +1,4 @@
-package com.example.connorstein.IoTManager;
+package com.iotmanager;
 
 import android.content.Context;
 import android.view.View;

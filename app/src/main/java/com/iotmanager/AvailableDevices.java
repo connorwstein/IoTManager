@@ -1,11 +1,14 @@
-package com.example.connorstein.IoTManager;
+package com.iotmanager;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+
 import android.net.wifi.ScanResult;
+
 import android.net.wifi.WifiManager;
+
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -23,29 +26,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class AvailableNetworks extends AppCompatActivity {
-    private static final String TAG="sure2015test";
-    private String selectedDevice;
-    private String networkPassword="";
-    private ListView networkListView;
-    private static final String defaultIP="192.168.4.1";
-    private static final int defaultPort=80;
+public class AvailableDevices extends AppCompatActivity {
+    private static final String TAG="Connors Debug";
+    private static final String NETWORK_PREFIX="ESP";
     private WifiManager manager;
+    private ListView listView;
+    private boolean connected=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_device);
-        selectedDevice=getIntent().getStringExtra("Name");
-        setTitle(selectedDevice);
-        Log.i(TAG, "Device: " + selectedDevice);
+        setContentView(R.layout.activity_add_device);
+        setTitle(R.string.default_page_name);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
-        listAllNetworks();
+        scanForNetworks();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_device, menu);
+        getMenuInflater().inflate(R.menu.menu_add_device, menu);
         return true;
     }
 
@@ -56,13 +56,15 @@ public class AvailableNetworks extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()) {
             case R.id.actionRefresh:
-                listAllNetworks();
+                Log.i(TAG,"Clicked refresh");
+                scanForNetworks();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-    public void listAllNetworks(){
+
+    public void scanForNetworks(){
         boolean scanSuccess=manager.startScan();
         if(!scanSuccess){
             Log.i(TAG,"Unable to scan.");
@@ -70,63 +72,58 @@ public class AvailableNetworks extends AppCompatActivity {
         List<ScanResult> networks=manager.getScanResults();
         List <String> ssids=new ArrayList<String>();
         for(int i=0;i<networks.size();i++){
-            ssids.add(networks.get(i).SSID);
-
+            if(networks.get(i).SSID.contains(NETWORK_PREFIX)) {
+                ssids.add(networks.get(i).SSID);
+            }
         }
-        networkListView=(ListView)findViewById(R.id.listNetworks);
+        listView=(ListView)findViewById(R.id.networkList);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
                 ssids
         );
-        networkListView.setAdapter(arrayAdapter);
-        networkListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
-                progressDialog.setMessage("Telling device to connect ...");
-                progressDialog.show();
-                String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
-                final Network network = new Network(selectedNetworkSSID, getApplicationContext());
+        listView.setAdapter(arrayAdapter);
+        listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
 
-                Log.i(TAG, "clicked item: " + network.ssid);
-                if (network.isEnterprise()) {
-                    Log.i(TAG, "Enterprise network selected");
-                    progressDialog.dismiss();
-                    Toast.makeText(getApplicationContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                String selectedNetworkSSID=(String) listView.getItemAtPosition(position);
+                final Network network=new Network(selectedNetworkSSID,getApplicationContext());
+                final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
+                progressDialog.setMessage("Connecting ...");
+                progressDialog.show();
+                final ConnectAndroid connectRequest=new ConnectAndroid();
+                final boolean connectAndStartDeviceActivity=true;
+                if(network.isEnterprise()){
+                    Toast.makeText(listView.getContext(), "Connecting ...", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (network.hasPassword()) {
-                    final EditText passwordInput = new EditText(AvailableNetworks.this);
+                else if(network.hasPassword()) {
+                    final EditText passwordInput=new EditText(AvailableDevices.this);
                     passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(AvailableNetworks.this)
+                    AlertDialog.Builder builder = new AlertDialog.Builder(AvailableDevices.this)
                             .setMessage("Enter password for network")
                             .setView(passwordInput)
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     network.setPassword(passwordInput.getText().toString());
-                                    ConnectDeviceToRouter tellDeviceToConnect=new ConnectDeviceToRouter();
-                                    tellDeviceToConnect.execute(network,getApplicationContext(),progressDialog);
+                                    connectRequest.execute(network, getApplicationContext(),progressDialog,connectAndStartDeviceActivity);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     progressDialog.dismiss();
                                     dialog.cancel();
+
                                 }
                             });
                     builder.show();
-                } else {
-                    ConnectDeviceToRouter tellDeviceToConnect=new ConnectDeviceToRouter();
-                    tellDeviceToConnect.execute(network,getApplicationContext(),progressDialog);
                 }
-
+                else{
+                    connectRequest.execute(network,getApplicationContext(),progressDialog,connectAndStartDeviceActivity);
+                }
             }
         });
     }
-
-
-
-
 }
