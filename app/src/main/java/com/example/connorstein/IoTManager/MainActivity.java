@@ -13,10 +13,7 @@ import android.widget.GridView;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG="sure2015test";
-    private static final String SAVED_DEVICES_FILE="ESP_DEVICES";
-    private static final int FILE_READ_BUF_SIZE=1024;
     private GridView devicesGridView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,30 +21,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main);
         devicesGridView=(GridView)findViewById(R.id.gridView);
         devicesGridView.setAdapter(new ImageAdapter(this));
-//        ImageView lights=(ImageView)devicesGridView.getItemAtPosition(0);
-//        ImageView temperature=(ImageView)devicesGridView.getItemAtPosition(1);
 
         devicesGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent startDeviceCategory = new Intent(MainActivity.this, DeviceCategory.class);
-                Log.i(TAG, "Position "+ position +" id "+id);
-                startDeviceCategory.putExtra("Position",""+position);
-                 startActivity(startDeviceCategory);
+            Intent startDeviceCategory = new Intent(MainActivity.this, DeviceCategory.class);
+            Log.i(TAG, "Position "+ position +" id "+id);
+            startDeviceCategory.putExtra("Position",""+position);
+            startActivity(startDeviceCategory);
             }
         });
 
-//        devicesListView=(ListView)findViewById(R.id.devices);
-//        broadcastForDevices();
-//        devicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent deviceConfigurationIntent=new Intent(MainActivity.this,DeviceConfiguration.class);
-//                deviceConfigurationIntent.putExtra("Device", devicesListView.getItemAtPosition(position).toString());
-//                startActivity(deviceConfigurationIntent);
-//
-//            }
-//        });
     }
 
 

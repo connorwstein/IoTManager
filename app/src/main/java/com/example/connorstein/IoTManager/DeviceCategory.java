@@ -2,6 +2,7 @@ package com.example.connorstein.IoTManager;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -18,6 +19,7 @@ public class DeviceCategory extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_category);
         devicesListView=(ListView)findViewById(R.id.devicesListView);
+
         switch(getIntent().getStringExtra("Position")){
             case "0":
                 deviceType="Lighting";
@@ -31,6 +33,12 @@ public class DeviceCategory extends AppCompatActivity {
         }
         setTitle(deviceType);
         broadcastForDevices(deviceType);
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
 
     }
 

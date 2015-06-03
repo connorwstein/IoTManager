@@ -27,10 +27,6 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
         context=(Context)args[1];
         progressDialog=(ProgressDialog)args[2];
         connectAndStartDeviceActivity=(boolean) args[3];
-        if(!connectAndStartDeviceActivity){
-            Log.i(TAG,"Connected android to same network ..");
-            //progressDialog.setMessage("Connecting android device to same network ... ");
-        }
         final WifiConfiguration conf = new WifiConfiguration();
         conf.SSID = "\"" + network.ssid + "\"";
         if(network.password!=null){
@@ -39,7 +35,6 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
         else{
             conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
         }
-
         if(network.manager.addNetwork(conf)==-1){
             Log.i(TAG, "Add network fail");
             return false;
@@ -65,7 +60,6 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
             //Tried to use NetworkInfo.DetailedState to check if it was CONNECTED
             //However the api method said it remained in OBTAINING_IPADDR state even after it obtained an ip (must be bug)
             info=network.manager.getConnectionInfo();
-
             Log.i(TAG, "IP " + info.getIpAddress());
             try{
                 Thread.sleep(100);
@@ -92,6 +86,9 @@ public class Connect extends AsyncTask<Object,Void,Boolean>{
         }
         else{
             Toast.makeText(context,"Successful connection",Toast.LENGTH_LONG).show();
+            Intent homeActivity= new Intent(context, MainActivity.class);
+            homeActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(homeActivity);
         }
     }
 }

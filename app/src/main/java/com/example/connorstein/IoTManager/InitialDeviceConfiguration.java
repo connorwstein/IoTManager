@@ -57,7 +57,9 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                         try {
                             s = new Socket("192.168.4.1", 80);
                             out = new PrintWriter(s.getOutputStream());
-                            out.write("Name:" + nameDevice.getText().toString()+" "+"Type:"+deviceType.getSelectedItem());
+                            out.write("Name:" + nameDevice.getText().toString());
+                            out.flush();
+                            out.write("Type:"+deviceType.getSelectedItem().toString());
                             out.flush();
                         } catch (Exception e) {
                             Log.i(TAG, "Exception " + e.getMessage());

@@ -38,13 +38,15 @@
             android:name="com.example.connorstein.IoTManager.DeviceConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_device_configuration"
-            android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
+            android:parentActivityName="com.example.connorstein.IoTManager.DeviceCategory" >
         </activity>
         <activity
             android:name="com.example.connorstein.IoTManager.DeviceCategory"
             android:label="@string/title_activity_device_category"
+            android:launchMode="singleTop"
             android:parentActivityName="com.example.connorstein.IoTManager.MainActivity" >
         </activity>
+        <!-- Note that launchMode Single Top allows this activity to remain the same when the back button is pressed from device configuration-->
         <activity
             android:name="com.example.connorstein.IoTManager.InitialDeviceConfiguration"
             android:label="@string/title_activity_initial_device_configuration"
