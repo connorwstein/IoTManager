@@ -14,4 +14,5 @@
     <string name="title_activity_device_configuration">DeviceConfiguration</string>
     <string name="title_activity_device_category">DeviceCategory</string>
     <string name="title_activity_initial_device_configuration">InitialDeviceConfiguration</string>
+    <string name="title_activity_main_activity2">MainActivity2Activity</string>
 </resources>

@@ -130,7 +130,7 @@ public class AvailableDevices extends AppCompatActivity {
                     public void handleMessage(Message msg){
                         Log.i(TAG, "Received message from thread");
                         Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
-                        startActivity(initialDeviceConfigurationIntent);
+                        AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
                         progressDialog.dismiss();
                     }
                 });
