@@ -22,8 +22,8 @@ public class AndroidWifiHandler{
     private Context context;
     private Network network;
     private boolean initialConfigurationConnect;
-    private static final int MAX_NUM_IP_POLLS=50;
-
+    private static final int MAX_NUM_IP_POLLS=100; //50*100 =10 seconds before ip timeout
+    private static final int IP_WAIT_TIME=100;
     public static Thread connect(final Network network,final ProgressDialog progressDialog,final Handler handler){
 
         Thread connectThread=new Thread(new Runnable(){
@@ -34,16 +34,20 @@ public class AndroidWifiHandler{
                 if(!addConfiguration(network)){
                     Log.i(TAG,"Unable to add network");
                     bundle.putInt("Error Code",0);
+
                 }
                 if(!connectHelper(network)){
                     Log.i(TAG, "Unable to connect to network");
                     bundle.putInt("Error Code",1);
+
                 }
                 if(!pollForIp(network)){
                     Log.i(TAG, "Unable to get an ip");
                     bundle.putInt("Error Code",2);
                 }
-                bundle.putInt("Error Code",3);
+                else{
+                    bundle.putInt("Error Code",3);
+                }
                 msg.setData(bundle);
                 handler.sendMessage(msg);
             }
@@ -94,9 +98,10 @@ public class AndroidWifiHandler{
         int ipAttempts=0;
         while((info.getIpAddress())==0 && ipAttempts<MAX_NUM_IP_POLLS){
             info=network.manager.getConnectionInfo();
+            ipAttempts++;
             Log.i(TAG, "IP " + info.getIpAddress());
             try{
-                Thread.sleep(100);
+                Thread.sleep(IP_WAIT_TIME);
             }
             catch(InterruptedException e){
                 Log.i(TAG,"Interrupted exception");

@@ -111,6 +111,7 @@ public class AvailableDevices extends AppCompatActivity {
         });
     }
     private void handlePostConnection(Message msg, Network network){
+        Log.i(TAG,"Msg error "+ Integer.toString(msg.getData().getInt("Error Code")));
         switch(msg.getData().getInt("Error Code")){
             case 0:
                 Toast.makeText(AvailableDevices.this,"Unable to add network,ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
@@ -120,6 +121,7 @@ public class AvailableDevices extends AppCompatActivity {
                 break;
             case 2:
                 Toast.makeText(AvailableDevices.this,"Unable to get IP, ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
+                break;
             case 3:
                 Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
                 initialDeviceConfigurationIntent.putExtra("espNetworkName",network.ssid);

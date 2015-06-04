@@ -134,6 +134,7 @@ public class AvailableNetworks extends AppCompatActivity {
             //Handle what happens when thread has completed
             @Override
             public void handleMessage(Message msg){
+                Log.i(TAG,"Reconnect handler");
                 progressDialog.dismiss();
                 if(msg.getData().getInt("Error code")!=3){
                     Toast.makeText(AvailableNetworks.this,"Error reconnecting, ensure device is on and set up as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
@@ -148,6 +149,7 @@ public class AvailableNetworks extends AppCompatActivity {
     }
 
     private void handlePostConnection(Message msg, Network network){
+        Log.i(TAG,"Connect android error code "+Integer.toString(msg.getData().getInt("Error Code")));
         switch(msg.getData().getInt("Error Code")){
             case 0:
                 Toast.makeText(AvailableNetworks.this,"Unable to add network, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
