@@ -63,11 +63,11 @@ public class DeviceCategory extends AppCompatActivity {
         }
     }
 
-    private void broadcastForDevices(String deviceType) {
+    private void broadcastForDevices(String deviceCategory) {
         UdpBroadcast getDevicesInfo= new UdpBroadcast();
         ProgressDialog progressDialog=new ProgressDialog(this);
         progressDialog.setMessage("Broadcasting for devices");
         progressDialog.show();
-        getDevicesInfo.execute(this,progressDialog,devicesListView,deviceType);
+        getDevicesInfo.execute(this,progressDialog,devicesListView,deviceCategory);
     }
 }

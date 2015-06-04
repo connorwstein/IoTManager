@@ -35,12 +35,6 @@
             android:parentActivityName=".MainActivity" >
         </activity>
         <activity
-            android:name=".DeviceConfiguration"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_device_configuration"
-            android:parentActivityName=".DeviceCategory" >
-        </activity>
-        <activity
             android:name=".DeviceCategory"
             android:label="@string/title_activity_device_category"
             android:launchMode="singleTop"
@@ -51,6 +45,16 @@
             android:name=".InitialDeviceConfiguration"
             android:label="@string/title_activity_initial_device_configuration"
             android:parentActivityName=".AvailableDevices" >
+        </activity>
+        <activity
+            android:name=".TemperatureConfiguration"
+            android:label="@string/title_activity_temperature_configuration"
+            android:parentActivityName=".DeviceCategory" >
+        </activity>
+        <activity
+            android:name=".LightingConfiguration"
+            android:label="@string/title_activity_lighting_configuration"
+            android:parentActivityName=".DeviceCategory" >
         </activity>
     </application>
 

@@ -33,7 +33,7 @@ public class SocketClient {
                     out.write(data);
                     out.flush();
                 } catch (Exception e){
-                    Log.i(TAG,"IOexception in socket");
+                    Log.i(TAG,"Exception: "+e.getMessage());
                     bundle.putInt("Error code", 0);
                     msg.setData(bundle);
                     handler.sendMessage(msg);
@@ -46,5 +46,4 @@ public class SocketClient {
         });
         return tcpSendThread;
     }
-
 }
