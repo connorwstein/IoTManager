@@ -88,7 +88,7 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         super.onPostExecute(devicesDetected);
         progressDialog.dismiss();
         if(!devicesDetected){
-            Toast.makeText(context,"No devices on this network.",Toast.LENGTH_LONG).show();
+            Toast.makeText(context,"No devices on this network. Try broadcasting again and ensure the correct password was sent to device.",Toast.LENGTH_LONG).show();
         }
         //List 0: Names, List 1: IPs, List 2: MAC adddresses
         //Want to display only the names, and pass the rest to the device configuration activity

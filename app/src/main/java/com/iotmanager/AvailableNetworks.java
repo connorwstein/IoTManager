@@ -91,14 +91,6 @@ public class AvailableNetworks extends AppCompatActivity {
                 final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
                 progressDialog.setMessage("Telling device to connect ...");
                 progressDialog.show();
-                Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
-                        new Handler(){
-                            @Override
-                            public void handleMessage(Message msg){
-                                progressDialog.dismiss();
-                                handlePostSend(msg,network);
-                            }
-                        });
 
                 if (network.isEnterprise()) {
                     progressDialog.dismiss();
@@ -106,9 +98,18 @@ public class AvailableNetworks extends AppCompatActivity {
                     return;
                 }
                 else if (network.hasPassword()) {
-                    setNetworkPasswordThenSend(network, AvailableNetworks.this, progressDialog, sendConnectRequest); //reuse method
+                    setNetworkPasswordThenSend(network, AvailableNetworks.this, progressDialog); //reuse method
                 }
                 else{
+                    Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                            new Handler(){
+                                @Override
+                                public void handleMessage(Message msg){
+                                    progressDialog.dismiss();
+                                    handlePostSend(msg,network);
+                                }
+                            });
+
                     sendConnectRequest.start();
                 }
 
@@ -120,70 +121,34 @@ public class AvailableNetworks extends AppCompatActivity {
             Toast.makeText(AvailableNetworks.this,"Error sending data, verify connection to device",Toast.LENGTH_LONG).show();
         }
         else{
-            connectAndroidToSameNetwork(network);
-        }
-    }
-
-    private void reconnect(){
-        final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
-        progressDialog.setMessage("Reconnecting to device...");
-        progressDialog.show();
-        final Network network=new Network(espNetworkName,AvailableNetworks.this);
-        network.setPassword(espNetworkPass);
-        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
-            //Handle what happens when thread has completed
-            @Override
-            public void handleMessage(Message msg){
-                Log.i(TAG,"Reconnect handler");
-                progressDialog.dismiss();
-                if(msg.getData().getInt("Error code")!=3){
-                    Toast.makeText(AvailableNetworks.this,"Error reconnecting, ensure device is on and set up as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
-                    Intent returnToAvailableDevices=new Intent(AvailableNetworks.this,AvailableDevices.class);
-                    startActivity(returnToAvailableDevices);
-                }
-                else{
-                    Toast.makeText(AvailableNetworks.this, "Successfully reconnected. Please try again.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    private void handlePostConnection(Message msg, Network network){
-        Log.i(TAG,"Connect android error code "+Integer.toString(msg.getData().getInt("Error Code")));
-        switch(msg.getData().getInt("Error Code")){
-            case 0:
-                Toast.makeText(AvailableNetworks.this,"Unable to add network, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
-                reconnect();
-                break;
-            case 1:
-                Toast.makeText(AvailableNetworks.this,"Unable to connect to network, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
-                reconnect();
-                break;
-            case 2:
-                Toast.makeText(AvailableNetworks.this,"Unable to get IP, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
-                reconnect();
-                break;
-            case 3:
-                Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
-                startActivity(mainActivityIntent);
-                break;
+            Toast.makeText(AvailableNetworks.this,"Successfully sent network name and password to device. Connect to the network then select device category to broadcast for the device",Toast.LENGTH_LONG).show();
+            Toast.makeText(AvailableNetworks.this,"Successfully sent network name and password to device. Connect to the network then select device category to broadcast for the device",Toast.LENGTH_LONG).show();
+            Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
+            startActivity(mainActivityIntent);
         }
     }
 
 
-
-   private void setNetworkPasswordThenSend(final Network network,Context context, final ProgressDialog progressDialog,final Thread sendConnectRequest){
+   private void setNetworkPasswordThenSend(final Network network,Context context, final ProgressDialog progressDialog){
         final EditText passwordInput=new EditText(context);
         passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+       AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setMessage("Enter password for network")
                 .setView(passwordInput)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         network.setPassword(passwordInput.getText().toString());
+                        final Thread sendConnectRequestWithPassword=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                                new Handler(){
+                                    @Override
+                                    public void handleMessage(Message msg){
+                                        progressDialog.dismiss();
+                                        handlePostSend(msg,network);
+                                    }
+                                });
                         dialog.cancel();
-                        sendConnectRequest.start();
+                        sendConnectRequestWithPassword.start();
 
                     }
                 })
@@ -194,21 +159,6 @@ public class AvailableNetworks extends AppCompatActivity {
                     }
                 });
         builder.show();
-    }
-
-    private void connectAndroidToSameNetwork(final Network network){
-        final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
-        progressDialog.setMessage("Sent connection request. Connecting android to same network ...");
-        progressDialog.show();
-        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
-            //Handle what happens when thread has completed
-            @Override
-            public void handleMessage(Message msg){
-                progressDialog.dismiss();
-                handlePostConnection(msg, network);
-            }
-        });
-        connectThread.start();
     }
 
     private List<String> getAllSSIDs(){
