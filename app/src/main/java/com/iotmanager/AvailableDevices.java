@@ -86,13 +86,12 @@ public class AvailableDevices extends AppCompatActivity {
                 final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.show();
-                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, AvailableDevices.this, new Handler(){
+                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
                     //Handle what happens when thread has completed
                     @Override
                     public void handleMessage(Message msg){
-                        Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
-                        AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
                         progressDialog.dismiss();
+                        handlePostConnection(msg,network);
                     }
                 });
                 if(network.isEnterprise()){
@@ -110,6 +109,24 @@ public class AvailableDevices extends AppCompatActivity {
 
             }
         });
+    }
+    private void handlePostConnection(Message msg, Network network){
+        switch(msg.getData().getInt("Error Code")){
+            case 0:
+                Toast.makeText(AvailableDevices.this,"Unable to add network,ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
+                break;
+            case 1:
+                Toast.makeText(AvailableDevices.this,"Unable to connect to network, ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
+                break;
+            case 2:
+                Toast.makeText(AvailableDevices.this,"Unable to get IP, ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
+            case 3:
+                Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
+                initialDeviceConfigurationIntent.putExtra("espNetworkName",network.ssid);
+                initialDeviceConfigurationIntent.putExtra("espNetworkPass",network.password);
+                AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
+                break;
+        }
     }
 
     public static void setNetworkPasswordThenConnect(final Network network,Context context,final ProgressDialog progressDialog,final Thread connectThread){

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -21,29 +22,30 @@ public class AndroidWifiHandler{
     private Context context;
     private Network network;
     private boolean initialConfigurationConnect;
-    private static final int MAX_NUM_IP_POLLS=2000;
+    private static final int MAX_NUM_IP_POLLS=50;
 
-    public static Thread connect(final Network network,final ProgressDialog progressDialog,final Context context,final Handler handler){
+    public static Thread connect(final Network network,final ProgressDialog progressDialog,final Handler handler){
 
         Thread connectThread=new Thread(new Runnable(){
             @Override
             public void run() {
+                Message msg=new Message();
+                Bundle bundle=new Bundle();
                 if(!addConfiguration(network)){
                     Log.i(TAG,"Unable to add network");
-                    Toast.makeText(context,"Unable to add network, ensure password is correct",Toast.LENGTH_LONG).show();
-                    handler.sendEmptyMessage(0);
+                    bundle.putInt("Error Code",0);
                 }
                 if(!connectHelper(network)){
-                    Log.i(TAG,"Unable to connect to network");
-                    Toast.makeText(context,"Unable to connect to network, ensure password is correct",Toast.LENGTH_LONG).show();
-                    handler.sendEmptyMessage(0);
+                    Log.i(TAG, "Unable to connect to network");
+                    bundle.putInt("Error Code",1);
                 }
                 if(!pollForIp(network)){
-                    Log.i(TAG,"Unable to get an ip");
-                    Toast.makeText(context,"Unable to get IP, ensure password is correct",Toast.LENGTH_LONG).show();
-                    handler.sendEmptyMessage(0);
+                    Log.i(TAG, "Unable to get an ip");
+                    bundle.putInt("Error Code",2);
                 }
-                handler.sendEmptyMessage(0);
+                bundle.putInt("Error Code",3);
+                msg.setData(bundle);
+                handler.sendMessage(msg);
             }
         });
         return connectThread;

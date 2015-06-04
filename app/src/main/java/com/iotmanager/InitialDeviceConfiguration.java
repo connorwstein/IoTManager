@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -25,7 +26,8 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
     private EditText nameDevice;
     private Button nameDeviceSubmit;
     private Spinner deviceType;
-
+    private String espNetworkName;
+    private String espNetworkPass;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +35,8 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         //Name:
         setTitle("Initial Configuration");
         setUpSpinner();
+        espNetworkName=getIntent().getStringExtra("espNetworkName");
+        espNetworkPass=getIntent().getStringExtra("espNetworkPass");
 
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
@@ -42,20 +46,35 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 final ProgressDialog progressDialog = new ProgressDialog(InitialDeviceConfiguration.this);
                 progressDialog.setMessage("Sending name..");
                 progressDialog.show();
-
+                if(nameDevice.getText().toString().equals("")){
+                    progressDialog.dismiss();
+                    Toast.makeText(InitialDeviceConfiguration.this,"Please enter a name for the device",Toast.LENGTH_LONG).show();
+                    return;
+                }
                 Thread sendConfigurationInformation=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(), DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
                         new Handler(){
                             @Override
                             public void handleMessage(Message msg){
                                 progressDialog.dismiss();
-                                Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
-                                availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
-                                startActivity(availableNetworksIntent);
+                                handlePostSend(msg);
                             }
                         });
                 sendConfigurationInformation.start();
             }
         });
+    }
+
+    private void handlePostSend(Message msg){
+        if(msg.getData().getInt("Error code")==0){
+            Toast.makeText(InitialDeviceConfiguration.this,"Error sending data, verify connection to device",Toast.LENGTH_LONG).show();
+        }
+        else{
+            Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
+            availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
+            availableNetworksIntent.putExtra("espNetworkName",espNetworkName);
+            availableNetworksIntent.putExtra("espNetworkPass",espNetworkPass);
+            startActivity(availableNetworksIntent);
+        }
     }
 
     private void setUpSpinner(){

@@ -33,13 +33,17 @@ public class AvailableNetworks extends AppCompatActivity {
     private String networkPassword="";
     private ListView networkListView;
     private WifiManager manager;
-
+    private String espNetworkName;
+    private String espNetworkPass;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
         selectedDevice=getIntent().getStringExtra("Name");
         setTitle(selectedDevice);
+        espNetworkName=getIntent().getStringExtra("espNetworkName");
+        espNetworkPass=getIntent().getStringExtra("espNetworkPass");
+
         Log.i(TAG, "Device: " + selectedDevice);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         listAllNetworks();
@@ -92,10 +96,9 @@ public class AvailableNetworks extends AppCompatActivity {
                             @Override
                             public void handleMessage(Message msg){
                                 progressDialog.dismiss();
-                                connectAndroidToSameNetwork(network);
+                                handlePostSend(msg,network);
                             }
                         });
-
 
                 if (network.isEnterprise()) {
                     progressDialog.dismiss();
@@ -112,6 +115,60 @@ public class AvailableNetworks extends AppCompatActivity {
             }
         });
     }
+    private void handlePostSend(Message msg,Network network){
+        if(msg.getData().getInt("Error code")==0){
+            Toast.makeText(AvailableNetworks.this,"Error sending data, verify connection to device",Toast.LENGTH_LONG).show();
+        }
+        else{
+            connectAndroidToSameNetwork(network);
+        }
+    }
+
+    private void reconnect(){
+        final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
+        progressDialog.setMessage("Reconnecting to device...");
+        progressDialog.show();
+        final Network network=new Network(espNetworkName,AvailableNetworks.this);
+        network.setPassword(espNetworkPass);
+        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+            //Handle what happens when thread has completed
+            @Override
+            public void handleMessage(Message msg){
+                progressDialog.dismiss();
+                if(msg.getData().getInt("Error code")!=3){
+                    Toast.makeText(AvailableNetworks.this,"Error reconnecting, ensure device is on and set up as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
+                    Intent returnToAvailableDevices=new Intent(AvailableNetworks.this,AvailableDevices.class);
+                    startActivity(returnToAvailableDevices);
+                }
+                else{
+                    Toast.makeText(AvailableNetworks.this, "Successfully reconnected. Please try again.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void handlePostConnection(Message msg, Network network){
+        switch(msg.getData().getInt("Error Code")){
+            case 0:
+                Toast.makeText(AvailableNetworks.this,"Unable to add network, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
+                reconnect();
+                break;
+            case 1:
+                Toast.makeText(AvailableNetworks.this,"Unable to connect to network, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
+                reconnect();
+                break;
+            case 2:
+                Toast.makeText(AvailableNetworks.this,"Unable to get IP, ensure password is correct and you are connected to the device",Toast.LENGTH_LONG).show();
+                reconnect();
+                break;
+            case 3:
+                Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
+                startActivity(mainActivityIntent);
+                break;
+        }
+    }
+
+
 
    private void setNetworkPasswordThenSend(final Network network,Context context, final ProgressDialog progressDialog,final Thread sendConnectRequest){
         final EditText passwordInput=new EditText(context);
@@ -137,17 +194,16 @@ public class AvailableNetworks extends AppCompatActivity {
         builder.show();
     }
 
-    private void connectAndroidToSameNetwork(Network network){
+    private void connectAndroidToSameNetwork(final Network network){
         final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
         progressDialog.setMessage("Sent connection request. Connecting android to same network ...");
         progressDialog.show();
-        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, AvailableNetworks.this,new Handler(){
+        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
             //Handle what happens when thread has completed
             @Override
             public void handleMessage(Message msg){
                 progressDialog.dismiss();
-                Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
-                startActivity(mainActivityIntent);
+                handlePostConnection(msg, network);
             }
         });
         connectThread.start();
