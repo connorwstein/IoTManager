@@ -4,7 +4,7 @@
     <string name="default_page_name">Available Devices</string>
     <string name="action_refresh">Refresh</string>
     <string name="title_activity_device">Device</string>
-
+    <string name="skip_initial_config">Skip</string>
     <string name="hello_world">Hello world!</string>
     <string name="configureRouter">Configure</string>
     <string name="title_activity_add_device">AddDevice</string>

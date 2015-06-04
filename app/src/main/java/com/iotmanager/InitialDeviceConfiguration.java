@@ -3,6 +3,8 @@ import static com.iotmanager.Constants.*;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 
 public class InitialDeviceConfiguration extends AppCompatActivity {
     private static final String TAG="Connors Debug";
+    private static final String DEVICE_NAME_PLACEHOLDER="Connect Device";
     private EditText nameDevice;
     private Button nameDeviceSubmit;
     private Spinner deviceType;
@@ -29,52 +32,43 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         setContentView(R.layout.activity_initial_device_configuration);
         //Name:
         setTitle("Initial Configuration");
-        deviceType=(Spinner)findViewById(R.id.deviceType);
-        ArrayList<String> types=new ArrayList<String>();
-        types.add("Temperature");
-        types.add("Lighting");
-
-        ArrayAdapter<String> adapter=new ArrayAdapter<String>(
-                this,
-                R.layout.support_simple_spinner_dropdown_item,
-                types
-        );
-        deviceType.setAdapter(adapter);
+        setUpSpinner();
 
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
         nameDeviceSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final ProgressDialog p = new ProgressDialog(InitialDeviceConfiguration.this);
-                p.setMessage("Sending name..");
-                p.show();
-                Log.i(TAG, "Clicked name button");
-                Thread sendConfigurationInformation=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(),DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT);
-                sendConfigurationInformation.start();
-                new Thread(new Runnable() {
-                    public void run() {
-                        Socket s = null;
-                        PrintWriter out;
-                        try {
-                            s = new Socket(DEFAULT_DEVICE_IP, DEFAULT_DEVICE_PORT);
-                            out = new PrintWriter(s.getOutputStream());
-                            out.write("Name:" + nameDevice.getText().toString());
-                            out.flush();
-                            out.write("Type:" + deviceType.getSelectedItem().toString());
-                            out.flush();
-                        } catch (Exception e) {
-                            Log.i(TAG, "Exception " + e.getMessage());
-                        }
-                        p.dismiss();
-                        Intent startAvailableNetworks = new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
-                        startAvailableNetworks.putExtra("Name",nameDevice.getText().toString());
-                        startActivity(startAvailableNetworks);
-                    }
+                final ProgressDialog progressDialog = new ProgressDialog(InitialDeviceConfiguration.this);
+                progressDialog.setMessage("Sending name..");
+                progressDialog.show();
 
-                }).start();
+                Thread sendConfigurationInformation=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(), DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                        new Handler(){
+                            @Override
+                            public void handleMessage(Message msg){
+                                progressDialog.dismiss();
+                                Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
+                                availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
+                                startActivity(availableNetworksIntent);
+                            }
+                        });
+                sendConfigurationInformation.start();
             }
         });
+    }
+
+    private void setUpSpinner(){
+        deviceType=(Spinner)findViewById(R.id.deviceType);
+        ArrayList<String> types=new ArrayList<String>();
+        types.add("Temperature");
+        types.add("Lighting");
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(
+                this,
+                R.layout.support_simple_spinner_dropdown_item,
+                types
+        );
+        deviceType.setAdapter(adapter);
     }
 
     @Override
@@ -89,11 +83,13 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-
-
-        return super.onOptionsItemSelected(item);
+        switch(item.getItemId()){
+            case R.id.skip_initial_config:
+                Intent availableNetworksIntent=new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
+                availableNetworksIntent.putExtra("Name",DEVICE_NAME_PLACEHOLDER);
+                startActivity(availableNetworksIntent);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

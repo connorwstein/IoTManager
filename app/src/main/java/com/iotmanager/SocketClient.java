@@ -1,5 +1,7 @@
 package com.iotmanager;
 
+import android.app.ProgressDialog;
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.PrintWriter;
@@ -14,7 +16,7 @@ import static com.iotmanager.Constants.DEFAULT_DEVICE_PORT;
 public class SocketClient {
     private static final String TAG="Connors Debug";
 
-    public static Thread tcpSend(final String data, final String IP, final int port){
+    public static Thread tcpSend(final String data, final String IP, final int port,final ProgressDialog progressDialog, final Handler handler){
         Thread tcpSendThread=new Thread(new Runnable(){
             Socket s = null;
             PrintWriter out;
@@ -28,6 +30,7 @@ public class SocketClient {
                 } catch (Exception e) {
                     Log.i(TAG, "Exception connecting to socket: " + e.getMessage());
                 }
+                handler.sendEmptyMessage(0);
             }
         });
         return tcpSendThread;

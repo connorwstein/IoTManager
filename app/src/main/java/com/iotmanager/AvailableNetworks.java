@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -68,17 +70,11 @@ public class AvailableNetworks extends AppCompatActivity {
         if(!scanSuccess){
             Log.i(TAG,"Unable to scan.");
         }
-        List<ScanResult> networks=manager.getScanResults();
-        List <String> ssids=new ArrayList<String>();
-        for(int i=0;i<networks.size();i++){
-            ssids.add(networks.get(i).SSID);
-
-        }
         networkListView=(ListView)findViewById(R.id.listNetworks);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
-                ssids
+                getAllSSIDs()
         );
         networkListView.setAdapter(arrayAdapter);
         networkListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
@@ -88,72 +84,58 @@ public class AvailableNetworks extends AppCompatActivity {
                 String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
                 final Network network = new Network(selectedNetworkSSID, getApplicationContext());
 
-                Log.i(TAG, "clicked item: " + network.ssid);
                 if (network.isEnterprise()) {
-                    Log.i(TAG, "Enterprise network selected");
                     Toast.makeText(getApplicationContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (network.hasPassword()) {
-                    final EditText passwordInput = new EditText(AvailableNetworks.this);
-                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(AvailableNetworks.this)
-                            .setMessage("Enter password for network")
-                            .setView(passwordInput)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    network.setPassword(passwordInput.getText().toString());
-//                                    ConnectDeviceToRouter tellDeviceToConnect=new ConnectDeviceToRouter();
-//                                    tellDeviceToConnect.execute(network,getApplicationContext(),progressDialog);
-                                    Thread connectDeviceThread=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password,DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT);
-                                    connectDeviceThread.start();
-                                    try{
-                                        connectDeviceThread.join();
-                                    }
-                                    catch(InterruptedException e){
-                                        Log.i(TAG,"Interrupted exception");
-                                    }
-                                    Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
-                                    startActivity(mainActivityIntent);
-                                }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                    dialog.cancel();
-                                }
-                            });
-                    builder.show();
-                } else {
-//                    ConnectDeviceToRouter tellDeviceToConnect=new ConnectDeviceToRouter();
-//                    tellDeviceToConnect.execute(network,getApplicationContext(),progressDialog);
-                    tellDeviceConnect(network);
+                else if (network.hasPassword()) {
+                    AvailableDevices.setNetworkPassword(network, AvailableNetworks.this); //reuse method
                 }
+                tellDeviceToConnect(network);
 
             }
         });
     }
 
-    private Thread tellDeviceConnect(Network network){
-        final String ssid=network.ssid;
-        final String password=network.password;
-        Thread connectDeviceThread=new Thread(new Runnable(){
-            Socket s = null;
-            PrintWriter out;
+    private void tellDeviceToConnect(final Network network){
+        final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
+        progressDialog.setMessage("Telling device to connect ...");
+        progressDialog.show();
+        Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                new Handler(){
+                    @Override
+                    public void handleMessage(Message msg){
+                        progressDialog.dismiss();
+                        connectAndroidToSameNetwork(network);
+                    }
+                });
+        sendConnectRequest.start();
+    }
+
+    private void connectAndroidToSameNetwork(Network network){
+        final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
+        progressDialog.setMessage("Connecting android to same network ...");
+        progressDialog.show();
+        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+            //Handle what happens when thread has completed
             @Override
-            public void run() {
-                try {
-                    s = new Socket(DEFAULT_DEVICE_IP, DEFAULT_DEVICE_PORT);
-                    out = new PrintWriter(s.getOutputStream());
-                    out.write("Connect:" +ssid+";"+password);
-                    out.flush();
-                } catch (Exception e) {
-                    Log.i(TAG, "Exception When Telling Device To Connect" + e.getMessage());
-                }
+            public void handleMessage(Message msg){
+                progressDialog.dismiss();
+                Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
+                startActivity(mainActivityIntent);
             }
         });
-        return connectDeviceThread;
+        connectThread.start();
+    }
+
+    private List<String> getAllSSIDs(){
+        List<ScanResult> networks=manager.getScanResults();
+        List <String> ssids=new ArrayList<String>();
+        for(int i=0;i<networks.size();i++){
+            ssids.add(networks.get(i).SSID);
+
+        }
+        return ssids;
     }
 
 }

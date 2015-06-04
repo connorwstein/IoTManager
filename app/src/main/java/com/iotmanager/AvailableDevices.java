@@ -69,6 +69,71 @@ public class AvailableDevices extends AppCompatActivity {
     }
 
     public void scanForNetworks(){
+
+        listView=(ListView)findViewById(R.id.networkList);
+        ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                getDeviceSSIDs()
+        );
+        listView.setAdapter(arrayAdapter);
+        listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                String selectedNetworkSSID=(String) listView.getItemAtPosition(position);
+                final Network network=new Network(selectedNetworkSSID,getApplicationContext());
+
+                if(network.isEnterprise()){
+                    Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                else if(network.hasPassword()) {
+                    setNetworkPassword(network,AvailableDevices.this);
+                }
+
+                final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
+                progressDialog.setMessage("Connecting ...");
+                progressDialog.show();
+
+                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+                    //Handle what happens when thread has completed
+                    @Override
+                    public void handleMessage(Message msg){
+                        Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
+                        AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
+                        progressDialog.dismiss();
+                    }
+                });
+                connectThread.start();
+            }
+        });
+    }
+
+    public static void setNetworkPassword(final Network network,Context context){
+        final EditText passwordInput=new EditText(context);
+        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setMessage("Enter password for network")
+                .setView(passwordInput)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        network.setPassword(passwordInput.getText().toString());
+                        dialog.cancel();
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+
+                    }
+                });
+        builder.show();
+    }
+
+    private List<String> getDeviceSSIDs(){
         boolean scanSuccess=manager.startScan();
         if(!scanSuccess){
             Log.i(TAG,"Unable to scan.");
@@ -80,64 +145,6 @@ public class AvailableDevices extends AppCompatActivity {
                 ssids.add(networks.get(i).SSID);
             }
         }
-        listView=(ListView)findViewById(R.id.networkList);
-        ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                ssids
-        );
-        listView.setAdapter(arrayAdapter);
-        listView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                String selectedNetworkSSID=(String) listView.getItemAtPosition(position);
-                final Network network=new Network(selectedNetworkSSID,getApplicationContext());
-                final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
-                progressDialog.setMessage("Connecting ...");
-                progressDialog.show();
-                Log.i(TAG,"Progress dialog should be showing");
-                if(network.isEnterprise()){
-                    Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                else if(network.hasPassword()) {
-                    final EditText passwordInput=new EditText(AvailableDevices.this);
-                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(AvailableDevices.this)
-                            .setMessage("Enter password for network")
-                            .setView(passwordInput)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    network.setPassword(passwordInput.getText().toString());
-                                    dialog.cancel();
-
-                                }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    progressDialog.dismiss();
-                                    dialog.cancel();
-
-                                }
-                            });
-                    builder.show();
-                }
-                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
-                    //Handle what happens when thread has completed
-                    @Override
-                    public void handleMessage(Message msg){
-                        Log.i(TAG, "Received message from thread");
-                        Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
-                        AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
-                        //test
-                        progressDialog.dismiss();
-                    }
-                });
-                connectThread.start();
-
-            }
-        });
+        return ssids;
     }
 }
