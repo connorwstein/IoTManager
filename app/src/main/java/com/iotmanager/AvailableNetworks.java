@@ -84,39 +84,64 @@ public class AvailableNetworks extends AppCompatActivity {
                 String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
                 final Network network = new Network(selectedNetworkSSID, getApplicationContext());
 
+                final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
+                progressDialog.setMessage("Telling device to connect ...");
+                progressDialog.show();
+                Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                        new Handler(){
+                            @Override
+                            public void handleMessage(Message msg){
+                                progressDialog.dismiss();
+                                connectAndroidToSameNetwork(network);
+                            }
+                        });
+
+
                 if (network.isEnterprise()) {
+                    progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
                 }
                 else if (network.hasPassword()) {
-                    AvailableDevices.setNetworkPassword(network, AvailableNetworks.this); //reuse method
+                    setNetworkPasswordThenSend(network, AvailableNetworks.this, progressDialog, sendConnectRequest); //reuse method
                 }
-                tellDeviceToConnect(network);
+                else{
+                    sendConnectRequest.start();
+                }
 
             }
         });
     }
 
-    private void tellDeviceToConnect(final Network network){
-        final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
-        progressDialog.setMessage("Telling device to connect ...");
-        progressDialog.show();
-        Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
-                new Handler(){
+   private void setNetworkPasswordThenSend(final Network network,Context context, final ProgressDialog progressDialog,final Thread sendConnectRequest){
+        final EditText passwordInput=new EditText(context);
+        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setMessage("Enter password for network")
+                .setView(passwordInput)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void handleMessage(Message msg){
+                    public void onClick(DialogInterface dialog, int which) {
+                        network.setPassword(passwordInput.getText().toString());
+                        dialog.cancel();
+                        sendConnectRequest.start();
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
                         progressDialog.dismiss();
-                        connectAndroidToSameNetwork(network);
+                        dialog.cancel();
                     }
                 });
-        sendConnectRequest.start();
+        builder.show();
     }
 
     private void connectAndroidToSameNetwork(Network network){
         final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
-        progressDialog.setMessage("Connecting android to same network ...");
+        progressDialog.setMessage("Sent connection request. Connecting android to same network ...");
         progressDialog.show();
-        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+        Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, AvailableNetworks.this,new Handler(){
             //Handle what happens when thread has completed
             @Override
             public void handleMessage(Message msg){

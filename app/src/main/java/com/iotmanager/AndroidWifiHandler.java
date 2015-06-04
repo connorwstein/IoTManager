@@ -23,19 +23,25 @@ public class AndroidWifiHandler{
     private boolean initialConfigurationConnect;
     private static final int MAX_NUM_IP_POLLS=2000;
 
-    public static Thread connect(final Network network,final ProgressDialog progressDialog,final Handler handler){
+    public static Thread connect(final Network network,final ProgressDialog progressDialog,final Context context,final Handler handler){
 
         Thread connectThread=new Thread(new Runnable(){
             @Override
             public void run() {
                 if(!addConfiguration(network)){
                     Log.i(TAG,"Unable to add network");
+                    Toast.makeText(context,"Unable to add network, ensure password is correct",Toast.LENGTH_LONG).show();
+                    handler.sendEmptyMessage(0);
                 }
                 if(!connectHelper(network)){
                     Log.i(TAG,"Unable to connect to network");
+                    Toast.makeText(context,"Unable to connect to network, ensure password is correct",Toast.LENGTH_LONG).show();
+                    handler.sendEmptyMessage(0);
                 }
                 if(!pollForIp(network)){
                     Log.i(TAG,"Unable to get an ip");
+                    Toast.makeText(context,"Unable to get IP, ensure password is correct",Toast.LENGTH_LONG).show();
+                    handler.sendEmptyMessage(0);
                 }
                 handler.sendEmptyMessage(0);
             }

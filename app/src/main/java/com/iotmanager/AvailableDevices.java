@@ -83,20 +83,10 @@ public class AvailableDevices extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 String selectedNetworkSSID=(String) listView.getItemAtPosition(position);
                 final Network network=new Network(selectedNetworkSSID,getApplicationContext());
-
-                if(network.isEnterprise()){
-                    Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                else if(network.hasPassword()) {
-                    setNetworkPassword(network,AvailableDevices.this);
-                }
-
                 final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.show();
-
-                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, AvailableDevices.this, new Handler(){
                     //Handle what happens when thread has completed
                     @Override
                     public void handleMessage(Message msg){
@@ -105,12 +95,24 @@ public class AvailableDevices extends AppCompatActivity {
                         progressDialog.dismiss();
                     }
                 });
-                connectThread.start();
+                if(network.isEnterprise()){
+                    progressDialog.dismiss();
+                    Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                else if(network.hasPassword()) {
+                    setNetworkPasswordThenConnect(network, AvailableDevices.this,progressDialog, connectThread);
+                }
+                else{
+                    //No password just connect
+                    connectThread.start();
+                }
+
             }
         });
     }
 
-    public static void setNetworkPassword(final Network network,Context context){
+    public static void setNetworkPasswordThenConnect(final Network network,Context context,final ProgressDialog progressDialog,final Thread connectThread){
         final EditText passwordInput=new EditText(context);
         passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
@@ -121,11 +123,13 @@ public class AvailableDevices extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         network.setPassword(passwordInput.getText().toString());
                         dialog.cancel();
+                        connectThread.start();
 
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        progressDialog.dismiss();
                         dialog.cancel();
 
                     }
