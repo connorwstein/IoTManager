@@ -1,5 +1,5 @@
 package com.iotmanager;
-
+import static com.iotmanager.Constants.*;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -66,7 +66,7 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
             try {
                 byte sendBuffer[] = broadcastMessage.getBytes();
                 sentPackets++;
-                DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, InetAddress.getByName(BROADCAST_ADDRESS), BROADCAST_PORT);
+                DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, InetAddress.getByName(BROADCAST_ADDRESS), DEFAULT_DEVICE_UDP_PORT);
                 Log.i(TAG, "Sending broadcast message");
                 udpBroadcastSocket.setSoTimeout(SOCKET_TIMEOUT);
                 udpBroadcastSocket.setBroadcast(true);

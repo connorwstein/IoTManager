@@ -51,7 +51,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                     Toast.makeText(InitialDeviceConfiguration.this,"Please enter a name for the device",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Thread sendConfigurationInformation=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(), DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                Thread sendConfigurationInformation=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(), DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
                         new Handler(){
                             @Override
                             public void handleMessage(Message msg){

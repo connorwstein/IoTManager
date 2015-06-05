@@ -101,7 +101,7 @@ public class AvailableNetworks extends AppCompatActivity {
                     setNetworkPasswordThenSend(network, AvailableNetworks.this, progressDialog); //reuse method
                 }
                 else{
-                    Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                    Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
                             new Handler(){
                                 @Override
                                 public void handleMessage(Message msg){
@@ -139,7 +139,7 @@ public class AvailableNetworks extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         network.setPassword(passwordInput.getText().toString());
-                        final Thread sendConnectRequestWithPassword=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_PORT, progressDialog,
+                        final Thread sendConnectRequestWithPassword=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
                                 new Handler(){
                                     @Override
                                     public void handleMessage(Message msg){
