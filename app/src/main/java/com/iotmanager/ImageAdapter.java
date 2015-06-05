@@ -11,18 +11,24 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.graphics.Color;
+import android.widget.LinearLayout;
+
+
 
 /**
  * Created by connorstein on 15-06-02.
  */
 public class ImageAdapter extends BaseAdapter {
     private static final int ROUNDED_CORNERS_IMAGE_FACTOR=100;
+    private static final String TAG="Connors Debug";
+
     private Context context;
     private Resources resources;
     public Integer[] imageIDs={

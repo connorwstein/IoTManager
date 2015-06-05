@@ -138,6 +138,11 @@ public class AvailableNetworks extends AppCompatActivity {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if(passwordInput.getText().toString().equals("")){
+                            progressDialog.dismiss();
+                            Toast.makeText(AvailableNetworks.this,"Please enter a password",Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         network.setPassword(passwordInput.getText().toString());
                         final Thread sendConnectRequestWithPassword=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
                                 new Handler(){
@@ -147,8 +152,8 @@ public class AvailableNetworks extends AppCompatActivity {
                                         handlePostSend(msg,network);
                                     }
                                 });
-                        dialog.cancel();
                         sendConnectRequestWithPassword.start();
+                        dialog.cancel();
 
                     }
                 })

@@ -60,6 +60,8 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                             }
                         });
                 sendConfigurationInformation.start();
+                ///NEED TO ALSO SEND DEVICE TYPE...
+                ///NEED TO ALSO SEND DEVICE TYPE...
             }
         });
     }

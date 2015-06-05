@@ -69,7 +69,6 @@ public class AvailableDevices extends AppCompatActivity {
     }
 
     public void scanForNetworks(){
-
         listView=(ListView)findViewById(R.id.networkList);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 this,
@@ -81,34 +80,33 @@ public class AvailableDevices extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                String selectedNetworkSSID=(String) listView.getItemAtPosition(position);
-                final Network network=new Network(selectedNetworkSSID,getApplicationContext());
-                final ProgressDialog progressDialog=new ProgressDialog(AvailableDevices.this);
+                String selectedNetworkSSID = (String) listView.getItemAtPosition(position);
+                final Network network = new Network(selectedNetworkSSID, getApplicationContext());
+                final ProgressDialog progressDialog = new ProgressDialog(AvailableDevices.this);
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.show();
-                Thread connectThread=AndroidWifiHandler.connect(network,progressDialog, new Handler(){
+                Thread connectThread = AndroidWifiHandler.connect(network, progressDialog, new Handler() {
                     //Handle what happens when thread has completed
                     @Override
-                    public void handleMessage(Message msg){
+                    public void handleMessage(Message msg) {
                         progressDialog.dismiss();
-                        handlePostConnection(msg,network);
+                        handlePostConnection(msg, network);
                     }
                 });
-                if(network.isEnterprise()){
+                if (network.isEnterprise()) {
                     progressDialog.dismiss();
                     Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
-                }
-                else if(network.hasPassword()) {
-                    setNetworkPasswordThenConnect(network, AvailableDevices.this,progressDialog, connectThread);
-                }
-                else{
+                } else if (network.hasPassword()) {
+                    setNetworkPasswordThenConnect(network, AvailableDevices.this, progressDialog, connectThread);
+                } else {
                     //No password just connect
                     connectThread.start();
                 }
 
             }
         });
+
     }
     private void handlePostConnection(Message msg, Network network){
         Log.i(TAG,"Msg error "+ Integer.toString(msg.getData().getInt("Error Code")));
