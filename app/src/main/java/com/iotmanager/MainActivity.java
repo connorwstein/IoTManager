@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         deviceCategoryGrid=(GridView)findViewById(R.id.deviceCategoryGrid);
-        deviceCategoryGrid.setAdapter(new ImageAdapter(this));
+        deviceCategoryGrid.setAdapter(new ImageAdapter(this,getResources()));
 
         deviceCategoryGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

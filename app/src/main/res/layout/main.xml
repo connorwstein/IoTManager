@@ -5,12 +5,16 @@
     android:weightSum="1">
 
     <GridView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/deviceCategoryGrid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dip"
         android:numColumns="auto_fit"
-        android:layout_gravity="center"
-        android:horizontalSpacing="20dp"
-        android:verticalSpacing="20dp"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:adjustViewBounds="true"
         />
+        <!--android:verticalSpacing="10dp"-->
+        <!--android:horizontalSpacing="10dp"-->
+
 </LinearLayout>
