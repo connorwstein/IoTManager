@@ -21,6 +21,10 @@ import android.widget.Toast;
 
 import com.iotmanager.R;
 
+import java.io.BufferedInputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+
 import static com.iotmanager.Constants.DEFAULT_DEVICE_TCP_PORT;
 
 public class LightingConfiguration extends AppCompatActivity {
@@ -38,7 +42,7 @@ public class LightingConfiguration extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG,"On create");
+        Log.i(TAG, "On create");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lighting_configuration);
         currentLightStatus=LIGHT_OFF;
@@ -53,12 +57,17 @@ public class LightingConfiguration extends AppCompatActivity {
         lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
         ipAddress.setText(ip);
         macAddress.setText(mac);
-        sendLightGetRequest();
-        SocketClient.closeConnection();
+        DeviceCommunicationHandler d=new DeviceCommunicationHandler("192.168.2.2",DEFAULT_DEVICE_TCP_PORT,this);
+        d.sendDataNoResponse("Hello from devicecomm handler");
+//        d.sendDataNoResponse("Check blocking");
+//        String response=d.sendDataGetResponse("Lighting Get");
+//        Log.i(TAG,response);
+//        sendLightGetRequest();
+//        SocketClient.closeConnection();
         lightingOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateLightStatus();
+//                updateLightStatus();
             }
         });
     }
@@ -72,6 +81,7 @@ public class LightingConfiguration extends AppCompatActivity {
     @Override
     protected void onResume(){
         Log.i(TAG,"On resume");
+        super.onResume();
     }
     private void updateLightStatus(){
         Log.i(TAG,"Update light status");

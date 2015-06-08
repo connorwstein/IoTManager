@@ -71,13 +71,22 @@ public class SocketClient {
                 }
                 Message msg= new Message();
                 Bundle bundle=new Bundle();
-                bundle.putString("Received",received);
+                bundle.putString("Received", received);
                 msg.setData(bundle);
                 handler.sendMessage(msg);
             }
         });
         return tcpReceiveThread;
     }
+
+//    public static Thread tcpSendAndReceive(ProgressDialog progressDialog,final Handler handler){
+//        Thread tcpSendAndReceiveThread=new Thread(new Runnable(){
+//            @Override
+//            public void run(){
+//            }
+//        });
+//        return tcpSendAndReceiveThread;
+//    }
 
     public static void closeConnection(){
         try{
