@@ -38,6 +38,7 @@ public class LightingConfiguration extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG,"On create");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lighting_configuration);
         currentLightStatus=LIGHT_OFF;
@@ -53,6 +54,7 @@ public class LightingConfiguration extends AppCompatActivity {
         ipAddress.setText(ip);
         macAddress.setText(mac);
         sendLightGetRequest();
+        SocketClient.closeConnection();
         lightingOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,46 +63,52 @@ public class LightingConfiguration extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.i(TAG,"Restored");
+        super.onRestoreInstanceState(savedInstanceState);
+
+    }
+    @Override
+    protected void onResume(){
+        Log.i(TAG,"On resume");
+    }
     private void updateLightStatus(){
+        Log.i(TAG,"Update light status");
         final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
         progressDialog.setMessage("Updating device light status..");
         progressDialog.show();
-        String invertLightStatus;
-        if(currentLightStatus.equals(LIGHT_OFF)){
-            invertLightStatus=LIGHT_ON;
-        }
-        else{
-            invertLightStatus=LIGHT_OFF;
-        }
-        Thread sendLightValue=SocketClient.tcpSend("Light Set:"+invertLightStatus,ip,DEFAULT_DEVICE_TCP_PORT,progressDialog,new Handler(){
+        Thread sendLightValue=SocketClient.tcpSend("Lighting Set", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
             @Override
-            public void handleMessage(Message msg){
-                progressDialog.dismiss();
+            public void handleMessage(Message msg) {
                 handlePostSend(msg);
+                recevieCurrentLightStatus(progressDialog);
             }
         });
         sendLightValue.start();
     }
 
     private void recevieCurrentLightStatus(final ProgressDialog progressDialog){
-        Thread sendTemperatureValue=SocketClient.tcpReceive(progressDialog,new Handler(){
+        Log.i(TAG,"Receive current light status");
+        Thread getTemperatureValue=SocketClient.tcpReceive(progressDialog, new Handler() {
             @Override
-            public void handleMessage(Message msg){
+            public void handleMessage(Message msg) {
                 progressDialog.dismiss();
-                currentLightStatus=msg.getData().getString("Received");
+                currentLightStatus = msg.getData().getString("Received");
                 Log.i(TAG, "Received " + currentLightStatus);
                 lightStatus.setText(currentLightStatus);
             }
         });
-        sendTemperatureValue.start();
+        getTemperatureValue.start();
     }
     private void sendLightGetRequest(){
+        Log.i(TAG,"Send get light status");
         final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
         progressDialog.setMessage("Getting device status..");
         progressDialog.show();
-        Thread sendTemperatureValue=SocketClient.tcpSend("Light Get",ip,DEFAULT_DEVICE_TCP_PORT,progressDialog,new Handler(){
+        Thread sendTemperatureValue=SocketClient.tcpSend("Lighting Get", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
             @Override
-            public void handleMessage(Message msg){
+            public void handleMessage(Message msg) {
                 handlePostSend(msg);
                 recevieCurrentLightStatus(progressDialog);
             }
@@ -108,7 +116,25 @@ public class LightingConfiguration extends AppCompatActivity {
         sendTemperatureValue.start();
     }
 
+    private void convertToAccessPoint(){
+        Log.i(TAG,"Convert to AP");
+        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
+        progressDialog.setMessage("Converting to AP..");
+        progressDialog.show();
+        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                progressDialog.dismiss();
+                handlePostSend(msg);
+                Intent returnToMain = new Intent(LightingConfiguration.this, MainActivity.class);
+                startActivity(returnToMain);
+            }
+        });
+        sendAP.start();
+    }
+
     private void renameDevice(){
+        Log.i(TAG,"Device Rename");
         final EditText rename=new EditText(LightingConfiguration.this);
         rename.setInputType(InputType.TYPE_CLASS_TEXT);
         AlertDialog.Builder builder = new AlertDialog.Builder(LightingConfiguration.this)
@@ -134,7 +160,7 @@ public class LightingConfiguration extends AppCompatActivity {
         final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
         progressDialog.setMessage("Updating device name..");
         progressDialog.show();
-        Thread sendRename=SocketClient.tcpSend("Rename:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 progressDialog.dismiss();
@@ -156,6 +182,7 @@ public class LightingConfiguration extends AppCompatActivity {
         }
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -172,9 +199,11 @@ public class LightingConfiguration extends AppCompatActivity {
         switch(item.getItemId()){
             case R.id.renameDevice:
                 renameDevice();
-            default:
-                return super.onOptionsItemSelected(item);
+                break;
+            case R.id.accessPoint:
+                convertToAccessPoint();
+                break;
         }
-
+        return super.onOptionsItemSelected(item);
     }
 }

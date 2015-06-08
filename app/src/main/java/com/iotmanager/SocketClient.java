@@ -79,4 +79,13 @@ public class SocketClient {
         return tcpReceiveThread;
     }
 
+    public static void closeConnection(){
+        try{
+            socket.close();
+        }
+        catch(Exception e){
+            Log.i(TAG,"Exception "+e.getMessage());
+        }
+    }
+
 }

@@ -137,7 +137,7 @@ public class TemperatureConfiguration extends AppCompatActivity{
         final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
         progressDialog.setMessage("Updating device name..");
         progressDialog.show();
-        Thread sendRename=SocketClient.tcpSend("Rename:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 progressDialog.dismiss();
@@ -158,6 +158,22 @@ public class TemperatureConfiguration extends AppCompatActivity{
                 break;
         }
     }
+
+    private void convertToAccessPoint(){
+        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
+        progressDialog.setMessage("Converting to AP..");
+        progressDialog.show();
+        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                progressDialog.dismiss();
+                handlePostSend(msg);
+                Intent returnToMain=new Intent(TemperatureConfiguration.this,MainActivity.class);
+                startActivity(returnToMain);
+            }
+        });
+        sendAP.start();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -173,8 +189,11 @@ public class TemperatureConfiguration extends AppCompatActivity{
         switch(item.getItemId()){
             case R.id.renameDevice:
                 renameDevice();
-            default:
-                return super.onOptionsItemSelected(item);
+                break;
+            case R.id.accessPoint:
+                convertToAccessPoint();
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -6,4 +6,8 @@
         android:title="@string/rename_device"
         android:orderInCategory="100"
         app:showAsAction="always" />
+    <item android:id="@+id/accessPoint"
+        android:title="@string/access_point"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
 </menu>
