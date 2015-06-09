@@ -67,7 +67,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         types.add("Lighting");
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(
                 this,
-                R.layout.support_simple_spinner_dropdown_item,
+                R.layout.spinner_layout,
                 types
         );
         deviceType.setAdapter(adapter);
