@@ -84,6 +84,7 @@ public class AvailableDevices extends AppCompatActivity {
                 final Network network = new Network(selectedNetworkSSID, getApplicationContext());
                 final ProgressDialog progressDialog = new ProgressDialog(AvailableDevices.this);
                 progressDialog.setMessage("Connecting ...");
+                progressDialog.setCancelable(false);
                 progressDialog.show();
                 Thread connectThread = AndroidWifiHandler.connect(network, progressDialog, new Handler() {
                     //Handle what happens when thread has completed

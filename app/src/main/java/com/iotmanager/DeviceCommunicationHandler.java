@@ -10,13 +10,17 @@ import android.widget.Toast;
 import java.io.BufferedInputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 /**
  * Created by connorstein on 15-06-08.
  */
 public class DeviceCommunicationHandler {
     private static final int BUFFER_SIZE=1024;
+    private static final int SOCKET_TIMEOUT=2000;
     private String deviceIP;
     private int devicePort;
     private PrintWriter out;
@@ -24,6 +28,7 @@ public class DeviceCommunicationHandler {
     private byte[] readBuffer;
     private static final String TAG="Connors Debug";
     private Context context;
+
 
     public DeviceCommunicationHandler(String deviceIP,int devicePort, Context context){
         this.deviceIP=deviceIP;
@@ -35,44 +40,56 @@ public class DeviceCommunicationHandler {
     public void sendDataNoResponse(final String data){
         //Open a tcp connection with the device and send the data
         //must be in separate thread to avoid networkonmain thread error
-        final ProgressDialog progressDialog=new ProgressDialog(context);
-        progressDialog.setMessage("Sending ...");
-        progressDialog.show();
-        //Need handle to manipulate UI thread depending on what happens with the send
+        Log.i(TAG,"Send data no response");
+        //Need handler to manipulate UI thread depending on what happens with the send
         final Handler handler=new Handler(){
             @Override
             public void handleMessage(Message message){
-                Log.i(TAG,getStringFromMessage("Exception",message));
-                Toast.makeText(context,"Unable to send. Error "+getStringFromMessage("Exception",message),Toast.LENGTH_LONG).show();
+                handleMessageResponse(message);
             }
         };
         Thread sendDataNoResponse= new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
-                    Socket s=new Socket(deviceIP,devicePort);
-                    out=new PrintWriter(s.getOutputStream());
-                    out.write(data);
-                    out.flush();
-                    s.close();
+                    Socket socket=createSocket();
+                    socketWrite(socket,data);
+                    socket.close(); //Have to close, want to reopen new sockets for each method call
                 }
                 catch(Exception e){
                     //Log.i(TAG,"Exception "+e.getMessage());
                     handler.sendMessage(createMessage("Exception",e.getMessage()));
                 }
-
+                handler.sendMessage(createMessage("Exception","None"));
             }
         });
         sendDataNoResponse.start();
-        //block until thread is finished
         try{
             sendDataNoResponse.join();
-            progressDialog.dismiss();
         }
         catch(InterruptedException e){
-            Log.i(TAG, "interrupted exception");
+            Log.i(TAG,"Interrupted exception");
         }
+        //block until thread is finished
+    }
 
+    private void flushReadBuffer(){
+        int i;
+        for(i=0;i<BUFFER_SIZE;i++){
+            readBuffer[i]='\0';
+        }
+    }
+    private void handleMessageResponse(Message message){
+        String exception=getStringFromMessage("Exception",message);
+        if(exception==null){
+            Log.i(TAG,"null response");
+            Toast.makeText(context,"Unable to send. Error: No Response",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Log.i(TAG, exception);
+        if(!exception.equals("None")){
+            Toast.makeText(context,"Unable to send. Error: "+getStringFromMessage("Exception",message),Toast.LENGTH_SHORT).show();
+        }
     }
 
     private Message createMessage(String key, String data){
@@ -87,60 +104,76 @@ public class DeviceCommunicationHandler {
         return message.getData().getString(key);
     }
 
+
     public String sendDataGetResponse(final String data){
         //Open a tcp connection with the device and send the data
         //must be in separate thread to avoid networkonmain thread error
-        final ProgressDialog progressDialog=new ProgressDialog(context);
-        progressDialog.setMessage("Sending ...");
-        progressDialog.show();
+
         //Need handle to manipulate UI thread depending on what happens with the send
         final Handler handler=new Handler(){
             @Override
             public void handleMessage(Message message){
-                Log.i(TAG,getStringFromMessage("Exception",message));
-                Toast.makeText(context,"Unable to send. Error: "+getStringFromMessage("Exception",message),Toast.LENGTH_SHORT).show();
+                handleMessageResponse(message);
             }
         };
-        Thread sendDataNoResponse= new Thread(new Runnable(){
+        Thread sendDataGetResponse= new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
-                    Socket s=new Socket(deviceIP,devicePort);
-                    out=new PrintWriter(s.getOutputStream());
-                    out.write(data);
-                    out.flush();
-                    in=new BufferedInputStream(s.getInputStream());
+                    Socket socket=createSocket();
+                    socketWrite(socket,data);
+                    in=new BufferedInputStream(socket.getInputStream());
                     in.read(readBuffer);
+                    socket.close();
                 }
                 catch(Exception e){
                     //Log.i(TAG,"Exception "+e.getMessage());
                     handler.sendMessage(createMessage("Exception",e.getMessage()));
+                    return;
                 }
+                handler.sendMessage(createMessage("Exception","None"));
 
             }
         });
-        sendDataNoResponse.start();
-        //block until thread is finished
+        sendDataGetResponse.start();
         try{
-            sendDataNoResponse.join();
-            progressDialog.dismiss();
+            sendDataGetResponse.join();
         }
         catch(InterruptedException e){
-            Log.i(TAG, "interrupted exception");
+            Log.i(TAG,"Interrupted exception");
+        }
+        //block until thread is finished
+        return getStringFromReadBuffer();
+    }
+    private void socketWrite(Socket socket, String data) throws Exception{
+        out=new PrintWriter(socket.getOutputStream());
+        out.write(data);
+        out.flush();
+    }
+
+    private Socket createSocket() throws Exception {
+        Socket socket=new Socket();
+        SocketAddress socketAddress=new InetSocketAddress(InetAddress.getByName(deviceIP),devicePort);
+        socket.connect(socketAddress,SOCKET_TIMEOUT);
+        socket.setSoTimeout(SOCKET_TIMEOUT);
+        return socket;
+    }
+
+    private String getStringFromReadBuffer(){
+        if(readBuffer[0]=='\0'){
+            //No response from device
+            return null;
         }
         String result=null;
         try{
-            result=new String(readBuffer,0,20,"UTF-8");
+            int i=0;
+            while(readBuffer[i++]!='\0');
+            result=new String(readBuffer,0,i-1,"UTF-8");
         }
         catch(UnsupportedEncodingException e){
             Log.i(TAG,"Exception "+e.getMessage());
         }
+        flushReadBuffer();
         return result;
     }
-
-    public void broadcastForDevices(){
-
-    }
-
-
 }

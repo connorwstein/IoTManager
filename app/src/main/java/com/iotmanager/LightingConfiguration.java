@@ -39,7 +39,7 @@ public class LightingConfiguration extends AppCompatActivity {
     private Button lightingOnOff;
     private static final String LIGHT_OFF="OFF";
     private static final String LIGHT_ON="ON";
-
+    private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "On create");
@@ -57,27 +57,23 @@ public class LightingConfiguration extends AppCompatActivity {
         lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
         ipAddress.setText(ip);
         macAddress.setText(mac);
-        DeviceCommunicationHandler d=new DeviceCommunicationHandler("192.168.2.2",DEFAULT_DEVICE_TCP_PORT,this);
-        d.sendDataNoResponse("Hello from devicecomm handler");
-//        d.sendDataNoResponse("Check blocking");
-//        String response=d.sendDataGetResponse("Lighting Get");
-//        Log.i(TAG,response);
-//        sendLightGetRequest();
-//        SocketClient.closeConnection();
+        deviceCommunicationHandler=new DeviceCommunicationHandler(ip,DEFAULT_DEVICE_TCP_PORT,this);
+        String response=deviceCommunicationHandler.sendDataGetResponse("Lighting Get");
+        if(response!=null){
+            currentLightStatus=response;
+        }
+        else{
+            currentLightStatus="Not Available";
+        }
+        lightStatus.setText(currentLightStatus);
         lightingOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                updateLightStatus();
+                updateLightStatus();
             }
         });
     }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Log.i(TAG,"Restored");
-        super.onRestoreInstanceState(savedInstanceState);
-
-    }
     @Override
     protected void onResume(){
         Log.i(TAG,"On resume");
@@ -85,62 +81,37 @@ public class LightingConfiguration extends AppCompatActivity {
     }
     private void updateLightStatus(){
         Log.i(TAG,"Update light status");
-        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
-        progressDialog.setMessage("Updating device light status..");
-        progressDialog.show();
-        Thread sendLightValue=SocketClient.tcpSend("Lighting Set", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                handlePostSend(msg);
-                recevieCurrentLightStatus(progressDialog);
-            }
-        });
-        sendLightValue.start();
+        deviceCommunicationHandler.sendDataNoResponse("Lighting Set");
+        String response=deviceCommunicationHandler.sendDataGetResponse("Lighting Get");
+        if(response!=null){
+            currentLightStatus=response;
+            lightStatus.setText(currentLightStatus);
+        }
+        else{
+            currentLightStatus="Not Available";
+            lightStatus.setText(currentLightStatus);
+        }
     }
 
-    private void recevieCurrentLightStatus(final ProgressDialog progressDialog){
-        Log.i(TAG,"Receive current light status");
-        Thread getTemperatureValue=SocketClient.tcpReceive(progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                currentLightStatus = msg.getData().getString("Received");
-                Log.i(TAG, "Received " + currentLightStatus);
-                lightStatus.setText(currentLightStatus);
-            }
-        });
-        getTemperatureValue.start();
-    }
-    private void sendLightGetRequest(){
-        Log.i(TAG,"Send get light status");
-        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
-        progressDialog.setMessage("Getting device status..");
-        progressDialog.show();
-        Thread sendTemperatureValue=SocketClient.tcpSend("Lighting Get", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                handlePostSend(msg);
-                recevieCurrentLightStatus(progressDialog);
-            }
-        });
-        sendTemperatureValue.start();
-    }
 
     private void convertToAccessPoint(){
         Log.i(TAG,"Convert to AP");
-        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
-        progressDialog.setMessage("Converting to AP..");
-        progressDialog.show();
-        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                handlePostSend(msg);
-                Intent returnToMain = new Intent(LightingConfiguration.this, MainActivity.class);
-                startActivity(returnToMain);
-            }
-        });
-        sendAP.start();
+//        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
+//        progressDialog.setMessage("Converting to AP..");
+//        progressDialog.show();
+//        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                progressDialog.dismiss();
+//                handlePostSend(msg);
+//                Intent returnToMain = new Intent(LightingConfiguration.this, MainActivity.class);
+//                startActivity(returnToMain);
+//            }
+//        });
+//        sendAP.start();
+        deviceCommunicationHandler.sendDataNoResponse("Run AP");
+        Intent returnToMain = new Intent(LightingConfiguration.this, MainActivity.class);
+        startActivity(returnToMain);
     }
 
     private void renameDevice(){
@@ -167,30 +138,34 @@ public class LightingConfiguration extends AppCompatActivity {
     }
 
     private void sendRename(){
-        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
-        progressDialog.setMessage("Updating device name..");
-        progressDialog.show();
-        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                handlePostSend(msg);
-                setTitle(name);
-            }
-        });
-        sendRename.start();
-    }
-
-    private void handlePostSend(Message msg){
-        switch(msg.getData().getInt("Error code")){
-            case 0:
-                Toast.makeText(LightingConfiguration.this, "Error sending data. Ensure the device is still available on the network.", Toast.LENGTH_SHORT).show();
-                break;
-            case 1:
-                //Toast.makeText(LightingConfiguration.this,"Succesfully updated light",Toast.LENGTH_SHORT).show();
-                break;
+//        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
+//        progressDialog.setMessage("Updating device name..");
+//        progressDialog.show();
+//        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                progressDialog.dismiss();
+//                handlePostSend(msg);
+//                setTitle(name);
+//            }
+//        });
+//        sendRename.start();
+        String response=deviceCommunicationHandler.sendDataGetResponse("Name:"+name);
+        if(response!=null){
+            Toast.makeText(this,"Device renamed",Toast.LENGTH_SHORT).show();
         }
     }
+
+//    private void handlePostSend(Message msg){
+//        switch(msg.getData().getInt("Error code")){
+//            case 0:
+//                Toast.makeText(LightingConfiguration.this, "Error sending data. Ensure the device is still available on the network.", Toast.LENGTH_SHORT).show();
+//                break;
+//            case 1:
+//                //Toast.makeText(LightingConfiguration.this,"Succesfully updated light",Toast.LENGTH_SHORT).show();
+//                break;
+//        }
+//    }
 
 
     @Override

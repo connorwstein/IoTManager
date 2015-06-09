@@ -28,10 +28,11 @@ public class TemperatureConfiguration extends AppCompatActivity{
     private TextView macAddress;
     private String ip;
     private String mac;
-    private String currentTempterature;
+    private String currentTemperature;
     private SeekBar temperatureSlider;
     private TextView temperature;
     private String name;
+    private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +48,8 @@ public class TemperatureConfiguration extends AppCompatActivity{
         macAddress.setText(mac);
         temperatureSlider=(SeekBar)findViewById(R.id.temperatureSlider);
         temperature=(TextView)findViewById(R.id.temperature);
-        sendTemperatureGetRequest();
+        deviceCommunicationHandler=new DeviceCommunicationHandler(ip,80,this);
+        getTemperature();
         temperatureSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressValue;
 
@@ -68,47 +70,62 @@ public class TemperatureConfiguration extends AppCompatActivity{
             }
         });
     }
-    private void sendTemperatureGetRequest(){
-        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
-        progressDialog.setMessage("Getting device temperature..");
-        progressDialog.show();
-        Thread sendTemperatureValue=SocketClient.tcpSend("Temperature Get",ip,DEFAULT_DEVICE_TCP_PORT,progressDialog,new Handler(){
-            @Override
-            public void handleMessage(Message msg){
-                handlePostSend(msg);
-                recevieCurrentTemperature(progressDialog);
-            }
-        });
-        sendTemperatureValue.start();
-    }
+//    private void sendTemperatureGetRequest(){
+//        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
+//        progressDialog.setMessage("Getting device temperature..");
+//        progressDialog.show();
+//        Thread sendTemperatureValue=SocketClient.tcpSend("Temperature Get",ip,DEFAULT_DEVICE_TCP_PORT,progressDialog,new Handler(){
+//            @Override
+//            public void handleMessage(Message msg){
+//                handlePostSend(msg);
+//                recevieCurrentTemperature(progressDialog);
+//            }
+//        });
+//        sendTemperatureValue.start();
+//    }
 
-    private void recevieCurrentTemperature(final ProgressDialog progressDialog){
-        Thread sendTemperatureValue=SocketClient.tcpReceive(progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                currentTempterature = msg.getData().getString("Received");
-                Log.i(TAG, "Received " + currentTempterature);
-                temperature.setText(currentTempterature);
-                temperatureSlider.setProgress(Integer.parseInt(currentTempterature));
-            }
-        });
-        sendTemperatureValue.start();
+//    private void recevieCurrentTemperature(final ProgressDialog progressDialog){
+//        Thread sendTemperatureValue=SocketClient.tcpReceive(progressDialog, new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                progressDialog.dismiss();
+//                currentTempterature = msg.getData().getString("Received");
+//                Log.i(TAG, "Received " + currentTempterature);
+//                temperature.setText(currentTempterature);
+//                temperatureSlider.setProgress(Integer.parseInt(currentTempterature));
+//            }
+//        });
+//        sendTemperatureValue.start();
+//    }
+    private void getTemperature(){
+        String response=deviceCommunicationHandler.sendDataGetResponse("Temperature Get");
+        if(response!=null){
+            currentTemperature=response;
+            temperature.setText(currentTemperature);
+            temperatureSlider.setProgress(Integer.parseInt(currentTemperature));
+        }
+        else{
+            currentTemperature="Not Available";
+            temperature.setText(currentTemperature);
+            temperatureSlider.setProgress(0);
+        }
     }
 
     private void updateTemperature(int progressValue){
         Log.i(TAG, "stop tracking touch");
-        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
-        progressDialog.setMessage("Updating device temperature..");
-        progressDialog.show();
-        Thread sendTemperatureValue=SocketClient.tcpSend("Temperature Set:" + Integer.toString(progressValue), ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                handlePostSend(msg);
-            }
-        });
-        sendTemperatureValue.start();
+//        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
+//        progressDialog.setMessage("Updating device temperature..");
+//        progressDialog.show();
+//        Thread sendTemperatureValue=SocketClient.tcpSend("Temperature Set:" + Integer.toString(progressValue), ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                progressDialog.dismiss();
+//                handlePostSend(msg);
+//            }
+//        });
+//        sendTemperatureValue.start();
+        deviceCommunicationHandler.sendDataNoResponse("Temperature Set:"+progressValue);
+        getTemperature();
     }
 
     private void renameDevice(){
@@ -134,45 +151,47 @@ public class TemperatureConfiguration extends AppCompatActivity{
     }
 
     private void sendRename(){
-        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
-        progressDialog.setMessage("Updating device name..");
-        progressDialog.show();
-        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                handlePostSend(msg);
-                setTitle(name);
-            }
-        });
-        sendRename.start();
+//        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
+//        progressDialog.setMessage("Updating device name..");
+//        progressDialog.show();
+//        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                progressDialog.dismiss();
+//                handlePostSend(msg);
+//                setTitle(name);
+//            }
+//        });
+//        sendRename.start();
+        deviceCommunicationHandler.sendDataGetResponse("Name:"+name);
     }
 
-    private void handlePostSend(Message msg){
-        switch(msg.getData().getInt("Error code")){
-            case 0:
-                Toast.makeText(TemperatureConfiguration.this,"Error sending data. Ensure the device is still available on the network.", Toast.LENGTH_SHORT).show();
-                break;
-            case 1:
-                //Toast.makeText(TemperatureConfiguration.this,"Succesfully updated!",Toast.LENGTH_SHORT).show();
-                break;
-        }
-    }
+//    private void handlePostSend(Message msg){
+//        switch(msg.getData().getInt("Error code")){
+//            case 0:
+//                Toast.makeText(TemperatureConfiguration.this,"Error sending data. Ensure the device is still available on the network.", Toast.LENGTH_SHORT).show();
+//                break;
+//            case 1:
+//                //Toast.makeText(TemperatureConfiguration.this,"Succesfully updated!",Toast.LENGTH_SHORT).show();
+//                break;
+//        }
+//    }
 
     private void convertToAccessPoint(){
-        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
-        progressDialog.setMessage("Converting to AP..");
-        progressDialog.show();
-        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                progressDialog.dismiss();
-                handlePostSend(msg);
-                Intent returnToMain=new Intent(TemperatureConfiguration.this,MainActivity.class);
-                startActivity(returnToMain);
-            }
-        });
-        sendAP.start();
+//        final ProgressDialog progressDialog=new ProgressDialog(TemperatureConfiguration.this);
+//        progressDialog.setMessage("Converting to AP..");
+//        progressDialog.show();
+//        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                progressDialog.dismiss();
+//                handlePostSend(msg);
+//                Intent returnToMain=new Intent(TemperatureConfiguration.this,MainActivity.class);
+//                startActivity(returnToMain);
+//            }
+//        });
+//        sendAP.start();
+
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
