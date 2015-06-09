@@ -17,7 +17,7 @@ public class DeviceCategory extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Not this onCreate is only called when coming from the main activity
+        //Not this onCreate is only called when coming from the home activity
         //Not called from back button in child activity, see manifest
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_category);

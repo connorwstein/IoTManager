@@ -3,20 +3,14 @@ package com.iotmanager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
 
-
-public class MainActivity extends AppCompatActivity {
+public class Home extends AppCompatActivity {
     private static final String TAG="Connors Debug";
 
     private GridView deviceCategoryGrid;
@@ -24,14 +18,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.home);
         deviceCategoryGrid=(GridView)findViewById(R.id.deviceCategoryGrid);
         deviceCategoryGrid.setAdapter(new ImageAdapter(this,getResources()));
 
         deviceCategoryGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent deviceCategoryIntent = new Intent(MainActivity.this, DeviceCategory.class);
+                Intent deviceCategoryIntent = new Intent(Home.this, DeviceCategory.class);
                 //Use position to indicate category
                 //Position 0: Lighting, Position 1: Temperature
                 deviceCategoryIntent.putExtra("Position",Integer.toString(position));

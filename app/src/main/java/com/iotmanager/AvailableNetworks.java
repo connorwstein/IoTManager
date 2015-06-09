@@ -1,15 +1,12 @@
 package com.iotmanager;
 import static com.iotmanager.Constants.*;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -22,8 +19,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +30,7 @@ public class AvailableNetworks extends AppCompatActivity {
     private WifiManager manager;
     private String espNetworkName;
     private String espNetworkPass;
+    private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +39,7 @@ public class AvailableNetworks extends AppCompatActivity {
         setTitle(selectedDevice);
         espNetworkName=getIntent().getStringExtra("espNetworkName");
         espNetworkPass=getIntent().getStringExtra("espNetworkPass");
-
+        deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
         Log.i(TAG, "Device: " + selectedDevice);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         listAllNetworks();
@@ -84,54 +80,29 @@ public class AvailableNetworks extends AppCompatActivity {
         networkListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 String selectedNetworkSSID = (String) networkListView.getItemAtPosition(position);
                 final Network network = new Network(selectedNetworkSSID, getApplicationContext());
-
-                final ProgressDialog progressDialog=new ProgressDialog(AvailableNetworks.this);
-                progressDialog.setMessage("Telling device to connect ...");
-                progressDialog.show();
-
                 if (network.isEnterprise()) {
-                    progressDialog.dismiss();
                     Toast.makeText(getApplicationContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
                 }
                 else if (network.hasPassword()) {
-                    setNetworkPasswordThenSend(network, AvailableNetworks.this, progressDialog); //reuse method
+                    setNetworkPasswordThenSend(network, AvailableNetworks.this);
                 }
                 else{
-                    Thread sendConnectRequest=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
-                            new Handler(){
-                                @Override
-                                public void handleMessage(Message msg){
-                                    progressDialog.dismiss();
-                                    handlePostSend(msg,network);
-                                }
-                            });
-
-                    sendConnectRequest.start();
+                    deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT+network.ssid+";"+network.password);
+                    Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
+                    Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
+                    startActivity(mainActivityIntent);
                 }
 
             }
         });
     }
-    private void handlePostSend(Message msg,Network network){
-        if(msg.getData().getInt("Error code")==0){
-            Toast.makeText(AvailableNetworks.this,"Error sending data, verify connection to device",Toast.LENGTH_LONG).show();
-        }
-        else{
-            Toast.makeText(AvailableNetworks.this,"Successfully sent network name and password to device. Connect to the network then select device category to broadcast for the device",Toast.LENGTH_LONG).show();
-            Toast.makeText(AvailableNetworks.this,"Successfully sent network name and password to device. Connect to the network then select device category to broadcast for the device",Toast.LENGTH_LONG).show();
-            Intent mainActivityIntent=new Intent(AvailableNetworks.this,MainActivity.class);
-            startActivity(mainActivityIntent);
-        }
-    }
 
-
-   private void setNetworkPasswordThenSend(final Network network,Context context, final ProgressDialog progressDialog){
-        final EditText passwordInput=new EditText(context);
-        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+   private void setNetworkPasswordThenSend(final Network network,Context context){
+       final EditText passwordInput=new EditText(context);
+       passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
        AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setMessage("Enter password for network")
                 .setView(passwordInput)
@@ -139,27 +110,20 @@ public class AvailableNetworks extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(passwordInput.getText().toString().equals("")){
-                            progressDialog.dismiss();
                             Toast.makeText(AvailableNetworks.this,"Please enter a password",Toast.LENGTH_SHORT).show();
                             return;
                         }
                         network.setPassword(passwordInput.getText().toString());
-                        final Thread sendConnectRequestWithPassword=SocketClient.tcpSend("Connect:"+network.ssid+";"+network.password, DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
-                                new Handler(){
-                                    @Override
-                                    public void handleMessage(Message msg){
-                                        progressDialog.dismiss();
-                                        handlePostSend(msg,network);
-                                    }
-                                });
-                        sendConnectRequestWithPassword.start();
+                        deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT + network.ssid + ";" + network.password);
+                        Toast.makeText(AvailableNetworks.this,"Send connect request",Toast.LENGTH_SHORT).show();
+                        Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
+                        startActivity(mainActivityIntent);
                         dialog.cancel();
 
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        progressDialog.dismiss();
                         dialog.cancel();
                     }
                 });

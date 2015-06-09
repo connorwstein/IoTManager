@@ -1,12 +1,9 @@
 package com.iotmanager;
 
+import static com.iotmanager.Constants.*;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -18,12 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.iotmanager.R;
-
-import java.io.BufferedInputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
 
 import static com.iotmanager.Constants.DEFAULT_DEVICE_TCP_PORT;
 
@@ -37,34 +28,16 @@ public class LightingConfiguration extends AppCompatActivity {
     private String name;
     private String currentLightStatus;
     private Button lightingOnOff;
-    private static final String LIGHT_OFF="OFF";
-    private static final String LIGHT_ON="ON";
     private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "On create");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lighting_configuration);
-        currentLightStatus=LIGHT_OFF;
-        Intent deviceInformation=getIntent();
-        name=deviceInformation.getStringExtra("NAME");
-        setTitle(name);
-        ip=deviceInformation.getStringExtra("IP");
-        mac=deviceInformation.getStringExtra("MAC");
-        ipAddress=(TextView)findViewById(R.id.lightingIpAddress);
-        macAddress=(TextView)findViewById(R.id.lightingMacAddress);
-        lightStatus=(TextView)findViewById(R.id.lightStatus);
-        lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
-        ipAddress.setText(ip);
-        macAddress.setText(mac);
+        getDeviceInformation();
+        initViews();
         deviceCommunicationHandler=new DeviceCommunicationHandler(ip,DEFAULT_DEVICE_TCP_PORT,this);
-        String response=deviceCommunicationHandler.sendDataGetResponse("Lighting Get");
-        if(response!=null){
-            currentLightStatus=response;
-        }
-        else{
-            currentLightStatus="Not Available";
-        }
+        getLightStatus();
         lightStatus.setText(currentLightStatus);
         lightingOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,16 +46,31 @@ public class LightingConfiguration extends AppCompatActivity {
             }
         });
     }
+    private void getDeviceInformation(){
+        Intent deviceInformation=getIntent();
+        name=deviceInformation.getStringExtra("NAME");
+        ip=deviceInformation.getStringExtra("IP");
+        mac=deviceInformation.getStringExtra("MAC");
+    }
+
+    private void initViews(){
+        setTitle(name);
+        ipAddress=(TextView)findViewById(R.id.lightingIpAddress);
+        macAddress=(TextView)findViewById(R.id.lightingMacAddress);
+        lightStatus=(TextView)findViewById(R.id.lightStatus);
+        lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
+        ipAddress.setText(ip);
+        macAddress.setText(mac);
+    }
 
     @Override
     protected void onResume(){
-        Log.i(TAG,"On resume");
+        Log.i(TAG, "On resume");
         super.onResume();
     }
-    private void updateLightStatus(){
-        Log.i(TAG,"Update light status");
-        deviceCommunicationHandler.sendDataNoResponse("Lighting Set");
-        String response=deviceCommunicationHandler.sendDataGetResponse("Lighting Get");
+
+    private void getLightStatus(){
+        String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_LIGHTING_GET);
         if(response!=null){
             currentLightStatus=response;
             lightStatus.setText(currentLightStatus);
@@ -92,25 +80,16 @@ public class LightingConfiguration extends AppCompatActivity {
             lightStatus.setText(currentLightStatus);
         }
     }
-
+    private void updateLightStatus(){
+        Log.i(TAG,"Update light status");
+        deviceCommunicationHandler.sendDataNoResponse(COMMAND_LIGHTING_SET);
+        getLightStatus();
+    }
 
     private void convertToAccessPoint(){
         Log.i(TAG,"Convert to AP");
-//        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
-//        progressDialog.setMessage("Converting to AP..");
-//        progressDialog.show();
-//        Thread sendAP=SocketClient.tcpSend("Run AP", ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-//            @Override
-//            public void handleMessage(Message msg) {
-//                progressDialog.dismiss();
-//                handlePostSend(msg);
-//                Intent returnToMain = new Intent(LightingConfiguration.this, MainActivity.class);
-//                startActivity(returnToMain);
-//            }
-//        });
-//        sendAP.start();
-        deviceCommunicationHandler.sendDataNoResponse("Run AP");
-        Intent returnToMain = new Intent(LightingConfiguration.this, MainActivity.class);
+        deviceCommunicationHandler.sendDataNoResponse(COMMAND_RUN_AP);
+        Intent returnToMain = new Intent(LightingConfiguration.this, Home.class);
         startActivity(returnToMain);
     }
 
@@ -138,36 +117,12 @@ public class LightingConfiguration extends AppCompatActivity {
     }
 
     private void sendRename(){
-//        final ProgressDialog progressDialog=new ProgressDialog(LightingConfiguration.this);
-//        progressDialog.setMessage("Updating device name..");
-//        progressDialog.show();
-//        Thread sendRename=SocketClient.tcpSend("Name:" + name, ip, DEFAULT_DEVICE_TCP_PORT, progressDialog, new Handler() {
-//            @Override
-//            public void handleMessage(Message msg) {
-//                progressDialog.dismiss();
-//                handlePostSend(msg);
-//                setTitle(name);
-//            }
-//        });
-//        sendRename.start();
-        String response=deviceCommunicationHandler.sendDataGetResponse("Name:"+name);
-        if(response!=null){
+        String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+name);
+        if(response.equals(RESPONSE_NAME_SUCCESS)){
             Toast.makeText(this,"Device renamed",Toast.LENGTH_SHORT).show();
+            setTitle(name);
         }
     }
-
-//    private void handlePostSend(Message msg){
-//        switch(msg.getData().getInt("Error code")){
-//            case 0:
-//                Toast.makeText(LightingConfiguration.this, "Error sending data. Ensure the device is still available on the network.", Toast.LENGTH_SHORT).show();
-//                break;
-//            case 1:
-//                //Toast.makeText(LightingConfiguration.this,"Succesfully updated light",Toast.LENGTH_SHORT).show();
-//                break;
-//        }
-//    }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

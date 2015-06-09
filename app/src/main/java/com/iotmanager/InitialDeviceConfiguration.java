@@ -1,10 +1,7 @@
 package com.iotmanager;
 import static com.iotmanager.Constants.*;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,8 +13,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 
 public class InitialDeviceConfiguration extends AppCompatActivity {
@@ -33,74 +28,37 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_initial_device_configuration);
-        //Name:
         setTitle("Initial Configuration");
         setUpSpinner();
         espNetworkName=getIntent().getStringExtra("espNetworkName");
         espNetworkPass=getIntent().getStringExtra("espNetworkPass");
-        deviceCommunicationHandler=new DeviceCommunicationHandler("192.168.4.1",80,this);
+        deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
         nameDeviceSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                final ProgressDialog progressDialog = new ProgressDialog(InitialDeviceConfiguration.this);
-//                progressDialog.setMessage("Sending name..");
-//                progressDialog.show();
                 if(nameDevice.getText().toString().equals("")){
-                    //progressDialog.dismiss();
                     Toast.makeText(InitialDeviceConfiguration.this,"Please enter a name for the device",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                String nameResponse=deviceCommunicationHandler.sendDataGetResponse("Name:"+nameDevice.getText().toString());
-                String typeResponse=deviceCommunicationHandler.sendDataGetResponse("Type:"+deviceType.getSelectedItem().toString());
-                if(nameResponse.equals("Name Set")&&typeResponse.equals("Type Set")){
+                String nameResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+nameDevice.getText().toString());
+                String typeResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TYPE+deviceType.getSelectedItem().toString());
+                if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
                     availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
                     availableNetworksIntent.putExtra("espNetworkName",espNetworkName);
                     availableNetworksIntent.putExtra("espNetworkPass",espNetworkPass);
                     startActivity(availableNetworksIntent);
                 }
-                else if(nameResponse.equals("Failed")||typeResponse.equals("Failed")){
+                else if(nameResponse.equals(RESPONSE_FAIL)||typeResponse.equals(RESPONSE_FAIL)){
                     //Error writing on device
                     //"Failed"
                     Toast.makeText(InitialDeviceConfiguration.this,"Failed to write to device",Toast.LENGTH_SHORT).show();
                 }
-
-//                final Thread sendConfigurationType=SocketClient.tcpSend("Type:"+deviceType.getSelectedItem().toString(),DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,progressDialog,
-//                    new Handler(){
-//                        @Override
-//                        public void handleMessage(Message msg){
-//                            //progressDialog.dismiss();
-//                            handlePostSend(msg);
-//                        }
-//                    });
-
-//                Thread sendConfigurationName=SocketClient.tcpSend("Name:"+nameDevice.getText().toString(), DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT, progressDialog,
-//                        new Handler(){
-//                            @Override
-//                            public void handleMessage(Message msg){
-//                                handlePostSend(msg);
-//                                sendConfigurationType.start();
-//                            }
-//                        });
-//                sendConfigurationName.start();
             }
         });
     }
-
-//    private void handlePostSend(Message msg){
-//        if(msg.getData().getInt("Error code")==0){
-//            Toast.makeText(InitialDeviceConfiguration.this,"Error sending data, verify connection to device",Toast.LENGTH_LONG).show();
-//        }
-//        else{
-//            Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
-//            availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
-//            availableNetworksIntent.putExtra("espNetworkName",espNetworkName);
-//            availableNetworksIntent.putExtra("espNetworkPass",espNetworkPass);
-//            startActivity(availableNetworksIntent);
-//        }
-//    }
 
     private void setUpSpinner(){
         deviceType=(Spinner)findViewById(R.id.deviceType);
