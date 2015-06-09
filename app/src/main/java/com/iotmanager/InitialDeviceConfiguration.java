@@ -55,6 +55,12 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 nameDeviceSubmit.setTextColor(Color.BLACK);
                 String nameResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+nameDevice.getText().toString());
                 String typeResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TYPE+deviceType.getSelectedItem().toString());
+                if(nameResponse==null||typeResponse==null){
+                    Log.i(TAG, "Null response");
+                    Toast.makeText(InitialDeviceConfiguration.this,"Error writing to device",Toast.LENGTH_SHORT).show();
+                    resetFields();
+                    return;
+                }
                 if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
                     availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
@@ -66,9 +72,15 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                     //Error writing on device
                     //"Failed"
                     Toast.makeText(InitialDeviceConfiguration.this,"Failed to write to device",Toast.LENGTH_SHORT).show();
+                    resetFields();
                 }
             }
         });
+    }
+    private void resetFields(){
+        deviceType.setSelection(0);
+        nameDevice.clearComposingText();
+        nameDeviceSubmit.setTextColor(Color.parseColor("#cccccc"));
     }
 
     private void setUpSpinner(){
@@ -90,6 +102,10 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 String selected=((TextView)parent.getChildAt(0)).getText().toString();
                 if(!selected.equals("Type")){
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.BLACK);
+                }
+                else{
+                    ((TextView) parent.getChildAt(0)).setTextColor(Color.parseColor("#cccccc"));
+
                 }
             }
 

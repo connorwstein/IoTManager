@@ -1,32 +1,19 @@
 package com.iotmanager;
 import static com.iotmanager.Constants.*;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
+
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class TemperatureConfiguration extends AppCompatActivity{
+public class TemperatureConfiguration extends GenericConfiguration{
     private static final String TAG="Connors Debug";
-    private static final int TCP_PORT=80;
     private TextView ipAddress;
     private TextView macAddress;
-    private String ip;
-    private String mac;
     private String currentTemperature;
     private SeekBar temperatureSlider;
     private TextView temperature;
-    private String name;
-    private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,12 +48,6 @@ public class TemperatureConfiguration extends AppCompatActivity{
         temperatureSlider=(SeekBar)findViewById(R.id.temperatureSlider);
         temperature=(TextView)findViewById(R.id.temperature);
     }
-    private void getDeviceInformation(){
-        Intent deviceInformation=getIntent();
-        name=deviceInformation.getStringExtra("NAME");
-        ip=deviceInformation.getStringExtra("IP");
-        mac=deviceInformation.getStringExtra("MAC");
-    }
 
     private void getTemperature(){
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TEMPERATURE_GET);
@@ -88,61 +69,4 @@ public class TemperatureConfiguration extends AppCompatActivity{
         getTemperature();
     }
 
-    private void renameDevice(){
-        final EditText rename=new EditText(TemperatureConfiguration.this);
-        rename.setInputType(InputType.TYPE_CLASS_TEXT);
-        AlertDialog.Builder builder = new AlertDialog.Builder(TemperatureConfiguration.this)
-                .setMessage("Enter new device name")
-                .setView(rename)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        name=rename.getText().toString();
-                        sendRename();
-                        dialog.cancel();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-        builder.show();
-    }
-
-    private void sendRename(){
-        String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+name);
-        if (response.equals(RESPONSE_NAME_SUCCESS)) {
-            Toast.makeText(this,"Device renamed",Toast.LENGTH_SHORT).show();
-            setTitle(name);
-        }
-    }
-
-    private void convertToAccessPoint(){
-        deviceCommunicationHandler.sendDataNoResponse(COMMAND_RUN_AP);
-        Intent returnToMain = new Intent(TemperatureConfiguration.this, Home.class);
-        startActivity(returnToMain);
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_temperature_configuration, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch(item.getItemId()){
-            case R.id.renameDevice:
-                renameDevice();
-                break;
-            case R.id.accessPoint:
-                convertToAccessPoint();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }

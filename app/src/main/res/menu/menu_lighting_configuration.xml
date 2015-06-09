@@ -5,9 +5,13 @@
     <item android:id="@+id/renameDevice"
         android:title="@string/rename_device"
         android:orderInCategory="100"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
     <item android:id="@+id/accessPoint"
         android:title="@string/access_point"
         android:orderInCategory="100"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
+    <item android:id="@+id/change_type"
+        android:title="@string/change_type"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
 </menu>

@@ -11,7 +11,8 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="add_device">Add</string>
     <string name="rename_device">Rename</string>
-    <string name="access_point">Convert to AP</string>
+    <string name="change_type">Change Type</string>
+    <string name="access_point">Convert To AP</string>
     <string name="broadcast_for_device_ips">Broadcast</string>
     <string name="title_activity_device_configuration">DeviceConfiguration</string>
     <string name="title_activity_device_category">DeviceCategory</string>
