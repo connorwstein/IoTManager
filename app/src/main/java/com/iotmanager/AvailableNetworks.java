@@ -73,7 +73,7 @@ public class AvailableNetworks extends AppCompatActivity {
         networkListView=(ListView)findViewById(R.id.listNetworks);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 this,
-                android.R.layout.simple_list_item_1,
+                R.layout.list,
                 getAllSSIDs()
         );
         networkListView.setAdapter(arrayAdapter);

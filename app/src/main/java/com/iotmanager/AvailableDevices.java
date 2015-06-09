@@ -72,7 +72,7 @@ public class AvailableDevices extends AppCompatActivity {
         listView=(ListView)findViewById(R.id.networkList);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
                 this,
-                android.R.layout.simple_list_item_1,
+                R.layout.list,
                 getDeviceSSIDs()
         );
         listView.setAdapter(arrayAdapter);

@@ -97,7 +97,7 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
 
         ArrayAdapter<String> deviceNameAdapter=new ArrayAdapter<String>(
                 context,
-                R.layout.device_list, //device list has size of text in the listView
+                R.layout.list, //device list has size of text in the listView
                 deviceInformation.get(0) //the first list has the names
         );
         devicesListView.setAdapter(deviceNameAdapter);
