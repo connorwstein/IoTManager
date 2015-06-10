@@ -28,18 +28,20 @@ public class AvailableNetworks extends AppCompatActivity {
     private String networkPassword="";
     private ListView networkListView;
     private WifiManager manager;
-    private String espNetworkName;
-    private String espNetworkPass;
     private DeviceCommunicationHandler deviceCommunicationHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
         selectedDevice=getIntent().getStringExtra("Name");
         setTitle(selectedDevice);
-        espNetworkName=getIntent().getStringExtra("espNetworkName");
-        espNetworkPass=getIntent().getStringExtra("espNetworkPass");
         deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
+        String newIP=getIntent().getStringExtra("New IP");
+        if(newIP!=null){
+            deviceCommunicationHandler.setIP(newIP); //In case the user changes networks from an existing network
+            //i.e. not from AP mode
+        }
         Log.i(TAG, "Device: " + selectedDevice);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         listAllNetworks();
@@ -90,7 +92,7 @@ public class AvailableNetworks extends AppCompatActivity {
                     setNetworkPasswordThenSend(network, AvailableNetworks.this);
                 }
                 else{
-                    deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT+network.ssid+";"+network.password);
+                    deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT+network.ssid+";");
                     Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
                     Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
                     startActivity(mainActivityIntent);
@@ -115,7 +117,7 @@ public class AvailableNetworks extends AppCompatActivity {
                         }
                         network.setPassword(passwordInput.getText().toString());
                         deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT + network.ssid + ";" + network.password);
-                        Toast.makeText(AvailableNetworks.this,"Send connect request",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
                         Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
                         startActivity(mainActivityIntent);
                         dialog.cancel();
@@ -135,7 +137,6 @@ public class AvailableNetworks extends AppCompatActivity {
         List <String> ssids=new ArrayList<String>();
         for(int i=0;i<networks.size();i++){
             ssids.add(networks.get(i).SSID);
-
         }
         return ssids;
     }

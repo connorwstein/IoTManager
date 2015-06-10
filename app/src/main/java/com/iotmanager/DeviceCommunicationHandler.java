@@ -37,6 +37,12 @@ public class DeviceCommunicationHandler {
         this.context=context;
     }
 
+    public void setIP(String newIP){
+        this.deviceIP=newIP;
+    }
+    public void setPort(int newPort){
+        this.devicePort=newPort;
+    }
     public void sendDataNoResponse(final String data){
         //Open a tcp connection with the device and send the data
         //must be in separate thread to avoid networkonmain thread error

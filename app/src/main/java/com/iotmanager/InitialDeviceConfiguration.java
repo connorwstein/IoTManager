@@ -25,8 +25,6 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
     private EditText nameDevice;
     private Button nameDeviceSubmit;
     private Spinner deviceType;
-    private String espNetworkName;
-    private String espNetworkPass;
     private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +32,6 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         setContentView(R.layout.activity_initial_device_configuration);
         setTitle("Initial Configuration");
         setUpSpinner();
-        espNetworkName=getIntent().getStringExtra("espNetworkName");
-        espNetworkPass=getIntent().getStringExtra("espNetworkPass");
         deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
@@ -64,8 +60,6 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
                     availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
-                    availableNetworksIntent.putExtra("espNetworkName",espNetworkName);
-                    availableNetworksIntent.putExtra("espNetworkPass",espNetworkPass);
                     startActivity(availableNetworksIntent);
                 }
                 else if(nameResponse.equals(RESPONSE_FAIL)||typeResponse.equals(RESPONSE_FAIL)){

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +19,7 @@ import static com.iotmanager.Constants.RESPONSE_NAME_SUCCESS;
 /**
  * Created by connorstein on 15-06-09.
  */
-public abstract class GenericConfiguration extends Activity {
+public abstract class GenericConfiguration extends AppCompatActivity {
 
     public DeviceCommunicationHandler deviceCommunicationHandler;
     public String ip;
@@ -88,12 +89,21 @@ public abstract class GenericConfiguration extends Activity {
                 });
         builder.create().show();
     }
+
+    public void changeNetwork(){
+        Intent changeNetworkIntent = new Intent(GenericConfiguration.this,AvailableNetworks.class);
+        changeNetworkIntent.putExtra("New IP",ip);
+        startActivity(changeNetworkIntent);
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()){
+            case R.id.change_network:
+                changeNetwork();
+                break;
             case R.id.change_type:
                 changeType();
                 break;

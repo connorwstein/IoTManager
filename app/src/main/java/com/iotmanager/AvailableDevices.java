@@ -123,8 +123,6 @@ public class AvailableDevices extends AppCompatActivity {
                 break;
             case 3:
                 Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
-                initialDeviceConfigurationIntent.putExtra("espNetworkName",network.ssid);
-                initialDeviceConfigurationIntent.putExtra("espNetworkPass",network.password);
                 AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
                 break;
         }
