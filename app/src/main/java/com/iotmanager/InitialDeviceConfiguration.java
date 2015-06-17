@@ -1,5 +1,8 @@
 package com.iotmanager;
 import static com.iotmanager.Constants.*;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -36,10 +39,20 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
         nameDeviceSubmit.setTextColor(Color.parseColor("#cccccc"));
+        AlertDialog.Builder builder= new AlertDialog.Builder(this);
+        builder.setMessage("This initial configuration only needs to be done once. If you send the wrong network information to the device (i.e. wrong password) or the device just fails to connect to " +
+                "your network, try to add the device again but you can skip this step.")
+               .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                   @Override
+                   public void onClick(DialogInterface dialog, int which) {
+                       dialog.cancel();
+                   }
+               });
+        builder.show();
         nameDeviceSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                //Handle cases of incomplete fields
                 if(nameDevice.getText().toString().equals("")){
                     Toast.makeText(InitialDeviceConfiguration.this,"Please enter a name for the device",Toast.LENGTH_SHORT).show();
                     return;
@@ -48,7 +61,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                     Toast.makeText(InitialDeviceConfiguration.this,"Please select type of device",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                nameDeviceSubmit.setTextColor(Color.BLACK);
+                nameDeviceSubmit.setTextColor(Color.BLACK); //Change the color to black on submit so all three fields are black when a configuration is submitted
                 String nameResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+nameDevice.getText().toString());
                 String typeResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TYPE+deviceType.getSelectedItem().toString());
                 if(nameResponse==null||typeResponse==null){
@@ -57,6 +70,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                     resetFields();
                     return;
                 }
+                //If device has been successfully configured move to the next page
                 if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
                     availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
@@ -71,12 +85,16 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * Resets text field to empty, the type Spinner to the placeholder item "Type" and the submit button back to the color #cccccc
+     */
     private void resetFields(){
-        deviceType.setSelection(0);
+        deviceType.setSelection(0); //default selection in the spinner is the Type (a place holder)
         nameDevice.clearComposingText();
         nameDeviceSubmit.setTextColor(Color.parseColor("#cccccc"));
     }
-
+    
     private void setUpSpinner(){
         deviceType=(Spinner)findViewById(R.id.deviceType);
         ArrayList<String> types=new ArrayList<String>();
@@ -94,15 +112,15 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.i(TAG, "Item selected");
                 String selected=((TextView)parent.getChildAt(0)).getText().toString();
+                //As long as the selected item in the spinner is not the placeholder item "Type"
+                //set its color to black, indicating a valid color has been selected
                 if(!selected.equals("Type")){
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.BLACK);
                 }
                 else{
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.parseColor("#cccccc"));
-
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 

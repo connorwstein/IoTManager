@@ -1,4 +1,5 @@
 package com.iotmanager;
+
 import static com.iotmanager.Constants.*;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -22,10 +23,13 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Displays a list of the available networks that the ESP device can be connected to
+ */
 public class AvailableNetworks extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private String selectedDevice;
-    private String networkPassword="";
     private ListView networkListView;
     private WifiManager manager;
     private DeviceCommunicationHandler deviceCommunicationHandler;
@@ -67,6 +71,18 @@ public class AvailableNetworks extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    /**
+     * List all the available networks
+     * Selecting one sends a command to the ESP device telling it to connect to that selected network and then returns to the main activity
+     * (even if the device does not actually connect)
+     * There is no way to verify whether the device has successfully connected, because if it does connect then it will not longer be in access point mode
+     * and thus the android device is unable to talk to it. In theory you could wait until the ESP_XXX ssid is no longer visible but that is
+     * unreliable (it may try to connect, stop broadcasting, fail to connect and then go back into AP mode), and scanning repeatedly for SSIDs is time consuming.
+     * Also, since the password of this network is only known by the user, if they sent the wrong password, they have to send it again via the Add button from the MainActivity
+     * Current solution is to just send the command, then the user can connect to the same network (outside of the app, if it does not autoconnect) and then broadcast
+     * for the device on the network by clicking on the device category (Temperature, Lights etc.).
+     */
     public void listAllNetworks(){
         boolean scanSuccess=manager.startScan();
         if(!scanSuccess){

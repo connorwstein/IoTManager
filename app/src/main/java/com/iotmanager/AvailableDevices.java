@@ -6,11 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
-
 import android.net.wifi.ScanResult;
-
 import android.net.wifi.WifiManager;
-
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -29,13 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
+/**
+ * Displays all available devices for initial configuration
+ * Must be detectable by wifi
+ * Assumes that devices have been flashed with our firmware and
+ * will be broadcasting an SSID of ESP_XXX where XXX is the last three bytes of its mac address (6 letters)
+ */
 public class AvailableDevices extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private static final String NETWORK_PREFIX="ESP";
-    private WifiManager manager;
+    private WifiManager manager; //Used to display available devices
     private ListView listView;
-    private boolean connected=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +69,10 @@ public class AvailableDevices extends AppCompatActivity {
         }
     }
 
+    /**
+     * Scan for available devices and fill listView with the scan results
+     * On item click will start a thread to connect the android device to that device
+     */
     public void scanForNetworks(){
         listView=(ListView)findViewById(R.id.networkList);
         ArrayAdapter<String> arrayAdapter=new ArrayAdapter<String>(
@@ -86,12 +91,12 @@ public class AvailableDevices extends AppCompatActivity {
                 progressDialog.setMessage("Connecting ...");
                 progressDialog.setCancelable(false);
                 progressDialog.show();
-                Thread connectThread = AndroidWifiHandler.connect(network, progressDialog, new Handler() {
+                Thread connectThread = AndroidWifiHandler.connect(network, new Handler() {
                     //Handle what happens when thread has completed
                     @Override
                     public void handleMessage(Message msg) {
                         progressDialog.dismiss();
-                        handlePostConnection(msg, network);
+                        handlePostConnection(msg);
                     }
                 });
                 if (network.isEnterprise()) {
@@ -101,17 +106,21 @@ public class AvailableDevices extends AppCompatActivity {
                 } else if (network.hasPassword()) {
                     setNetworkPasswordThenConnect(network, AvailableDevices.this, progressDialog, connectThread);
                 } else {
-                    //No password just connect
+                    //No password, just connect
                     connectThread.start();
                 }
-
             }
         });
-
     }
-    private void handlePostConnection(Message msg, Network network){
+
+    /**
+     * Use Toast messages to inform user of any errors when connecting to the device
+     * @param msg Message object received from the connectThread
+     */
+    private void handlePostConnection(Message msg){
         Log.i(TAG,"Msg error "+ Integer.toString(msg.getData().getInt("Error Code")));
         switch(msg.getData().getInt("Error Code")){
+            //See AndroidWifiHandler for details on the error codes
             case 0:
                 Toast.makeText(AvailableDevices.this,"Unable to add network,ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
                 break;
@@ -128,6 +137,14 @@ public class AvailableDevices extends AppCompatActivity {
         }
     }
 
+    /**
+     * If the device has a password (it should not if flashed with our firmware, but just in case),
+     * prompt the user for the password and then connect
+     * @param network Network to connect to
+     * @param context
+     * @param progressDialog Need to pass this in the event that the user selects cancel
+     * @param connectThread The thread that handles connecting to the network
+     */
     public static void setNetworkPasswordThenConnect(final Network network,Context context,final ProgressDialog progressDialog,final Thread connectThread){
         final EditText passwordInput=new EditText(context);
         passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -140,19 +157,21 @@ public class AvailableDevices extends AppCompatActivity {
                         network.setPassword(passwordInput.getText().toString());
                         dialog.cancel();
                         connectThread.start();
-
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         progressDialog.dismiss();
                         dialog.cancel();
-
                     }
                 });
         builder.show();
     }
 
+    /**
+     * Get all available SSIDs contains the prefix ESP
+     * @return List of the SSIDs
+     */
     private List<String> getDeviceSSIDs(){
         boolean scanSuccess=manager.startScan();
         if(!scanSuccess){
