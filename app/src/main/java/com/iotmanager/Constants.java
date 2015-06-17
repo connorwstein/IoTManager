@@ -2,6 +2,7 @@ package com.iotmanager;
 
 /**
  * Created by connorstein on 15-06-03.
+ * All commands for communication with the ESP devices
  */
 public final class Constants {
 

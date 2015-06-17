@@ -17,6 +17,7 @@ import static com.iotmanager.Constants.RESPONSE_NAME_SUCCESS;
 
 /**
  * Created by connorstein on 15-06-09.
+ * Standard configuration tools for the device i.e. rename, connect to a different network, become and AP etc.
  */
 public abstract class GenericConfiguration extends AppCompatActivity {
 

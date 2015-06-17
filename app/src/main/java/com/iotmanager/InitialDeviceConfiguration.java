@@ -15,7 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,7 +93,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         nameDevice.clearComposingText();
         nameDeviceSubmit.setTextColor(Color.parseColor("#cccccc"));
     }
-    
+
     private void setUpSpinner(){
         deviceType=(Spinner)findViewById(R.id.deviceType);
         ArrayList<String> types=new ArrayList<String>();

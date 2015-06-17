@@ -1,8 +1,7 @@
 package com.iotmanager;
+
 import static com.iotmanager.Constants.*;
-
 import android.os.Bundle;
-
 import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;

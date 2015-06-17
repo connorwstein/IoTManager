@@ -9,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-
 public class DeviceCategory extends AppCompatActivity {
     private ListView devicesListView;
     private static final String TAG="Connors Debug";
