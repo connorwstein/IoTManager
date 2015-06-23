@@ -11,8 +11,9 @@ public class TemperatureConfiguration extends GenericConfiguration{
     private TextView ipAddress;
     private TextView macAddress;
     private String currentTemperature;
-    private SeekBar temperatureSlider;
+    private String currentHumidity;
     private TextView temperature;
+    private TextView humidity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,23 +21,7 @@ public class TemperatureConfiguration extends GenericConfiguration{
         getDeviceInformation();
         initViews();
         deviceCommunicationHandler=new DeviceCommunicationHandler(ip,DEFAULT_DEVICE_TCP_PORT,this);
-        getTemperature();
-        temperatureSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progressValue;
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                temperature.setText(Integer.toString(progress));
-                progressValue = progress;
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                Log.i(TAG, "start tracking touch");
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                updateTemperature(progressValue);
-            }
-        });
+        getTemperatureAndHumidity();
     }
     private void initViews(){
         setTitle(name);
@@ -44,28 +29,24 @@ public class TemperatureConfiguration extends GenericConfiguration{
         macAddress=(TextView)findViewById(R.id.temperatureMacAddress);
         ipAddress.setText(ip);
         macAddress.setText(mac);
-        temperatureSlider=(SeekBar)findViewById(R.id.temperatureSlider);
         temperature=(TextView)findViewById(R.id.temperature);
+        humidity=(TextView)findViewById(R.id.humidity);
     }
 
-    private void getTemperature(){
+    private void getTemperatureAndHumidity(){
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TEMPERATURE_GET);
+        Log.i(TAG,"Response from device: "+response);
         if(response!=null){
-            currentTemperature=response;
-            temperature.setText(currentTemperature);
-            temperatureSlider.setProgress(Integer.parseInt(currentTemperature));
+            String[] tempAndHum=response.split("\\s");
+            currentHumidity=tempAndHum[0].substring(0,tempAndHum[0].length()-1)+"."+tempAndHum[0].substring(tempAndHum[0].length()-1);
+            currentTemperature=tempAndHum[1].substring(0,tempAndHum[1].length()-1)+"."+tempAndHum[1].substring(tempAndHum[1].length()-1);
         }
         else{
             currentTemperature="Not Available";
-            temperature.setText(currentTemperature);
-            temperatureSlider.setProgress(0);
+            currentHumidity="Not Available";
         }
-    }
-
-    private void updateTemperature(int progressValue){
-        Log.i(TAG, "stop tracking touch");
-        deviceCommunicationHandler.sendDataNoResponse(COMMAND_TEMPERATURE_SET+progressValue);
-        getTemperature();
+        humidity.setText("Humidity: "+currentHumidity +"%");
+        temperature.setText("Temperature: "+currentTemperature);
     }
 
 }
