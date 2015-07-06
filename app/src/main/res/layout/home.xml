@@ -5,6 +5,7 @@
     android:weightSum="1"
     android:background="#009688">
 
+
     <GridView
         android:id="@+id/deviceCategoryGrid"
         android:layout_width="match_parent"

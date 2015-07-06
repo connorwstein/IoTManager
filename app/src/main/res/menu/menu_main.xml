@@ -5,5 +5,8 @@
         android:title="@string/add_device"
         android:orderInCategory="100"
         app:showAsAction="always" />
-
+    <item android:id="@+id/lucky"
+        android:title="@string/lucky"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
 </menu>

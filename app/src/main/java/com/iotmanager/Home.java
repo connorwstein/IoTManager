@@ -1,24 +1,32 @@
 package com.iotmanager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
+import android.widget.TextView;
 
+import android.net.wifi.WifiManager;
 
 public class Home extends AppCompatActivity {
     private static final String TAG="Connors Debug";
 
     private GridView deviceCategoryGrid;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
+
+
         deviceCategoryGrid=(GridView)findViewById(R.id.deviceCategoryGrid);
         deviceCategoryGrid.setAdapter(new ImageAdapter(this,getResources()));
 
@@ -51,6 +59,9 @@ public class Home extends AppCompatActivity {
                 Intent availableDevicesIntent=new Intent(this,AvailableDevices.class);
                 startActivity(availableDevicesIntent);
                 return true;
+            case R.id.lucky:
+                Intent nearbyDevicesIntent= new Intent(this, NearbyDevices.class);
+                startActivity(nearbyDevicesIntent);
 
             default:
                 return super.onOptionsItemSelected(item);

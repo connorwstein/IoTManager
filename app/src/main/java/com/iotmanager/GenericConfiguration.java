@@ -63,6 +63,7 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         }
     }
 
+
     public void convertToAccessPoint(){
         deviceCommunicationHandler.sendDataNoResponse(COMMAND_RUN_AP);
         Intent returnToMain = new Intent(GenericConfiguration.this, Home.class);
