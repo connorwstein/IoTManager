@@ -23,4 +23,5 @@
     <string name="title_activity_lighting_configuration">LightingConfiguration</string>
     <string name="lucky">Feelin Lucky</string>
     <string name="title_activity_nearby_devices">NearbyDevices</string>
+    <string name="title_activity_camera_configuration">CameraConfiguration</string>
 </resources>

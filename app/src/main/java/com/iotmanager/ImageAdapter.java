@@ -27,12 +27,12 @@ public class ImageAdapter extends BaseAdapter {
     private Context context;
     private Resources resources;
     public Integer[] imageIDs={
-            R.drawable.lights,R.drawable.thermometer
+            R.drawable.lights,R.drawable.thermometer, R.drawable.camera
     };
 
     // Constructor
     public ImageAdapter(Context c,Resources r){
-        context = c;
+        context=c;
         resources=r;
     }
 

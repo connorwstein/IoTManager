@@ -29,6 +29,9 @@ public class DeviceCategory extends AppCompatActivity {
             case "1":
                 deviceCategory="Temperature";
                 break;
+            case "2":
+                deviceCategory="Camera";
+                break;
             default:
                 Log.i(TAG,"Error selecting category");
 

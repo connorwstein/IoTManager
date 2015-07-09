@@ -76,6 +76,10 @@
             android:name=".NearbyDevices"
             android:label="@string/title_activity_nearby_devices" >
         </activity>
+        <activity
+            android:name=".CameraConfiguration"
+            android:label="@string/title_activity_camera_configuration" >
+        </activity>
     </application>
 
 </manifest>

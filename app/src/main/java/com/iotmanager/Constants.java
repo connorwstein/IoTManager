@@ -21,5 +21,7 @@ public final class Constants {
     public static final String COMMAND_LIGHTING_SET="Lighting Set";
     public static final String COMMAND_LIGHTING_GET="Lighting Get";
     public static final String COMMAND_RUN_AP="Run AP";
+    public static final String COMMAND_CAMERA_TAKE_PICTURE="Camera Take Picture";
+    public static final String COMMAND_CAMERA_GET_PICTURE="Camera Get Picture";
 
 }
