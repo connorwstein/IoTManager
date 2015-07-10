@@ -75,7 +75,7 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
                 Log.i(TAG, "Exception has occured: " + e.getMessage());
             }
         }
-        Log.i(TAG,"Number of devices that responded "+ deviceResponses.size());
+        Log.i(TAG, "Number of devices that responded " + deviceResponses.size());
         if(deviceResponses.size()==0){
             return false;
         }
@@ -104,27 +104,33 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         devicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch(deviceCategory){
-                    case "Temperature":
-                        Intent deviceConfigurationIntent = new Intent(context, TemperatureConfiguration.class);
-                        deviceConfigurationIntent.putExtra("NAME", deviceInformation.get(0).get(position));
-                        deviceConfigurationIntent.putExtra("IP", deviceInformation.get(1).get(position));
-                        deviceConfigurationIntent.putExtra("MAC", deviceInformation.get(2).get(position));
-                        context.startActivity(deviceConfigurationIntent);
-                        break;
-                    case "Lighting":
-                        Intent lightingConfigurationIntent = new Intent(context, LightingConfiguration.class);
-                        lightingConfigurationIntent.putExtra("NAME", deviceInformation.get(0).get(position));
-                        lightingConfigurationIntent.putExtra("IP", deviceInformation.get(1).get(position));
-                        lightingConfigurationIntent.putExtra("MAC", deviceInformation.get(2).get(position));
-                        context.startActivity(lightingConfigurationIntent);
-                        break;
-                    default:
-                        Log.i(TAG,"Error device category not supported");
-                }
-
+                Intent startDeviceConfiguration = createIntentWithDeviceInformation(deviceCategory, deviceInformation, position);
+                context.startActivity(startDeviceConfiguration);
             }
         });
+
+    }
+    private Intent createIntentWithDeviceInformation(String type, final ArrayList<ArrayList<String>>deviceInformation, int position){
+        Log.i(TAG,"Create Device info intent");
+        Intent i=null;
+        switch(type){
+            case "Temperature":
+                i=new Intent(context, TemperatureConfiguration.class);
+                break;
+            case "Lighting":
+                i=new Intent(context, LightingConfiguration.class);
+                break;
+            case "Camera":
+                i=new Intent(context, CameraConfiguration.class);
+                break;
+            default:
+                Log.i(TAG,"Type not supported");
+        }
+
+        i.putExtra("NAME", deviceInformation.get(0).get(position));
+        i.putExtra("IP", deviceInformation.get(1).get(position));
+        i.putExtra("MAC", deviceInformation.get(2).get(position));
+        return i;
 
     }
     //Tries to receive MAX_NUM_RECEIVE_PACKETS and stores them

@@ -3,6 +3,7 @@ package com.iotmanager;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +21,7 @@ public class CameraConfiguration extends GenericConfiguration {
     private TextView ipAddress;
     private TextView macAddress;
     private Button takePicture;
+    private ImageView cameraPicture;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,32 +42,42 @@ public class CameraConfiguration extends GenericConfiguration {
         ipAddress=(TextView)findViewById(R.id.cameraIpAddress);
         macAddress=(TextView)findViewById(R.id.cameraMacAddress);
         takePicture=(Button)findViewById(R.id.cameraTakePicture);
+        cameraPicture=(ImageView)findViewById(R.id.cameraPicture);
+        if(Build.VERSION.SDK_INT<21){
+            cameraPicture.setImageDrawable(getResources().getDrawable(R.drawable.camera));
+        }
+        else{
+            cameraPicture.setImageDrawable(getResources().getDrawable(R.drawable.camera,getTheme()));
+        }
         ipAddress.setText(ip);
         macAddress.setText(mac);
     }
 
     private void takePicture(){
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_TAKE_PICTURE);
-        if(response!=null){
-            Log.i(TAG, "Response from taking picture "+response);
+        if(response.equals(RESPONSE_TAKE_PICTURE_SUCCESS)){
+            Log.i(TAG, response);
             getPicture();
         }
+        else if(response.equals(RESPONSE_TAKE_PICTURE_FAIL)){
+            Log.i(TAG,"Device unable to take a picture");
+        }
         else{
-            Log.i(TAG,"Null response when taking a picture");
+            Log.i(TAG,"Error receiving response from device");
         }
 
     }
     private void getPicture(){
         String rawImageData=deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_GET_PICTURE);
-        Log.i(TAG,"RAW IMAGE DATA: "+rawImageData.substring(0,100));
-        createJPEG(rawImageData);
+        Log.i(TAG,rawImageData);
+        //Log.i(TAG,"RAW IMAGE DATA: "+rawImageData.substring(0,100));
+       // createJPEG(rawImageData);
     }
 
     private void createJPEG(String rawImageData){
         byte[] imageBytes=rawImageData.getBytes(Charset.forName("UTF-8"));
         Bitmap imageBitmap= BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length, null);
-        ImageView picture =new ImageView(this);
-        picture.setImageBitmap(imageBitmap);
+        cameraPicture.setImageBitmap(imageBitmap);
 
     }
 

@@ -100,6 +100,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         types.add("Type");
         types.add("Temperature");
         types.add("Lighting");
+        types.add("Camera");
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(
                 this,
                 R.layout.spinner_layout,
