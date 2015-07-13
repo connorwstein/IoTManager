@@ -10,174 +10,217 @@ import android.widget.Toast;
 import java.io.BufferedInputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.charset.Charset;
 
 /**
  * Created by connorstein on 15-06-08.
  */
 public class DeviceCommunicationHandler {
-    private static final int BUFFER_SIZE=1024;
-    private static final int SOCKET_TIMEOUT=2000;
+    private static final int SOCKET_TIMEOUT = 10000;
+    private static final int DEFAULT_READ_BUF_SIZE=1024;
     private String deviceIP;
     private int devicePort;
     private PrintWriter out;
     private BufferedInputStream in;
     private byte[] readBuffer;
-    private static final String TAG="Connors Debug";
+    private static final String TAG = "Connors Debug";
     private Context context;
+    private boolean isPicture = false; //if this is true, the entire buffer will be returned (including null bytes)
+    private ProgressDialog pd;
 
-
-    public DeviceCommunicationHandler(String deviceIP,int devicePort, Context context){
-        this.deviceIP=deviceIP;
-        this.devicePort=devicePort;
-        readBuffer=new byte[BUFFER_SIZE];
-        this.context=context;
+    public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context, int readBufSize, ProgressDialog p) {
+        this.deviceIP = deviceIP;
+        this.devicePort = devicePort;
+        readBuffer = new byte[readBufSize];
+        this.context = context;
+        pd=p;
+    }
+    public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context) {
+        this.deviceIP = deviceIP;
+        this.devicePort = devicePort;
+        readBuffer = new byte[DEFAULT_READ_BUF_SIZE];
+        this.context = context;
+    }
+    public void setRawData(boolean picture) {
+        isPicture= picture;
     }
 
-    public void setIP(String newIP){
-        this.deviceIP=newIP;
+    public void setIP(String newIP) {
+        this.deviceIP = newIP;
     }
-    public void setPort(int newPort){
-        this.devicePort=newPort;
+
+    public void setPort(int newPort) {
+        this.devicePort = newPort;
     }
-    public void sendDataNoResponse(final String data){
+
+    public void sendDataNoResponse(final String data) {
         //Open a tcp connection with the device and send the data
         //must be in separate thread to avoid networkonmain thread error
-        Log.i(TAG,"Send data no response");
+        Log.i(TAG, "Send data no response");
         //Need handler to manipulate UI thread depending on what happens with the send
-        final Handler handler=new Handler(){
+        final Handler handler = new Handler() {
             @Override
-            public void handleMessage(Message message){
+            public void handleMessage(Message message) {
                 handleMessageResponse(message);
             }
         };
-        Thread sendDataNoResponse= new Thread(new Runnable(){
+        Thread sendDataNoResponse = new Thread(new Runnable() {
             @Override
-            public void run(){
-                try{
-                    Socket socket=createSocket();
-                    socketWrite(socket,data);
+            public void run() {
+                try {
+                    Socket socket = createSocket();
+                    socketWrite(socket, data);
                     socket.close(); //Have to close, want to reopen new sockets for each method call
+                } catch (Exception e) {
+                    Log.i(TAG, "Exception " + e.getMessage());
+                    handler.sendMessage(createMessage("Exception", e.getMessage()));
                 }
-                catch(Exception e){
-                    //Log.i(TAG,"Exception "+e.getMessage());
-                    handler.sendMessage(createMessage("Exception",e.getMessage()));
-                }
-                handler.sendMessage(createMessage("Exception","None"));
+                handler.sendMessage(createMessage("Exception", "None"));
             }
         });
         sendDataNoResponse.start();
-        try{
+        try {
             sendDataNoResponse.join();
-        }
-        catch(InterruptedException e){
-            Log.i(TAG,"Interrupted exception");
+        } catch (InterruptedException e) {
+            Log.i(TAG, "Interrupted exception");
         }
         //block until thread is finished
     }
 
-    private void flushReadBuffer(){
+    private void flushReadBuffer() {
         int i;
-        for(i=0;i<BUFFER_SIZE;i++){
-            readBuffer[i]='\0';
-        }
-    }
-    private void handleMessageResponse(Message message){
-        String exception=getStringFromMessage("Exception",message);
-        if(exception==null){
-            Log.i(TAG,"null response");
-            Toast.makeText(context,"Unable to send. Error: No Response",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Log.i(TAG, exception);
-        if(!exception.equals("None")){
-            Toast.makeText(context,"Unable to send. Error: "+getStringFromMessage("Exception",message),Toast.LENGTH_SHORT).show();
+        for (i = 0; i < readBuffer.length; i++) {
+            readBuffer[i] = '\0';
         }
     }
 
-    private Message createMessage(String key, String data){
-        Message m=new Message();
-        Bundle b=new Bundle();
-        b.putString(key,data);
+    private void handleMessageResponse(Message message) {
+        String exception = getStringFromMessage("Exception", message);
+        if (exception == null) {
+            Log.i(TAG, "null response");
+            Toast.makeText(context, "Unable to send. Error: No Response", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //Log.i(TAG, exception);
+        if (!exception.equals("None")) {
+            Toast.makeText(context, "Unable to send. Error: " + getStringFromMessage("Exception", message), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Message createMessage(String key, String data) {
+        Message m = new Message();
+        Bundle b = new Bundle();
+        b.putString(key, data);
         m.setData(b);
         return m;
     }
 
-    private String getStringFromMessage(String key, Message message){
+    private String getStringFromMessage(String key, Message message) {
         return message.getData().getString(key);
     }
 
 
-    public String sendDataGetResponse(final String data){
+    public String sendDataGetResponse(final String data) {
         //Open a tcp connection with the device and send the data
         //must be in separate thread to avoid networkonmain thread error
 
         //Need handle to manipulate UI thread depending on what happens with the send
-        final Handler handler=new Handler(){
+        //Log.i(TAG,"Send data get response");
+        final Handler handler = new Handler() {
             @Override
-            public void handleMessage(Message message){
+            public void handleMessage(Message message) {
                 handleMessageResponse(message);
             }
         };
-        Thread sendDataGetResponse= new Thread(new Runnable(){
+        Thread sendDataGetResponse = new Thread(new Runnable() {
             @Override
-            public void run(){
-                try{
-                    Socket socket=createSocket();
-                    socketWrite(socket,data);
-                    in=new BufferedInputStream(socket.getInputStream());
-                    in.read(readBuffer);
+            public void run() {
+                try {
+                    Socket socket = createSocket();
+                    socketWrite(socket, data);
+                    in = new BufferedInputStream(socket.getInputStream(),readBuffer.length);
+                    int i=0;
+                    if(isPicture){
+                        while(i<readBuffer.length/1460+1){
+                            if(i==readBuffer.length/1460){
+                                in.read(readBuffer,i*1460,readBuffer.length%1460);
+                            }
+                            else{
+                                in.read(readBuffer,i*1460,1460);
+                            }
+
+                            i++;
+                        }
+                    }
+                    else{
+                        in.read(readBuffer);
+                    }
+
                     socket.close();
-                }
-                catch(Exception e){
-                    //Log.i(TAG,"Exception "+e.getMessage());
-                    handler.sendMessage(createMessage("Exception",e.getMessage()));
+                } catch (Exception e) {
+                    Log.i(TAG, "Exception " + e.getMessage());
+                    handler.sendMessage(createMessage("Exception", e.getMessage()));
                     return;
                 }
-                handler.sendMessage(createMessage("Exception","None"));
+                handler.sendMessage(createMessage("Exception", "None"));
 
             }
         });
         sendDataGetResponse.start();
-        try{
+        try {
             sendDataGetResponse.join();
-        }
-        catch(InterruptedException e){
-            Log.i(TAG,"Interrupted exception");
+        } catch (InterruptedException e) {
+            Log.i(TAG, "Interrupted exception");
         }
         //block until thread is finished
         return getStringFromReadBuffer();
     }
-    private void socketWrite(Socket socket, String data) throws Exception{
-        out=new PrintWriter(socket.getOutputStream());
+
+    private void socketWrite(Socket socket, String data) throws Exception {
+        out = new PrintWriter(socket.getOutputStream());
         out.write(data);
         out.flush();
     }
 
     private Socket createSocket() throws Exception {
-        Socket socket=new Socket();
-        SocketAddress socketAddress=new InetSocketAddress(InetAddress.getByName(deviceIP),devicePort);
-        socket.connect(socketAddress,SOCKET_TIMEOUT);
+
+        Socket socket = new Socket();
+        SocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName(deviceIP), devicePort);
+        socket.connect(socketAddress, SOCKET_TIMEOUT);
         socket.setSoTimeout(SOCKET_TIMEOUT);
+        //Log.i(TAG,"Created socket");
         return socket;
     }
 
-    private String getStringFromReadBuffer(){
-        if(readBuffer[0]=='\0'){
+    private String getStringFromReadBuffer() {
+        if (readBuffer[0] == '\0') {
             //No response from device
             return null;
         }
-        String result=null;
-        try{
-            int i=0;
-            while(readBuffer[i++]!='\0');
-            result=new String(readBuffer,0,i-1,"UTF-8");
-        }
-        catch(UnsupportedEncodingException e){
-            Log.i(TAG,"Exception "+e.getMessage());
+        String result = null;
+        try {
+            if (isPicture) {
+                //use string builder when looping, much faster than concatenating
+                StringBuilder sb=new StringBuilder();
+                for (byte b : readBuffer) {
+                    sb.append(String.format("%02X", b));
+                }
+                Log.i(TAG,"Size result "+sb.toString().length());
+                result=sb.toString();
+               // pd.dismiss();
+            } else {
+                int i = 0;
+                while (readBuffer[i++] != '\0') ;
+                result = new String(readBuffer, 0, i - 1, "UTF-8");
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            Log.i(TAG, "Exception " + e.getMessage());
         }
         flushReadBuffer();
         return result;
