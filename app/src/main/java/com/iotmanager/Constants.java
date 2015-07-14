@@ -28,5 +28,6 @@ public final class Constants {
     public static final String RESPONSE_GET_PICTURE_FAIL="Picture Got Fail";
     public static final String COMMAND_CAMERA_GET_PICTURE="Camera Get Picture";
     public static final String COMMAND_CAMERA_STOP_PICTURE="Camera Stop Picture";
+    public static final String COMMAND_CAMERA_GET_SIZE="Camera Get Size";
 
 }

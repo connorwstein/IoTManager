@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -15,6 +16,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.charset.Charset;
 
 /**
@@ -23,6 +25,7 @@ import java.nio.charset.Charset;
 public class DeviceCommunicationHandler {
     private static final int SOCKET_TIMEOUT = 10000;
     private static final int DEFAULT_READ_BUF_SIZE=1024;
+
     private String deviceIP;
     private int devicePort;
     private PrintWriter out;
@@ -31,14 +34,12 @@ public class DeviceCommunicationHandler {
     private static final String TAG = "Connors Debug";
     private Context context;
     private boolean isPicture = false; //if this is true, the entire buffer will be returned (including null bytes)
-    private ProgressDialog pd;
 
-    public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context, int readBufSize, ProgressDialog p) {
+    public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context, int readBufSize) {
         this.deviceIP = deviceIP;
         this.devicePort = devicePort;
         readBuffer = new byte[readBufSize];
         this.context = context;
-        pd=p;
     }
     public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context) {
         this.deviceIP = deviceIP;
@@ -46,7 +47,7 @@ public class DeviceCommunicationHandler {
         readBuffer = new byte[DEFAULT_READ_BUF_SIZE];
         this.context = context;
     }
-    public void setRawData(boolean picture) {
+    public void setPictureBoolean(boolean picture) {
         isPicture= picture;
     }
 
@@ -92,6 +93,7 @@ public class DeviceCommunicationHandler {
         //block until thread is finished
     }
 
+
     private void flushReadBuffer() {
         int i;
         for (i = 0; i < readBuffer.length; i++) {
@@ -106,7 +108,6 @@ public class DeviceCommunicationHandler {
             Toast.makeText(context, "Unable to send. Error: No Response", Toast.LENGTH_SHORT).show();
             return;
         }
-        //Log.i(TAG, exception);
         if (!exception.equals("None")) {
             Toast.makeText(context, "Unable to send. Error: " + getStringFromMessage("Exception", message), Toast.LENGTH_SHORT).show();
         }
@@ -144,26 +145,10 @@ public class DeviceCommunicationHandler {
                     Socket socket = createSocket();
                     socketWrite(socket, data);
                     in = new BufferedInputStream(socket.getInputStream(),readBuffer.length);
-                    int i=0;
-                    if(isPicture){
-                        while(i<readBuffer.length/1460+1){
-                            if(i==readBuffer.length/1460){
-                                in.read(readBuffer,i*1460,readBuffer.length%1460);
-                            }
-                            else{
-                                in.read(readBuffer,i*1460,1460);
-                            }
-
-                            i++;
-                        }
-                    }
-                    else{
-                        in.read(readBuffer);
-                    }
-
+                    in.read(readBuffer);
                     socket.close();
-                } catch (Exception e) {
-                    Log.i(TAG, "Exception " + e.getMessage());
+                } catch (IOException e) {
+                    Log.i(TAG, "IOException");
                     handler.sendMessage(createMessage("Exception", e.getMessage()));
                     return;
                 }
@@ -181,21 +166,21 @@ public class DeviceCommunicationHandler {
         return getStringFromReadBuffer();
     }
 
-    private void socketWrite(Socket socket, String data) throws Exception {
+    private void socketWrite(Socket socket, String data) throws IOException {
         out = new PrintWriter(socket.getOutputStream());
         out.write(data);
         out.flush();
     }
 
-    private Socket createSocket() throws Exception {
-
+    private Socket createSocket() throws IOException {
         Socket socket = new Socket();
         SocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName(deviceIP), devicePort);
         socket.connect(socketAddress, SOCKET_TIMEOUT);
         socket.setSoTimeout(SOCKET_TIMEOUT);
-        //Log.i(TAG,"Created socket");
         return socket;
     }
+
+
 
     private String getStringFromReadBuffer() {
         if (readBuffer[0] == '\0') {
@@ -210,9 +195,7 @@ public class DeviceCommunicationHandler {
                 for (byte b : readBuffer) {
                     sb.append(String.format("%02X", b));
                 }
-                Log.i(TAG,"Size result "+sb.toString().length());
                 result=sb.toString();
-               // pd.dismiss();
             } else {
                 int i = 0;
                 while (readBuffer[i++] != '\0') ;

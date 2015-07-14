@@ -71,7 +71,7 @@ public abstract class GenericConfiguration extends AppCompatActivity {
     }
 
     public void changeType(){
-        final CharSequence[] items={"Temperature","Lighting"};
+        final CharSequence[] items={"Temperature","Lighting","Camera"};
         AlertDialog.Builder builder = new AlertDialog.Builder(GenericConfiguration.this)
                 .setTitle("Select New Type")
                 .setItems(items, new DialogInterface.OnClickListener() {
