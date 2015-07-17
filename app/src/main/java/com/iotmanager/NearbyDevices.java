@@ -21,6 +21,7 @@ public class NearbyDevices extends AppCompatActivity {
     private WifiManager manager;
     private ListView nearbyDevices;
     private ArrayAdapter<String> adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

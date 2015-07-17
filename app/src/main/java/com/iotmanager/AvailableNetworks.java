@@ -109,7 +109,7 @@ public class AvailableNetworks extends AppCompatActivity {
                 }
                 else{
                     deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT+network.ssid+";");
-                    Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AvailableNetworks.this,"Sent connect request, ensure android is connected to the same network",Toast.LENGTH_LONG).show();
                     Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
                     startActivity(mainActivityIntent);
                 }

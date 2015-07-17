@@ -25,6 +25,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private static final String DEVICE_NAME_PLACEHOLDER="Connect Device";
     private EditText nameDevice;
+    private EditText roomDevice;
     private Button nameDeviceSubmit;
     private Spinner deviceType;
     private DeviceCommunicationHandler deviceCommunicationHandler;
@@ -36,6 +37,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         setUpSpinner();
         deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
         nameDevice=(EditText)findViewById(R.id.nameDevice);
+        roomDevice=(EditText)findViewById(R.id.roomDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
         nameDeviceSubmit.setTextColor(Color.parseColor("#cccccc"));
         AlertDialog.Builder builder= new AlertDialog.Builder(this);
