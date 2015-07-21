@@ -39,7 +39,7 @@ public class AvailableNetworks extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
         selectedDevice=getIntent().getStringExtra("Name");
-        setTitle(selectedDevice);
+        setTitle("Connect "+selectedDevice);
         deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
         String newIP=getIntent().getStringExtra("New IP");
         if(newIP!=null){
@@ -152,7 +152,10 @@ public class AvailableNetworks extends AppCompatActivity {
         List<ScanResult> networks=manager.getScanResults();
         List <String> ssids=new ArrayList<String>();
         for(int i=0;i<networks.size();i++){
-            ssids.add(networks.get(i).SSID);
+            String ssid=networks.get(i).SSID;
+            if(!ssid.contains("ESP")){ //Dont allow connections between devices
+                ssids.add(networks.get(i).SSID);
+            }
         }
         return ssids;
     }

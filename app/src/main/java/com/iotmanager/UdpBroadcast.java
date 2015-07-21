@@ -104,15 +104,26 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         devicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 Intent startDeviceConfiguration = createIntentWithDeviceInformation(deviceCategory, deviceInformation, position);
-                context.startActivity(startDeviceConfiguration);
+                if (startDeviceConfiguration != null) {
+                    context.startActivity(startDeviceConfiguration);
+                }
+                else{
+                    Toast.makeText(context, "Device configuration data error",Toast.LENGTH_LONG);
+                }
+
             }
         });
 
     }
     private Intent createIntentWithDeviceInformation(String type, final ArrayList<ArrayList<String>>deviceInformation, int position){
-        Log.i(TAG,"Create Device info intent");
+        Log.i(TAG, "Create Device info intent");
         Intent i=null;
+//        if(!type.equals(deviceInformation.get(4).get(position))){
+//            //Type does not match, must be an error
+//            return i;
+//        }
         switch(type){
             case "Temperature":
                 i=new Intent(context, TemperatureConfiguration.class);
@@ -126,13 +137,16 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
             default:
                 Log.i(TAG,"Type not supported");
         }
-
+        Log.i(TAG,deviceInformation.get(0).get(position)+deviceInformation.get(1).get(position)+deviceInformation.get(2).get(position)+deviceInformation.get(3).get(position)+deviceInformation.get(4).get(position));
         i.putExtra("NAME", deviceInformation.get(0).get(position));
         i.putExtra("IP", deviceInformation.get(1).get(position));
         i.putExtra("MAC", deviceInformation.get(2).get(position));
+        i.putExtra("ROOM", deviceInformation.get(3).get(position));
+        i.putExtra("TYPE", deviceInformation.get(4).get(position));
         return i;
 
     }
+
     //Tries to receive MAX_NUM_RECEIVE_PACKETS and stores them
     //in member variable deviceResponses
     private void receiveMultiplePackets(DatagramSocket udpBroadcastSocket){
@@ -145,10 +159,10 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
                 udpBroadcastSocket.receive(receivePacket);
             }
             catch(IOException e){
-                Log.i(TAG,"IO exception receiving packet "+i);
+                //Log.i(TAG,"IO exception receiving packet "+i);
                 continue;
             }
-            Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
+           // Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
             responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
             Log.i(TAG, "Received: " + responsePacketData);
             deviceResponses.add(responsePacketData);
@@ -161,6 +175,8 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         ArrayList<String> deviceNames=new ArrayList<String>();
         ArrayList<String> deviceIPs=new ArrayList<String>();
         ArrayList<String> deviceMACs=new ArrayList<String>();
+        ArrayList<String> deviceRooms=new ArrayList<String>();
+        ArrayList<String> deviceTypes=new ArrayList<String>();
         Set<String> distinctDeviceResponses=new HashSet<>();
         distinctDeviceResponses.addAll(deviceResponses);
         deviceResponses.clear();
@@ -169,11 +185,15 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
             deviceNames.add(getDeviceName(deviceResponse));
             deviceIPs.add(getDeviceIP(deviceResponse));
             deviceMACs.add(getDeviceMAC(deviceResponse));
+            deviceRooms.add(getDeviceRoom(deviceResponse));
+            deviceTypes.add(getDeviceType(deviceResponse));
         }
         ArrayList<ArrayList<String>> devicesInformation=new ArrayList<ArrayList<String>>();
         devicesInformation.add(deviceNames);
         devicesInformation.add(deviceIPs);
         devicesInformation.add(deviceMACs);
+        devicesInformation.add(deviceRooms);
+        devicesInformation.add(deviceTypes);
         return devicesInformation;
     }
 
@@ -200,7 +220,20 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
     private String getDeviceMAC(String deviceResponse){
         int indexOfMAC=deviceResponse.indexOf("MAC:");
         int charsInMac=4;
-        return deviceResponse.substring(indexOfMAC+charsInMac);
+        int indexOfRoom=deviceResponse.indexOf("ROOM:");
+        return deviceResponse.substring(indexOfMAC+charsInMac,indexOfRoom);
+    }
+    //"Name:....IP:....MAC:...Room:....Type:....
+    private String getDeviceRoom(String deviceResponse){
+        int indexOfRoom=deviceResponse.indexOf("ROOM:");
+        int charsInRoom=5;
+        int indexOfType=deviceResponse.indexOf("TYPE:");
+        return deviceResponse.substring(indexOfRoom+charsInRoom,indexOfType);
+    }
+    private String getDeviceType(String deviceResponse){
+        int indexOfType=deviceResponse.indexOf("TYPE:");
+        int charsInType=5;
+        return deviceResponse.substring(indexOfType+charsInType);
     }
 
 }

@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import static com.iotmanager.Constants.COMMAND_CAMERA_STOP_PICTURE;
 /**
  * Created by connorstein on 15-07-14.
  */
-public class GetPicture extends AsyncTask<Object,Integer,Void> {
+public class GetPicture extends AsyncTask<Object,Integer,Integer> {
     private static final int MAXIMUM_ESP_PACKET=1460;
     private static final int SOCKET_TIMEOUT=5000;
     private static final int MAX_PICTURE_SIZE=14000;
@@ -37,17 +38,18 @@ public class GetPicture extends AsyncTask<Object,Integer,Void> {
     private ImageView image;
     private DeviceCommunicationHandler deviceCommunicationHandler;
     @Override
-    protected Void doInBackground(Object... params) {
+    protected Integer doInBackground(Object... params) {
             size=(int)params[0];
             pd=(ProgressDialog)params[1];
             ip=(String)params[2];
             image=(ImageView)params[3];
             deviceCommunicationHandler=(DeviceCommunicationHandler) params[4];
+            readBuffer=new byte[2*size];
             if(size>MAX_PICTURE_SIZE){
                 Log.i(TAG,"Maximum picture size exceeded");
-
+                return -1;
             }
-            readBuffer=new byte[2*size];
+
             try {
                 Socket socket = new Socket();
                 SocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName(ip), port);
@@ -57,22 +59,16 @@ public class GetPicture extends AsyncTask<Object,Integer,Void> {
                 out.write("Camera Get Picture");
                 out.flush();
                 in = new BufferedInputStream(socket.getInputStream(),readBuffer.length);
-
-                int i=0;
-                //in.read(readBuffer,1460,1460);
-                //int read=in.read(readBuffer);
-                //Log.i(TAG,"Read "+read+" bytes");
                 int read=0;
-                //read=in.read(readBuffer);
                 while(read<=size){
                     read+=in.read(readBuffer,read,MAXIMUM_ESP_PACKET);
                     Log.i(TAG,"Read: "+read);
                 }
                 socket.close();
             } catch (IOException e) {
-                Log.i(TAG, "IOException ");
+                Log.i(TAG, "IOException "); //Always throws this exception, not sure why
             }
-            return null;
+            return 0;
     }
 
     @Override
@@ -81,43 +77,38 @@ public class GetPicture extends AsyncTask<Object,Integer,Void> {
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-
+    protected void onPostExecute(Integer error) {
+        super.onPostExecute(error);
         //use string builder when looping, much faster than concatenating
         StringBuilder sb=new StringBuilder();
         for (byte b : readBuffer) {
             sb.append(String.format("%02X", b));
         }
-        Log.i(TAG,"Image Data: "+sb.toString());
-
+        Log.i(TAG, "Image Data: " + sb.toString());
         pd.dismiss();
-        createJPEG(readBuffer);
+        if(error==-1){
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
+            Log.i(TAG,"Error recieving picture data");
+        }
+        else{
+            createJPEG(readBuffer);
+        }
     }
     private void createJPEG(byte[] rawData) {
-        //Log.i(TAG,"Response check : "+rawImageData.substring(0,14));
-//        int i=27999;
-//        while(rawImageData.charAt(i)!='7' &&i>=0) {
-//            i--;
-//        }
 
         int i=2*size-1;
         while(i>=0&&readBuffer[i]!=-1){
-            //Log.i(TAG,readBuffer[i]+"");
             i--;
         }
         if(i==0){
             Log.i(TAG,"No FFD9 received");
             return;
         }
-
         Log.i(TAG,"End check: "+String.format("%02X%02X",readBuffer[i],readBuffer[i+1]));
         Log.i(TAG,"Start check "+String.format("%02X%02X",readBuffer[5],readBuffer[6]));
         Bitmap imageBitmap= BitmapFactory.decodeByteArray(readBuffer, 5, (i+2)-5, null);
         image.setImageBitmap(imageBitmap);
         deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
-
     }
-
 }
 

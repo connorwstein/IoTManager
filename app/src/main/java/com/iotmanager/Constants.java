@@ -17,6 +17,8 @@ public final class Constants {
     public static final String RESPONSE_NAME_SUCCESS="Name Set";
     public static final String COMMAND_TYPE="Type:";
     public static final String RESPONSE_TYPE_SUCCESS="Type Set";
+    public static final String COMMAND_ROOM="Room:";
+    public static final String RESPONSE_ROOM_SUCCESS="Room Set";
     public static final String RESPONSE_FAIL="Failed";
     public static final String COMMAND_LIGHTING_SET="Lighting Set";
     public static final String COMMAND_LIGHTING_GET="Lighting Get";

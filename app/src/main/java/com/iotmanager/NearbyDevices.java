@@ -47,9 +47,9 @@ public class NearbyDevices extends AppCompatActivity {
         List <String> ssids=new ArrayList<String>();
         for(ScanResult device: devices){
             Log.i(TAG, "Device: " + device.SSID + " RSSI: " + device.level);
-            if(device.level>-70) {
+
                 ssids.add(device.SSID + " " +device.level);
-            }
+
         }
         return ssids;
     }

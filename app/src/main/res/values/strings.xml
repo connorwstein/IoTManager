@@ -14,6 +14,7 @@
     <string name="change_type">Change Type</string>
     <string name="change_network">Change Network</string>
     <string name="access_point">Convert To AP</string>
+    <string name="change_room">Change Room</string>
     <string name="broadcast_for_device_ips">Broadcast</string>
     <string name="title_activity_device_configuration">DeviceConfiguration</string>
     <string name="title_activity_device_category">DeviceCategory</string>

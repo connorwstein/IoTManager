@@ -14,6 +14,10 @@
         android:title="@string/change_type"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item android:id="@+id/change_room"
+        android:title="@string/change_room"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
     <item android:id="@+id/change_network"
         android:title="@string/change_network"
         android:orderInCategory="100"

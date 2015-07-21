@@ -131,8 +131,26 @@ public class AvailableDevices extends AppCompatActivity {
                 Toast.makeText(AvailableDevices.this,"Unable to get IP, ensure device is powered on and setup as an access point. Try refreshing.",Toast.LENGTH_LONG).show();
                 break;
             case 3:
-                Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
-                AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                        .setMessage("I have configured this device before...")
+                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent connectDeviceToNetworkIntent=new Intent(AvailableDevices.this,AvailableNetworks.class);
+                                AvailableDevices.this.startActivity(connectDeviceToNetworkIntent);
+                                dialog.cancel();
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
+                                AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
+                                dialog.cancel();
+                            }
+                        });
+                builder.show();
+
                 break;
         }
     }

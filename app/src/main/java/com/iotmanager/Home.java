@@ -24,28 +24,8 @@ public class Home extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
-        DeviceDBHelper dbHelper=new DeviceDBHelper(this);
-        SQLiteDatabase myDb= dbHelper.getWritableDatabase();
-
-        ContentValues test= new ContentValues();
-        test.put(DevicesDB.COLUMN_ID, 1);
-        test.put(DevicesDB.COLUMN_NAME, "TEMP");
-        test.put(DevicesDB.COLUMN_ROOM,"Living");
-        test.put(DevicesDB.COLUMN_TYPE,"Temperature");
-
-        long rowid=myDb.insert(DevicesDB.TABLE_NAME, null, test);
-
-        String[] projection={
-                DevicesDB.COLUMN_ID,
-                DevicesDB.COLUMN_NAME,
-                DevicesDB.COLUMN_ROOM,
-                DevicesDB.COLUMN_TYPE
-        };
-         Cursor c=myDb.query(DevicesDB.TABLE_NAME, projection, null,null,null,null,null);
-
-//        c.moveToFirst();
-//        Log.i(TAG,"DB helper test "+c.getString(c.getColumnIndex(DevicesDB.COLUMN_NAME_NAME)));
-
+        DeviceDBHelper db=new DeviceDBHelper(this);
+        db.emptyDB(); //clear out for testing
         deviceCategoryGrid=(GridView)findViewById(R.id.deviceCategoryGrid);
         deviceCategoryGrid.setAdapter(new ImageAdapter(this,getResources()));
 

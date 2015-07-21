@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -14,23 +15,31 @@ import static com.iotmanager.Constants.COMMAND_NAME;
 import static com.iotmanager.Constants.COMMAND_RUN_AP;
 import static com.iotmanager.Constants.COMMAND_TYPE;
 import static com.iotmanager.Constants.RESPONSE_NAME_SUCCESS;
+import static com.iotmanager.Constants.COMMAND_ROOM;
+import static com.iotmanager.Constants.RESPONSE_ROOM_SUCCESS;
+
 
 /**
  * Created by connorstein on 15-06-09.
  * Standard configuration tools for the device i.e. rename, connect to a different network, become and AP etc.
  */
 public abstract class GenericConfiguration extends AppCompatActivity {
-
+    private static final String TAG="Connors Debug";
     public DeviceCommunicationHandler deviceCommunicationHandler;
     public String ip;
     public String mac;
     public String name;
+    public String type;
+    public String room;
+    private DeviceDBHelper deviceDBHelper=new DeviceDBHelper(this);
 
     public void getDeviceInformation(){
         Intent deviceInformation=getIntent();
         name=deviceInformation.getStringExtra("NAME");
         ip=deviceInformation.getStringExtra("IP");
         mac=deviceInformation.getStringExtra("MAC");
+        type=deviceInformation.getStringExtra("TYPE");
+        room=deviceInformation.getStringExtra("ROOM");
     }
 
     public void renameDevice(){
@@ -42,8 +51,8 @@ public abstract class GenericConfiguration extends AppCompatActivity {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        name=rename.getText().toString();
-                        sendRename();
+                        String newName=rename.getText().toString();
+                        sendRename(newName);
                         dialog.cancel();
                     }
                 })
@@ -55,14 +64,91 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         builder.show();
     }
 
-    public void sendRename(){
-        String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+name);
+    public void sendRename(String newName){
+        String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+newName);
         if (response.equals(RESPONSE_NAME_SUCCESS)) {
-            Toast.makeText(this, "Device renamed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Device renamed to "+newName, Toast.LENGTH_SHORT).show();
+            deviceDBHelper.dumpDBtoLog();
+            int id=deviceDBHelper.getIDSpecificDevice(name,room,type);
+            if(id==-1){
+                //device is not in the database, but should be (can happen when flashing and clearing the db)
+                //just add it with the new name
+                Log.i(TAG,"Device not in db, adding "+name+", "+room+", "+type);
+                deviceDBHelper.addDevice(newName,room,type);
+                deviceDBHelper.dumpDBtoLog();
+            }
+            else{
+                Log.i(TAG,"Device in db, updating "+name+", "+room+", "+type);
+                deviceDBHelper.updateDevice(id, newName, room, type);
+                deviceDBHelper.dumpDBtoLog();
+            }
+            name=newName;
             setTitle(name);
+            returnToDeviceCategoryAfterConfigChange();
+        }
+        else{
+            Toast.makeText(this, "Device rename failed", Toast.LENGTH_SHORT).show();
         }
     }
 
+    public void changeRoom(){
+        final EditText newRoom=new EditText(GenericConfiguration.this);
+        newRoom.setInputType(InputType.TYPE_CLASS_TEXT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(GenericConfiguration.this)
+                .setMessage("Enter new room for device")
+                .setView(newRoom)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String newRoomText=newRoom.getText().toString();
+                        sendNewRoom(newRoomText);
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
+    }
+    public void sendNewRoom(String newRoom){
+        String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_ROOM+newRoom);
+        if (response.equals(RESPONSE_ROOM_SUCCESS)) {
+            Toast.makeText(this, "Device room changed to "+newRoom, Toast.LENGTH_SHORT).show();
+            int id=deviceDBHelper.getIDSpecificDevice(name,room,type);
+            if(id==-1){
+                //device is not in the database, but should be (can happen when flashing and clearing the db
+                deviceDBHelper.addDevice(name,newRoom,type);
+            }
+            else{
+                deviceDBHelper.updateDevice(id, name, newRoom, type);
+            }
+            room=newRoom;
+            returnToDeviceCategoryAfterConfigChange();
+        }
+        else{
+            Toast.makeText(this, "Device room change failed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void returnToDeviceCategoryAfterConfigChange(){
+        Intent backToDeviceCategory=new Intent(GenericConfiguration.this,DeviceCategory.class);
+        switch(type){
+            case "Lighting":
+                backToDeviceCategory.putExtra("Position","0");
+                break;
+            case "Temperature":
+                backToDeviceCategory.putExtra("Position","1");
+                break;
+            case "Camera":
+                backToDeviceCategory.putExtra("Position","2");
+                break;
+            default:
+                Log.i(TAG,"Error changing room");
+        }
+        startActivity(backToDeviceCategory);
+    }
 
     public void convertToAccessPoint(){
         deviceCommunicationHandler.sendDataNoResponse(COMMAND_RUN_AP);
@@ -77,7 +163,9 @@ public abstract class GenericConfiguration extends AppCompatActivity {
                 .setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deviceCommunicationHandler.sendDataNoResponse(COMMAND_TYPE+items[which].toString());
+                        deviceCommunicationHandler.sendDataNoResponse(COMMAND_TYPE + items[which].toString());
+                        deviceDBHelper.updateDevice(deviceDBHelper.getIDSpecificDevice(name,room,type),name,items[which].toString(),type);
+                        type=items[which].toString();
                         Intent homeIntent=new Intent(GenericConfiguration.this,Home.class);
                         startActivity(homeIntent);
                         dialog.cancel();
@@ -110,6 +198,9 @@ public abstract class GenericConfiguration extends AppCompatActivity {
                 break;
             case R.id.renameDevice:
                 renameDevice();
+                break;
+            case R.id.change_room:
+                changeRoom();
                 break;
             case R.id.accessPoint:
                 convertToAccessPoint();

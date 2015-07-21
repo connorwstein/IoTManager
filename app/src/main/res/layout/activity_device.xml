@@ -8,17 +8,6 @@
     android:background="#009688"
     android:id="@+id/relativeLayout">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Connect device:"
-        android:textColor="#cccccc"
-        android:id="@+id/configureInstructions"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="20dp"
-        android:textSize="40dp" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -26,5 +15,5 @@
         android:id="@+id/listNetworks"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/configureInstructions" />
+        />
 </RelativeLayout>

@@ -23,7 +23,7 @@ import java.nio.charset.Charset;
  * Created by connorstein on 15-06-08.
  */
 public class DeviceCommunicationHandler {
-    private static final int SOCKET_TIMEOUT = 10000;
+    private static final int SOCKET_TIMEOUT = 5000;
     private static final int DEFAULT_READ_BUF_SIZE=1024;
 
     private String deviceIP;

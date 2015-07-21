@@ -65,6 +65,7 @@ public class CameraConfiguration extends GenericConfiguration {
         Log.i(TAG, "Response " + response);
         if(response==null){
             Log.i(TAG,"Error receiving response from device");
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
             return;
         }
         if(response.equals(RESPONSE_TAKE_PICTURE_SUCCESS)){
@@ -73,9 +74,12 @@ public class CameraConfiguration extends GenericConfiguration {
         }
         else if(response.equals(RESPONSE_TAKE_PICTURE_FAIL)){
             Log.i(TAG,"Device unable to take a picture");
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
         }
         else{
             Log.i(TAG,"Firmware malfunction, received junk response");
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
+
         }
     }
     private void getPictureSize(){
@@ -86,6 +90,7 @@ public class CameraConfiguration extends GenericConfiguration {
         }
         else{
             Log.i(TAG,"Error receiving response from device");
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
         }
     }
     private void getPicture(int size){

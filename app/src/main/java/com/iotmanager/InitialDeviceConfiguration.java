@@ -29,6 +29,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
     private Button nameDeviceSubmit;
     private Spinner deviceType;
     private DeviceCommunicationHandler deviceCommunicationHandler;
+    private DeviceDBHelper deviceDBHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +37,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         setTitle("Initial Configuration");
         setUpSpinner();
         deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
+        deviceDBHelper=new DeviceDBHelper(this);
         nameDevice=(EditText)findViewById(R.id.nameDevice);
         roomDevice=(EditText)findViewById(R.id.roomDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
@@ -54,30 +56,44 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //Handle cases of incomplete fields
-                if(nameDevice.getText().toString().equals("")){
+                String name=nameDevice.getText().toString();
+                String type=deviceType.getSelectedItem().toString();
+                String room=roomDevice.getText().toString();
+                if(name.equals("")){
                     Toast.makeText(InitialDeviceConfiguration.this,"Please enter a name for the device",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(deviceType.getSelectedItem().toString().equals("Type")){
+                else if(type.equals("Type")){
                     Toast.makeText(InitialDeviceConfiguration.this,"Please select type of device",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                else if(room.equals("")){
+                    Toast.makeText(InitialDeviceConfiguration.this,"Please enter a room for the device",Toast.LENGTH_SHORT).show();
                     return;
                 }
                 nameDeviceSubmit.setTextColor(Color.BLACK); //Change the color to black on submit so all three fields are black when a configuration is submitted
                 String nameResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+nameDevice.getText().toString());
                 String typeResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TYPE+deviceType.getSelectedItem().toString());
-                if(nameResponse==null||typeResponse==null){
-                    Log.i(TAG, "Null response");
+                String roomResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_ROOM+roomDevice.getText().toString());
+                if(nameResponse==null||typeResponse==null|| roomResponse==null){
+                    Log.i(TAG, "Null response when sending: "+nameDevice+", "+deviceType+", "+roomDevice);
                     Toast.makeText(InitialDeviceConfiguration.this,"Error writing to device",Toast.LENGTH_SHORT).show();
                     resetFields();
                     return;
                 }
                 //If device has been successfully configured move to the next page
-                if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)){
+                if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)&&roomResponse.equals(RESPONSE_ROOM_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
+                    //Only add to database if it has been successfully configured on the firmware side
+                    if(deviceDBHelper.addDevice(name,room,type)==-1){
+                        Toast.makeText(InitialDeviceConfiguration.this,"That device configuration already exists",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    deviceDBHelper.dumpDBtoLog();
                     availableNetworksIntent.putExtra("Name",nameDevice.getText().toString());
                     startActivity(availableNetworksIntent);
                 }
-                else if(nameResponse.equals(RESPONSE_FAIL)||typeResponse.equals(RESPONSE_FAIL)){
+                else if(nameResponse.equals(RESPONSE_FAIL)||typeResponse.equals(RESPONSE_FAIL) || roomResponse.equals(RESPONSE_FAIL)){
                     //Error writing on device
                     //"Failed"
                     Toast.makeText(InitialDeviceConfiguration.this,"Failed to write to device",Toast.LENGTH_SHORT).show();
