@@ -11,8 +11,6 @@ import static com.iotmanager.Constants.DEFAULT_DEVICE_TCP_PORT;
 
 public class LightingConfiguration extends GenericConfiguration {
     private static final String TAG="Connors Debug";
-    private TextView ipAddress;
-    private TextView macAddress;
     private TextView lightStatus;
     private String currentLightStatus;
     private Button lightingOnOff;
@@ -37,12 +35,8 @@ public class LightingConfiguration extends GenericConfiguration {
 
     private void initViews(){
         setTitle(name);
-        ipAddress=(TextView)findViewById(R.id.lightingIpAddress);
-        macAddress=(TextView)findViewById(R.id.lightingMacAddress);
         lightStatus=(TextView)findViewById(R.id.lightStatus);
         lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
-        ipAddress.setText(ip);
-        macAddress.setText(mac);
     }
 
     @Override

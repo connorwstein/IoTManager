@@ -15,6 +15,7 @@
     <string name="change_network">Change Network</string>
     <string name="access_point">Convert To AP</string>
     <string name="change_room">Change Room</string>
+    <string name="extra_info">More Info</string>
     <string name="broadcast_for_device_ips">Broadcast</string>
     <string name="title_activity_device_configuration">DeviceConfiguration</string>
     <string name="title_activity_device_category">DeviceCategory</string>
@@ -25,4 +26,5 @@
     <string name="lucky">Feelin Lucky</string>
     <string name="title_activity_nearby_devices">NearbyDevices</string>
     <string name="title_activity_camera_configuration">CameraConfiguration</string>
+    <string name="title_activity_extra_info">ExtraInfo</string>
 </resources>

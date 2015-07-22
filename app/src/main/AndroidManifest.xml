@@ -11,14 +11,14 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
-    <android:uses-permission
+    <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <android:uses-permission
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-
+<!-- Note that configChanges=keyboardHidden|orientation|screenSize stops app from crashing when phone turned horizontal-->
     <application
         android:allowBackup="true"
         android:icon="@drawable/wifi"
@@ -74,11 +74,18 @@
         </activity>
         <activity
             android:name=".NearbyDevices"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_nearby_devices" >
         </activity>
         <activity
             android:name=".CameraConfiguration"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_camera_configuration" >
+        </activity>
+        <activity
+            android:name=".ExtraInfo"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_extra_info">
         </activity>
     </application>
 

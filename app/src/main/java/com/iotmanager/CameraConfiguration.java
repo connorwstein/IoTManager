@@ -22,8 +22,6 @@ import static com.iotmanager.Constants.*;
 public class CameraConfiguration extends GenericConfiguration {
     private static final String TAG="Connors Debug";
     private static final int MAX_IMAGE_SIZE=14000;
-    private TextView ipAddress;
-    private TextView macAddress;
     private Button takePicture;
     private ImageView cameraPicture;
     private ProgressDialog pg;
@@ -44,8 +42,6 @@ public class CameraConfiguration extends GenericConfiguration {
 
     private void initViews(){
         setTitle(name);
-        ipAddress=(TextView)findViewById(R.id.cameraIpAddress);
-        macAddress=(TextView)findViewById(R.id.cameraMacAddress);
         takePicture=(Button)findViewById(R.id.cameraTakePicture);
         cameraPicture=(ImageView)findViewById(R.id.cameraPicture);
         if(Build.VERSION.SDK_INT<21){
@@ -54,8 +50,6 @@ public class CameraConfiguration extends GenericConfiguration {
         else{
             cameraPicture.setImageDrawable(getResources().getDrawable(R.drawable.camera,getTheme()));
         }
-        ipAddress.setText(ip);
-        macAddress.setText(mac);
         pg=new ProgressDialog(this);
         pg.setTitle("Taking picture...");
     }
@@ -103,7 +97,7 @@ public class CameraConfiguration extends GenericConfiguration {
         p.setIndeterminate(false);
         p.show();
         GetPicture getPictureTask=new GetPicture();
-        getPictureTask.execute(size,p,ipAddress.getText().toString(),cameraPicture,deviceCommunicationHandler);
+        getPictureTask.execute(size,p,ip.toString(),cameraPicture,deviceCommunicationHandler);
 //        createJPEG(rawImageData);
     }
 

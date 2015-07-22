@@ -6,44 +6,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.iotmanager.LightingConfiguration">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/lightingIpAddress"
-        android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/lightingMacAddress"
-        android:layout_alignStart="@+id/lightingMacAddress" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/lightingMacAddress"
-        android:layout_below="@+id/lightingIpAddress"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="IP"
-        android:id="@+id/lightingIpAddressLabel"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="MAC"
-        android:id="@+id/lightingMacAddressLabel"
-        android:layout_alignTop="@+id/lightingMacAddress"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"

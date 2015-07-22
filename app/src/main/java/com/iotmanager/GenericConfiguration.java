@@ -184,6 +184,14 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         changeNetworkIntent.putExtra("New IP",ip);
         startActivity(changeNetworkIntent);
     }
+
+    public void showExtraInfo(){
+        Intent extraInfoIntent = new Intent(GenericConfiguration.this,ExtraInfo.class);
+        extraInfoIntent.putExtra("IP",ip);
+        extraInfoIntent.putExtra("MAC", mac);
+        extraInfoIntent.putExtra("NAME",name);
+        startActivity(extraInfoIntent);
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -205,6 +213,10 @@ public abstract class GenericConfiguration extends AppCompatActivity {
             case R.id.accessPoint:
                 convertToAccessPoint();
                 break;
+            case R.id.extraInfo:
+                showExtraInfo();
+                break;
+
         }
         return super.onOptionsItemSelected(item);
     }

@@ -11,46 +11,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/temperatureIpAddress"
-        android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/temperatureMacAddress"
-        android:layout_alignStart="@+id/temperatureMacAddress" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/temperatureMacAddress"
-        android:layout_below="@+id/temperatureIpAddress"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="IP"
-        android:id="@+id/temperatureIpAddressLabel"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="MAC"
-        android:id="@+id/temperatureMacAddressLabel"
-        android:layout_alignTop="@+id/temperatureMacAddress"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/temperature"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="100dp"

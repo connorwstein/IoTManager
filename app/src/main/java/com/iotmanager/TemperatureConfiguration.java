@@ -7,8 +7,7 @@ import android.widget.TextView;
 
 public class TemperatureConfiguration extends GenericConfiguration{
     private static final String TAG="Connors Debug";
-    private TextView ipAddress;
-    private TextView macAddress;
+    private CircleView circle;
     private String currentTemperature;
     private String currentHumidity;
     private TextView temperature;
@@ -24,12 +23,10 @@ public class TemperatureConfiguration extends GenericConfiguration{
     }
     private void initViews(){
         setTitle(name);
-        ipAddress=(TextView)findViewById(R.id.temperatureIpAddress);
-        macAddress=(TextView)findViewById(R.id.temperatureMacAddress);
-        ipAddress.setText(ip);
-        macAddress.setText(mac);
         temperature=(TextView)findViewById(R.id.temperature);
         humidity=(TextView)findViewById(R.id.humidity);
+        //circle=new CircleView(this);
+        //circle.invalidate();
     }
 
     private void getTemperatureAndHumidity(){

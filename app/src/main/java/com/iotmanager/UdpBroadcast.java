@@ -165,12 +165,19 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
            // Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
             responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
             Log.i(TAG, "Received: " + responsePacketData);
-            deviceResponses.add(responsePacketData);
+            if(responsePacketData.contains("IP:")&&responsePacketData.contains("MAC:")&&responsePacketData.contains("NAME:")
+                    && responsePacketData.contains("ROOM:")&&responsePacketData.contains("TYPE:")){
+                deviceResponses.add(responsePacketData);
+            }
+            else{
+                Log.i(TAG,"Invalid Packet: "+responsePacketData);
+            }
+
         }
     }
     //Removes duplicate responses
     //Parses responses for NAME, IP, MAC
-    //Returns arraylist of arraylists where list 0: names, list 1: ips, list 3: mac addresses
+    //Returns arraylist of arraylists where list 0: names, list 1: ips, list 3: mac addresses list 4 rooms, list 5 types
     private ArrayList<ArrayList<String>> getDistinctDeviceInformation(ArrayList<String> deviceResponses){
         ArrayList<String> deviceNames=new ArrayList<String>();
         ArrayList<String> deviceIPs=new ArrayList<String>();

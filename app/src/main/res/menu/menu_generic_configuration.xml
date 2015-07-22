@@ -6,10 +6,6 @@
         android:title="@string/rename_device"
         android:orderInCategory="100"
         app:showAsAction="never" />
-    <item android:id="@+id/accessPoint"
-        android:title="@string/access_point"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
     <item android:id="@+id/change_type"
         android:title="@string/change_type"
         android:orderInCategory="100"
@@ -20,6 +16,14 @@
         app:showAsAction="never" />
     <item android:id="@+id/change_network"
         android:title="@string/change_network"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item android:id="@+id/accessPoint"
+        android:title="@string/access_point"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item android:id="@+id/extraInfo"
+        android:title="@string/extra_info"
         android:orderInCategory="100"
         app:showAsAction="never" />
 </menu>
