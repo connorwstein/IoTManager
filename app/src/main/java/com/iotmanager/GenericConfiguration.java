@@ -69,17 +69,17 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         if (response.equals(RESPONSE_NAME_SUCCESS)) {
             Toast.makeText(this, "Device renamed to "+newName, Toast.LENGTH_SHORT).show();
             deviceDBHelper.dumpDBtoLog();
-            int id=deviceDBHelper.getIDSpecificDevice(name,room,type);
+            int id=deviceDBHelper.getIDSpecificDevice(name,room,type,mac);
             if(id==-1){
                 //device is not in the database, but should be (can happen when flashing and clearing the db)
                 //just add it with the new name
                 Log.i(TAG,"Device not in db, adding "+name+", "+room+", "+type);
-                deviceDBHelper.addDevice(newName,room,type);
+                deviceDBHelper.addDevice(newName,room,type,mac);
                 deviceDBHelper.dumpDBtoLog();
             }
             else{
                 Log.i(TAG,"Device in db, updating "+name+", "+room+", "+type);
-                deviceDBHelper.updateDevice(id, newName, room, type);
+                deviceDBHelper.updateDevice(id, newName, room, type,mac);
                 deviceDBHelper.dumpDBtoLog();
             }
             name=newName;
@@ -116,13 +116,13 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_ROOM+newRoom);
         if (response.equals(RESPONSE_ROOM_SUCCESS)) {
             Toast.makeText(this, "Device room changed to "+newRoom, Toast.LENGTH_SHORT).show();
-            int id=deviceDBHelper.getIDSpecificDevice(name,room,type);
+            int id=deviceDBHelper.getIDSpecificDevice(name,room,type,mac);
             if(id==-1){
                 //device is not in the database, but should be (can happen when flashing and clearing the db
-                deviceDBHelper.addDevice(name,newRoom,type);
+                deviceDBHelper.addDevice(name,newRoom,type,mac);
             }
             else{
-                deviceDBHelper.updateDevice(id, name, newRoom, type);
+                deviceDBHelper.updateDevice(id, name, newRoom, type,mac);
             }
             room=newRoom;
             returnToHomeAfterConfigChange();
@@ -151,7 +151,7 @@ public abstract class GenericConfiguration extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         deviceCommunicationHandler.sendDataNoResponse(COMMAND_TYPE + items[which].toString());
-                        deviceDBHelper.updateDevice(deviceDBHelper.getIDSpecificDevice(name,room,type),name,items[which].toString(),type);
+                        deviceDBHelper.updateDevice(deviceDBHelper.getIDSpecificDevice(name,room,type,mac),name,items[which].toString(),type,mac);
                         type=items[which].toString();
                         Intent homeIntent=new Intent(GenericConfiguration.this,Home.class);
                         startActivity(homeIntent);

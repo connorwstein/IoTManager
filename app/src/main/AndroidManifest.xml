@@ -69,17 +69,20 @@
         <activity
             android:name=".NearbyDevices"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_nearby_devices" >
+            android:label="@string/title_activity_nearby_devices"
+            android:parentActivityName=".Home">
         </activity>
         <activity
             android:name=".CameraConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_camera_configuration" >
+            android:label="@string/title_activity_camera_configuration"
+            android:parentActivityName=".Home">
         </activity>
         <activity
             android:name=".ExtraInfo"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_extra_info">
+            android:label="@string/title_activity_extra_info"
+            >
         </activity>
     </application>
 

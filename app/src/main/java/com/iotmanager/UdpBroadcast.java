@@ -44,6 +44,8 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
     private String deviceCategory;
     private GridView devicesGridView;
     private Resources resources;
+    private DeviceDBHelper deviceDBHelper;
+
     @Override
     protected Boolean doInBackground(Object... args) {
         context=(Context)args[0];
@@ -101,9 +103,21 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         //Want to display only the names, and pass the rest to the device configuration activity
         //so if user clicks on a name more detailed information is available
         final ArrayList<ArrayList<String>>deviceInformation=ResponseParser.getDistinctDeviceInformation(deviceResponses);
-        for(String devicename:deviceInformation.get(0)){
-            Log.i(TAG,"Device found: "+devicename);
+        deviceDBHelper=new DeviceDBHelper(context);
+        //Parallel index in the lists which represent each device
+        for(int i=0;i<deviceInformation.get(0).size();i++){
+            String name,room,type,mac;
+            name=deviceInformation.get(0).get(i);
+            mac=deviceInformation.get(2).get(i);
+            room=deviceInformation.get(3).get(i);
+            type=deviceInformation.get(4).get(i);
+            Log.i(TAG, "Device found: " + name + ", " + deviceInformation.get(1).get(i) + ", " + deviceInformation.get(2).get(i) + ", " + room + ", " + type);
+            if(deviceDBHelper.getIDSpecificDevice(name,room,type,mac)==-1) {
+                //if the device does not already exist in the database, add it
+                deviceDBHelper.addDevice(name, room, type,mac);
+            }
         }
+        deviceDBHelper.dumpDBtoLog();
         devicesGridView.setAdapter(new ImageAdapter(context, resources,deviceInformation.get(0),deviceInformation.get(4)));
         devicesGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

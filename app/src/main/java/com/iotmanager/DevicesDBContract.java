@@ -15,6 +15,7 @@ public final class DevicesDBContract {
         public static final String COLUMN_NAME="NAME";
         public static final String COLUMN_ROOM="ROOM";
         public static final String COLUMN_TYPE="TYPE";
+        public static final String COLUMN_MAC="MAC";
     }
 
 

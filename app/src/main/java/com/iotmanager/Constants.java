@@ -11,6 +11,7 @@ public final class Constants {
     public static final int DEFAULT_DEVICE_UDP_PORT=1025;
     public static final String DEFAULT_DEVICE_IP="192.168.4.1";
     public static final String COMMAND_CONNECT="Connect:";
+    public static final String COMMAND_MAC_GET="Mac Get";
     public static final String COMMAND_TEMPERATURE_SET="Temperature Set:";
     public static final String COMMAND_TEMPERATURE_GET="Temperature Get";
     public static final String COMMAND_NAME="Name:";

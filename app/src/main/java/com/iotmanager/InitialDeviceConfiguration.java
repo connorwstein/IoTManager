@@ -42,16 +42,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         roomDevice=(EditText)findViewById(R.id.roomDevice);
         nameDeviceSubmit=(Button)findViewById(R.id.nameDeviceSubmit);
         nameDeviceSubmit.setTextColor(Color.parseColor("#cccccc"));
-        AlertDialog.Builder builder= new AlertDialog.Builder(this);
-//        builder.setMessage("This initial configuration only needs to be done once. If you send the wrong network information to the device (i.e. wrong password) or the device just fails to connect to " +
-//                "your network, try to add the device again but you can skip this step.")
-//               .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//                   @Override
-//                   public void onClick(DialogInterface dialog, int which) {
-//                       dialog.cancel();
-//                   }
-//               });
-//        builder.show();
+
         nameDeviceSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,7 +66,8 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 String nameResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+nameDevice.getText().toString());
                 String typeResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_TYPE+deviceType.getSelectedItem().toString());
                 String roomResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_ROOM+roomDevice.getText().toString());
-                if(nameResponse==null||typeResponse==null||roomResponse==null){
+                String macResponse=deviceCommunicationHandler.sendDataGetResponse(COMMAND_MAC_GET); //Need the mac for the locator processing (match this mac address with the SSID which has the mac in it)
+                if(nameResponse==null||typeResponse==null||roomResponse==null||macResponse==null){
                     Log.i(TAG, "Null response when sending: "+nameDevice.getText().toString()+", "+deviceType.getSelectedItem().toString()+", "+roomDevice.getText().toString());
                     Toast.makeText(InitialDeviceConfiguration.this,"Error writing to device",Toast.LENGTH_SHORT).show();
                     resetFields();
@@ -85,7 +77,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)&&roomResponse.equals(RESPONSE_ROOM_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
                     //Only add to database if it has been successfully configured on the firmware side
-                    if(deviceDBHelper.addDevice(name,room,type)==-1){
+                    if(deviceDBHelper.addDevice(name,room,type,macResponse)==-1){
                         Toast.makeText(InitialDeviceConfiguration.this,"That device configuration already exists",Toast.LENGTH_SHORT).show();
                         return;
                     }

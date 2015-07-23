@@ -21,12 +21,14 @@ public class NearbyDevices extends AppCompatActivity {
     private WifiManager manager;
     private ListView nearbyDevices;
     private ArrayAdapter<String> adapter;
+    private DeviceDBHelper deviceDBHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nearby_devices);
         setTitle("Nearby Devices");
+        deviceDBHelper=new DeviceDBHelper(NearbyDevices.this);
         nearbyDevices=(ListView)findViewById(R.id.nearbyDevices);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         adapter=new ArrayAdapter<String>(
@@ -35,7 +37,6 @@ public class NearbyDevices extends AppCompatActivity {
                 getNearbyDevices()
         );
         nearbyDevices.setAdapter(adapter);
-
     }
 
     private List<String> getNearbyDevices(){
@@ -47,10 +48,12 @@ public class NearbyDevices extends AppCompatActivity {
         List <String> ssids=new ArrayList<String>();
         for(ScanResult device: devices){
             Log.i(TAG, "Device: " + device.SSID + " RSSI: " + device.level);
-
+            if(device.SSID.contains("ESP")){
                 ssids.add(device.SSID + " " +device.level);
+            }
 
         }
+        deviceDBHelper.dumpDBtoLog();
         return ssids;
     }
 

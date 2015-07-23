@@ -25,7 +25,8 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
                     DevicesDB.COLUMN_ID + " INTEGER PRIMARY KEY, " +
                     DevicesDB.COLUMN_NAME + TEXT_TYPE + COMMA_SEP +
                     DevicesDB.COLUMN_ROOM + TEXT_TYPE + COMMA_SEP +
-                    DevicesDB.COLUMN_TYPE + TEXT_TYPE +
+                    DevicesDB.COLUMN_TYPE + TEXT_TYPE + COMMA_SEP +
+                    DevicesDB.COLUMN_MAC + TEXT_TYPE +
             ");";
 
     private static final String SQL_DELETE_ENTRIES =
@@ -56,33 +57,35 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         //Log.i(TAG, "Database opened");
     }
 
-    public int addDevice(String name, String room, String type){
+    public int addDevice(String name, String room, String type, String mac){
         SQLiteDatabase db=this.getWritableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
                 +DevicesDB.COLUMN_NAME +"="+"'"+name.trim()+"'"+" AND "
                 +DevicesDB.COLUMN_ROOM +"="+"'"+room.trim()+"'"+" AND "
-                +DevicesDB.COLUMN_TYPE +"="+"'"+type.trim()+"'",null);
+                +DevicesDB.COLUMN_TYPE +"="+"'"+type.trim()+"'"+" AND "
+                +DevicesDB.COLUMN_MAC +"="+"'"+mac.trim()+"'",null);
 
         if(c.moveToFirst()){
-            Log.i(TAG,"Device already exists: "+c.getString(0)+", "+c.getString(1)+", "+c.getString(2));
+            Log.i(TAG,"Device already exists: "+c.getString(0)+", "+c.getString(1)+", "+c.getString(2)+", "+c.getString(3));
             return -1;
         }
         ContentValues values= new ContentValues();
         values.put(DevicesDB.COLUMN_NAME, name.trim());
         values.put(DevicesDB.COLUMN_ROOM, room.trim());
         values.put(DevicesDB.COLUMN_TYPE, type.trim());
+        values.put(DevicesDB.COLUMN_MAC, mac.trim());
         db.insert(DevicesDB.TABLE_NAME, null, values);
         //dumpDBtoLog();
         db.close();
         return 0;
     }
 
-    public int updateDevice(int id, String updatedName, String updatedRoom, String updatedType){
+    public int updateDevice(int id, String updatedName, String updatedRoom, String updatedType, String updatedMac){
         SQLiteDatabase db=this.getWritableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
                 +DevicesDB.COLUMN_ID +"="+id,null);
         if(!c.moveToFirst()){
-            Log.i(TAG,"No such device: "+id+", can not change to "+updatedName.trim()+", "+updatedRoom.trim()+", "+updatedType.trim());
+            Log.i(TAG,"No such device: "+id+", can not change to "+updatedName.trim()+", "+updatedRoom.trim()+", "+updatedType.trim()+", "+updatedMac);
             //dumpDBtoLog();
             return -1;
         }
@@ -91,6 +94,7 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
             values.put(DevicesDB.COLUMN_NAME, updatedName.trim());
             values.put(DevicesDB.COLUMN_ROOM, updatedRoom.trim());
             values.put(DevicesDB.COLUMN_TYPE, updatedType.trim());
+            values.put(DevicesDB.COLUMN_MAC, updatedMac.trim());
             db.update(DevicesDB.TABLE_NAME, values, DevicesDB.COLUMN_ID + "=" + id, null);
             return 0;
         }
@@ -113,12 +117,13 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public int getIDSpecificDevice(String name, String room, String type){
+    public int getIDSpecificDevice(String name, String room, String type, String mac){
         SQLiteDatabase db=this.getReadableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
                 +DevicesDB.COLUMN_NAME +"="+"'"+name.trim()+"'"+" AND "
                 +DevicesDB.COLUMN_ROOM +"="+"'"+room.trim()+"'"+" AND "
-                +DevicesDB.COLUMN_TYPE +"="+"'"+type.trim()+"'",null);
+                +DevicesDB.COLUMN_TYPE +"="+"'"+type.trim()+"'"+" AND "
+                +DevicesDB.COLUMN_MAC +"="+"'"+mac.trim()+"'",null);
 
         if(!c.moveToFirst()){
             Log.i(TAG,"No such device exists: "+name.trim()+", "+room.trim()+", "+type.trim());
