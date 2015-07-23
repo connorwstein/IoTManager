@@ -4,26 +4,51 @@
     android:layout_height="match_parent"
     tools:context="com.iotmanager.TemperatureConfiguration"
     android:background="#009688">
-    <com.iotmanager.CircleView
+    <ImageView
+        android:layout_marginTop="10dp"
         android:layout_width="250dp"
         android:layout_height="250dp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/temperatureCircleBorder"
+        android:background="@drawable/circle"
+        />
+    <ImageView
+
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:id="@+id/humidityCircleBorder"
+        android:layout_below="@id/temperatureCircleBorder"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/circle"
+        />
+    <ImageView
+        android:layout_marginTop="27dp"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_centerHorizontal="true"
         android:id="@+id/temperatureCircle"
-        android:layout_marginTop="20dp"
-        android:layout_centerHorizontal="true"/>
-    <com.iotmanager.CircleView
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+        android:background="@drawable/circle"
+        />
+    <ImageView
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_marginTop="38dp"
         android:id="@+id/humidityCircle"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/temperatureCircle"/>
+        android:layout_below="@id/temperatureCircle"
+        android:background="@drawable/circle"
+        />
+
     <TextView
         android:layout_width="250dp"
         android:layout_height="30dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/temperature"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="130dp"
-        android:gravity="center_horizontal" />
+        android:layout_marginTop="125dp"
+        android:gravity="center_horizontal"
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:layout_width="250dp"
@@ -33,6 +58,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="380dp"
         android:gravity="center_horizontal"
+        android:textColor="#FFFFFF"
          />
 
 </RelativeLayout>

@@ -1,18 +1,24 @@
 package com.iotmanager;
 
 import static com.iotmanager.Constants.*;
+
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class TemperatureConfiguration extends GenericConfiguration{
     private static final String TAG="Connors Debug";
-    private CircleView circleTemperature;
-    private CircleView circleHumidity;
     private String currentTemperature;
     private String currentHumidity;
     private TextView temperature;
     private TextView humidity;
+    private ImageView temperatureCircle;
+    private ImageView temperatureCircleBorder;
+    private ImageView humidityCircle;
+    private ImageView humidityCircleBorder;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,13 +32,21 @@ public class TemperatureConfiguration extends GenericConfiguration{
         setTitle(name);
         temperature=(TextView)findViewById(R.id.temperature);
         humidity=(TextView)findViewById(R.id.humidity);
-        circleTemperature=(CircleView)findViewById(R.id.temperatureCircle);
-        circleTemperature.setCircleRadius(220);
-        circleTemperature.invalidate();
-        circleHumidity=(CircleView)findViewById(R.id.humidityCircle);
-        circleHumidity.setCircleRadius(220);
-        circleHumidity.setCircleColor("#33CCFF");
-        circleHumidity.invalidate();
+
+        temperatureCircle=(ImageView)findViewById(R.id.temperatureCircle);
+        ((GradientDrawable)temperatureCircle.getBackground()).setColor(Color.parseColor("#FF6666"));
+
+
+        temperatureCircleBorder=(ImageView)findViewById(R.id.temperatureCircleBorder);
+        ((GradientDrawable)temperatureCircleBorder.getBackground()).setColor(Color.parseColor("#FFFFFF"));
+
+        humidityCircleBorder=(ImageView)findViewById(R.id.humidityCircleBorder);
+        ((GradientDrawable)humidityCircleBorder.getBackground()).setColor(Color.parseColor("#FFFFFF"));
+
+        humidityCircle=(ImageView)findViewById(R.id.humidityCircle);
+        ((GradientDrawable)humidityCircle.getBackground()).setColor(Color.parseColor("#33CCFF"));
+
+
     }
 
     private void getTemperatureAndHumidity(){
@@ -46,6 +60,9 @@ public class TemperatureConfiguration extends GenericConfiguration{
         else{
             currentTemperature="Not Available";
             currentHumidity="Not Available";
+            humidity.setText("Not Available");
+            temperature.setText("Not Available");
+            return;
         }
         humidity.setText("Humidity: "+currentHumidity +"%");
         temperature.setText("Temperature: "+currentTemperature+"°C");
