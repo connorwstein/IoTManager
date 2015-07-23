@@ -39,7 +39,12 @@ public class AvailableNetworks extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
         selectedDevice=getIntent().getStringExtra("Name");
-        setTitle("Connect "+selectedDevice);
+        if(selectedDevice!=null){
+            setTitle("Connect "+selectedDevice);
+        }
+        else{
+            setTitle("Connect Device");
+        }
         deviceCommunicationHandler=new DeviceCommunicationHandler(DEFAULT_DEVICE_IP,DEFAULT_DEVICE_TCP_PORT,this);
         String newIP=getIntent().getStringExtra("New IP");
         if(newIP!=null){
@@ -70,6 +75,12 @@ public class AvailableNetworks extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        //startActivity(new Intent(AvailableNetworks.this,Home.class)); //return to home after changing networks
     }
 
     /**
@@ -108,8 +119,8 @@ public class AvailableNetworks extends AppCompatActivity {
                     setNetworkPasswordThenSend(network, AvailableNetworks.this);
                 }
                 else{
-                    deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT+network.ssid+";");
-                    Toast.makeText(AvailableNetworks.this,"Sent connect request, ensure android is connected to the same network",Toast.LENGTH_LONG).show();
+                    deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT + network.ssid + ";");
+                    //Toast.makeText(AvailableNetworks.this,"Sent connect request, ensure android is connected to the same network",Toast.LENGTH_LONG).show();
                     Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
                     startActivity(mainActivityIntent);
                 }
@@ -133,9 +144,18 @@ public class AvailableNetworks extends AppCompatActivity {
                         }
                         network.setPassword(passwordInput.getText().toString());
                         deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT + network.ssid + ";" + network.password);
-                        Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
-                        Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
-                        startActivity(mainActivityIntent);
+                        //Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
+                        AlertDialog.Builder builder=new AlertDialog.Builder(AvailableNetworks.this)
+                                .setMessage("Now connect the phone to the same network as the device")
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener(){
+                                            @Override
+                                            public void onClick(DialogInterface dialog,int which){
+                                                startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+                                            }
+                                        });
+                        builder.show();
+//                        Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
+//                        startActivity(mainActivityIntent);
                         dialog.cancel();
 
                     }

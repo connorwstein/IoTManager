@@ -10,11 +10,16 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 
 /**
@@ -29,21 +34,25 @@ public class ImageAdapter extends BaseAdapter {
     public Integer[] imageIDs={
             R.drawable.lights,R.drawable.thermometer, R.drawable.camera
     };
+    private ArrayList<String> deviceNames;
+    private ArrayList<String> deviceTypes;
 
     // Constructor
-    public ImageAdapter(Context c,Resources r){
+    public ImageAdapter(Context c,Resources r, ArrayList<String> deviceNames,ArrayList<String> deviceTypes){
         context=c;
         resources=r;
+        this.deviceNames=deviceNames;
+        this.deviceTypes=deviceTypes;
     }
 
     @Override
     public int getCount() {
-        return imageIDs.length;
+        return deviceNames.size();
         }
 
     @Override
     public Object getItem(int position) {
-        return imageIDs[position];
+        return null;
         }
 
     @Override
@@ -53,12 +62,34 @@ public class ImageAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView imageView = new ImageView(context);
-        Bitmap bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[position]));
-        imageView.setImageBitmap(bitmap);
-        imageView.setLayoutParams(new GridView.LayoutParams(290, 290));
-        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        return imageView;
+        View v;
+
+        LayoutInflater inflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if(convertView==null) {
+            //v = new View(context);
+            v = inflater.inflate(R.layout.image_and_text, null);
+            TextView textView = (TextView) v.findViewById(R.id.grid_text);
+            ImageView imageView = (ImageView) v.findViewById(R.id.grid_image);
+            textView.setText(deviceNames.get(position));
+            Bitmap bitmap = null;
+            switch (deviceTypes.get(position)) {
+                case "Lighting":
+                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[0]));
+                    break;
+                case "Temperature":
+                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[1]));
+                    break;
+                case "Camera":
+                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[2]));
+                    break;
+            }
+            imageView.setImageBitmap(bitmap);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        }
+        else{
+            v=convertView;
+        }
+        return v;
     }
 
     //Rounded corner method from http://ruibm.com/2009/06/16/rounded-corner-bitmaps-on-android/

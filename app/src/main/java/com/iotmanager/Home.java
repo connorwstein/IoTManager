@@ -1,5 +1,6 @@
 package com.iotmanager;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -18,27 +19,34 @@ import com.iotmanager.DevicesDBContract.DevicesDB;
 public class Home extends AppCompatActivity {
     private static final String TAG="Connors Debug";
 
-    private GridView deviceCategoryGrid;
-
+   // private GridView deviceCategoryGrid;
+    private GridView devicesGridView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
         DeviceDBHelper db=new DeviceDBHelper(this);
         db.emptyDB(); //clear out for testing
-        deviceCategoryGrid=(GridView)findViewById(R.id.deviceCategoryGrid);
-        deviceCategoryGrid.setAdapter(new ImageAdapter(this,getResources()));
+        devicesGridView=(GridView)findViewById(R.id.deviceCategoryGrid);
+        UdpBroadcast deviceBroadcast=new UdpBroadcast();
+        ProgressDialog progressDialog=new ProgressDialog(this);
+        progressDialog.setMessage("Broadcasting for devices");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        deviceBroadcast.execute(this, progressDialog,devicesGridView,getResources());//will block until devices have been found
+    }
 
-        deviceCategoryGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent deviceCategoryIntent = new Intent(Home.this, DeviceCategory.class);
-                //Use position to indicate category
-                //Position 0: Lighting, Position 1: Temperature
-                deviceCategoryIntent.putExtra("Position",Integer.toString(position));
-                startActivity(deviceCategoryIntent);
-            }
-        });
+    @Override
+    protected void onStart() {
+        super.onStart();
+        devicesGridView.setAdapter(null);
+        UdpBroadcast deviceBroadcast=new UdpBroadcast();
+        ProgressDialog progressDialog=new ProgressDialog(this);
+        progressDialog.setMessage("Broadcasting for devices");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources());//will block until devices have been found
+
     }
 
     @Override

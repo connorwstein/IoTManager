@@ -84,7 +84,7 @@ public abstract class GenericConfiguration extends AppCompatActivity {
             }
             name=newName;
             setTitle(name);
-            returnToDeviceCategoryAfterConfigChange();
+            returnToHomeAfterConfigChange();
         }
         else{
             Toast.makeText(this, "Device rename failed", Toast.LENGTH_SHORT).show();
@@ -125,29 +125,16 @@ public abstract class GenericConfiguration extends AppCompatActivity {
                 deviceDBHelper.updateDevice(id, name, newRoom, type);
             }
             room=newRoom;
-            returnToDeviceCategoryAfterConfigChange();
+            returnToHomeAfterConfigChange();
         }
         else{
             Toast.makeText(this, "Device room change failed", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void returnToDeviceCategoryAfterConfigChange(){
-        Intent backToDeviceCategory=new Intent(GenericConfiguration.this,DeviceCategory.class);
-        switch(type){
-            case "Lighting":
-                backToDeviceCategory.putExtra("Position","0");
-                break;
-            case "Temperature":
-                backToDeviceCategory.putExtra("Position","1");
-                break;
-            case "Camera":
-                backToDeviceCategory.putExtra("Position","2");
-                break;
-            default:
-                Log.i(TAG,"Error changing room");
-        }
-        startActivity(backToDeviceCategory);
+    public void returnToHomeAfterConfigChange(){
+        Intent backToHome=new Intent(GenericConfiguration.this,Home.class);
+        startActivity(backToHome);
     }
 
     public void convertToAccessPoint(){

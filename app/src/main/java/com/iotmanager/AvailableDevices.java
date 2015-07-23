@@ -145,6 +145,7 @@ public class AvailableDevices extends AppCompatActivity {
                         .setNegativeButton("NO", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);
+
                                 AvailableDevices.this.startActivity(initialDeviceConfigurationIntent);
                                 dialog.cancel();
                             }

@@ -7,7 +7,8 @@ import android.widget.TextView;
 
 public class TemperatureConfiguration extends GenericConfiguration{
     private static final String TAG="Connors Debug";
-    private CircleView circle;
+    private CircleView circleTemperature;
+    private CircleView circleHumidity;
     private String currentTemperature;
     private String currentHumidity;
     private TextView temperature;
@@ -25,8 +26,13 @@ public class TemperatureConfiguration extends GenericConfiguration{
         setTitle(name);
         temperature=(TextView)findViewById(R.id.temperature);
         humidity=(TextView)findViewById(R.id.humidity);
-        //circle=new CircleView(this);
-        //circle.invalidate();
+        circleTemperature=(CircleView)findViewById(R.id.temperatureCircle);
+        circleTemperature.setCircleRadius(220);
+        circleTemperature.invalidate();
+        circleHumidity=(CircleView)findViewById(R.id.humidityCircle);
+        circleHumidity.setCircleRadius(220);
+        circleHumidity.setCircleColor("#33CCFF");
+        circleHumidity.invalidate();
     }
 
     private void getTemperatureAndHumidity(){
@@ -42,7 +48,7 @@ public class TemperatureConfiguration extends GenericConfiguration{
             currentHumidity="Not Available";
         }
         humidity.setText("Humidity: "+currentHumidity +"%");
-        temperature.setText("Temperature: "+currentTemperature);
+        temperature.setText("Temperature: "+currentTemperature+"°C");
     }
 
 }

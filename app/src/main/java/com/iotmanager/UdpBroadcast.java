@@ -4,12 +4,17 @@ import static com.iotmanager.Constants.*;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -37,14 +42,15 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
     private ArrayList<String> deviceResponses;
     private ListView devicesListView;
     private String deviceCategory;
-
+    private GridView devicesGridView;
+    private Resources resources;
     @Override
     protected Boolean doInBackground(Object... args) {
         context=(Context)args[0];
         progressDialog=(ProgressDialog)args[1];
-        devicesListView=(ListView)args[2];
-        deviceCategory=(String)args[3];
-        broadcastMessage="Hello "+deviceCategory+" Devices?";
+        devicesGridView=(GridView)args[2];
+        resources=(Resources) args[3];
+        broadcastMessage="Hello ESP Devices?";
         deviceResponses=new ArrayList<String>();
 
         //Create UDP socket
@@ -89,42 +95,34 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         if(!devicesDetected){
             //Stack the toasts so user has time to read it
             Toast.makeText(context,"No devices on this network. Try broadcasting again and ensure the correct password was sent to device when connecting it to the network.",Toast.LENGTH_LONG).show();
+            return;
         }
-        //List 0: Names, List 1: IPs, List 2: MAC adddresses
+        //List 0: Names, List 1: IPs, List 2: MAC adddresses list 3 rooms, list 4 types
         //Want to display only the names, and pass the rest to the device configuration activity
         //so if user clicks on a name more detailed information is available
-        final ArrayList<ArrayList<String>>deviceInformation=getDistinctDeviceInformation(deviceResponses);
-
-        ArrayAdapter<String> deviceNameAdapter=new ArrayAdapter<String>(
-                context,
-                R.layout.list, //device list has size of text in the listView
-                deviceInformation.get(0) //the first list has the names
-        );
-        devicesListView.setAdapter(deviceNameAdapter);
-        devicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        final ArrayList<ArrayList<String>>deviceInformation=ResponseParser.getDistinctDeviceInformation(deviceResponses);
+        for(String devicename:deviceInformation.get(0)){
+            Log.i(TAG,"Device found: "+devicename);
+        }
+        devicesGridView.setAdapter(new ImageAdapter(context, resources,deviceInformation.get(0),deviceInformation.get(4)));
+        devicesGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Intent startDeviceConfiguration = createIntentWithDeviceInformation(deviceCategory, deviceInformation, position);
-                if (startDeviceConfiguration != null) {
-                    context.startActivity(startDeviceConfiguration);
-                }
-                else{
-                    Toast.makeText(context, "Device configuration data error",Toast.LENGTH_LONG);
-                }
-
+                ViewGroup data=(ViewGroup)view;
+                TextView text=(TextView)data.getChildAt(1);
+                Log.i(TAG, text.getText().toString()+"Item clicked position: " + position + " id: " + id);
+                Intent i=createIntentWithDeviceInformation(deviceInformation,position);
+                if(i!=null)
+                    context.startActivity(i);
+                else
+                    Log.i(TAG,"Error with device information");
             }
         });
-
     }
-    private Intent createIntentWithDeviceInformation(String type, final ArrayList<ArrayList<String>>deviceInformation, int position){
+    private Intent createIntentWithDeviceInformation(final ArrayList<ArrayList<String>>deviceInformation, int position){
         Log.i(TAG, "Create Device info intent");
         Intent i=null;
-//        if(!type.equals(deviceInformation.get(4).get(position))){
-//            //Type does not match, must be an error
-//            return i;
-//        }
-        switch(type){
+        switch(deviceInformation.get(4).get(position)){
             case "Temperature":
                 i=new Intent(context, TemperatureConfiguration.class);
                 break;
@@ -146,7 +144,6 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
         return i;
 
     }
-
     //Tries to receive MAX_NUM_RECEIVE_PACKETS and stores them
     //in member variable deviceResponses
     private void receiveMultiplePackets(DatagramSocket udpBroadcastSocket){
@@ -175,72 +172,4 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
 
         }
     }
-    //Removes duplicate responses
-    //Parses responses for NAME, IP, MAC
-    //Returns arraylist of arraylists where list 0: names, list 1: ips, list 3: mac addresses list 4 rooms, list 5 types
-    private ArrayList<ArrayList<String>> getDistinctDeviceInformation(ArrayList<String> deviceResponses){
-        ArrayList<String> deviceNames=new ArrayList<String>();
-        ArrayList<String> deviceIPs=new ArrayList<String>();
-        ArrayList<String> deviceMACs=new ArrayList<String>();
-        ArrayList<String> deviceRooms=new ArrayList<String>();
-        ArrayList<String> deviceTypes=new ArrayList<String>();
-        Set<String> distinctDeviceResponses=new HashSet<>();
-        distinctDeviceResponses.addAll(deviceResponses);
-        deviceResponses.clear();
-        deviceResponses.addAll(distinctDeviceResponses);
-        for (String deviceResponse: deviceResponses){
-            deviceNames.add(getDeviceName(deviceResponse));
-            deviceIPs.add(getDeviceIP(deviceResponse));
-            deviceMACs.add(getDeviceMAC(deviceResponse));
-            deviceRooms.add(getDeviceRoom(deviceResponse));
-            deviceTypes.add(getDeviceType(deviceResponse));
-        }
-        ArrayList<ArrayList<String>> devicesInformation=new ArrayList<ArrayList<String>>();
-        devicesInformation.add(deviceNames);
-        devicesInformation.add(deviceIPs);
-        devicesInformation.add(deviceMACs);
-        devicesInformation.add(deviceRooms);
-        devicesInformation.add(deviceTypes);
-        return devicesInformation;
-    }
-
-    //Takes "Name:...IP:...MAC:..." response and extracts the NAME
-    //Assume name does not have IP or MAC in it...
-    private String getDeviceName(String deviceResponse){
-        int indexOfName=deviceResponse.indexOf("NAME:");
-        int charsInName=5;
-        int indexOfIP=deviceResponse.indexOf("IP:");
-        return deviceResponse.substring(indexOfName+charsInName,indexOfIP);
-    }
-
-    //Takes "Name:...IP:...MAC:..." response and extracts the IP
-    //Assume name does not have IP or MAC in it...
-    private String getDeviceIP(String deviceResponse){
-        int indexOfIP=deviceResponse.indexOf("IP:");
-        int charsInIP=3;
-        int indexOfMAC=deviceResponse.indexOf("MAC:");
-        return deviceResponse.substring(indexOfIP+charsInIP,indexOfMAC);
-    }
-
-    //Takes "Name:...IP:...MAC:..." response and extracts the MAC
-    //Assume name does not have IP or MAC in it...
-    private String getDeviceMAC(String deviceResponse){
-        int indexOfMAC=deviceResponse.indexOf("MAC:");
-        int charsInMac=4;
-        int indexOfRoom=deviceResponse.indexOf("ROOM:");
-        return deviceResponse.substring(indexOfMAC+charsInMac,indexOfRoom);
-    }
-    //"Name:....IP:....MAC:...Room:....Type:....
-    private String getDeviceRoom(String deviceResponse){
-        int indexOfRoom=deviceResponse.indexOf("ROOM:");
-        int charsInRoom=5;
-        int indexOfType=deviceResponse.indexOf("TYPE:");
-        return deviceResponse.substring(indexOfRoom+charsInRoom,indexOfType);
-    }
-    private String getDeviceType(String deviceResponse){
-        int indexOfType=deviceResponse.indexOf("TYPE:");
-        int charsInType=5;
-        return deviceResponse.substring(indexOfType+charsInType);
-    }
-
 }
