@@ -146,7 +146,7 @@ public class AvailableNetworks extends AppCompatActivity {
                         deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT + network.ssid + ";" + network.password);
                         //Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
                         AlertDialog.Builder builder=new AlertDialog.Builder(AvailableNetworks.this)
-                                .setMessage("Now connect the phone to the same network as the device")
+                                .setMessage("Now connect the phone to the same network as the device if you see no errors below. Reconnect to the device again if failed to send network information.")
                                 .setPositiveButton("OK", new DialogInterface.OnClickListener(){
                                             @Override
                                             public void onClick(DialogInterface dialog,int which){

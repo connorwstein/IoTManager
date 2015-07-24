@@ -67,7 +67,7 @@
             android:parentActivityName=".Home" >
         </activity>
         <activity
-            android:name=".NearbyDevices"
+            android:name=".AllDevices"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_nearby_devices"
             android:parentActivityName=".Home">

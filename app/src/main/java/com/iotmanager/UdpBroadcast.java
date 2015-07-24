@@ -99,7 +99,7 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
             Toast.makeText(context,"No devices on this network. Try broadcasting again and ensure the correct password was sent to device when connecting it to the network.",Toast.LENGTH_LONG).show();
             return;
         }
-        //List 0: Names, List 1: IPs, List 2: MAC adddresses list 3 rooms, list 4 types
+        //List 0: Names, List 1: IPs, List all_devices: MAC adddresses list 3 rooms, list 4 types
         //Want to display only the names, and pass the rest to the device configuration activity
         //so if user clicks on a name more detailed information is available
         final ArrayList<ArrayList<String>>deviceInformation=ResponseParser.getDistinctDeviceInformation(deviceResponses);

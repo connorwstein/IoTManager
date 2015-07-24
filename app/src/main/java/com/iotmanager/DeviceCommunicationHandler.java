@@ -109,7 +109,7 @@ public class DeviceCommunicationHandler {
             return;
         }
         if (!exception.equals("None")) {
-            Toast.makeText(context, "Unable to send. Error: " + getStringFromMessage("Exception", message), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Unable to send. Error: " + getStringFromMessage("Exception", message), Toast.LENGTH_LONG).show();
         }
     }
 

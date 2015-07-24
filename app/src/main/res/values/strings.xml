@@ -23,7 +23,7 @@
     <string name="title_activity_main_activity2">MainActivity2Activity</string>
     <string name="title_activity_temperature_configuration">TemperatureConfiguration</string>
     <string name="title_activity_lighting_configuration">LightingConfiguration</string>
-    <string name="lucky">Feelin Lucky</string>
+    <string name="all">All</string>
     <string name="title_activity_nearby_devices">NearbyDevices</string>
     <string name="title_activity_camera_configuration">CameraConfiguration</string>
     <string name="title_activity_extra_info">ExtraInfo</string>

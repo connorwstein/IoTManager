@@ -134,6 +134,18 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
             return Integer.parseInt(c.getString(0));
         }
     }
+    public String getRoomFromMac(String mac){
+        SQLiteDatabase db=this.getReadableDatabase();
+        Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "+DevicesDB.COLUMN_MAC+"="+"'"+mac.trim()+"'",null);
+        String result=null;
+        if(c.moveToFirst()){
+            result=c.getString(c.getColumnIndex(DevicesDB.COLUMN_ROOM));
+        }
+        else{
+            Log.i(TAG,mac+ " does not exist in db");
+        }
+        return result;
+    }
 
     //Allows multiple devices with the same name (can differentiate in terms of room)
     public List<Integer> getIDDevices(String name){
