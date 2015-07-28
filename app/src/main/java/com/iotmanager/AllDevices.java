@@ -11,7 +11,6 @@ import android.widget.GridView;
 public class AllDevices extends AppCompatActivity {
 
     private static final String TAG="Connors Debug";
-    // private GridView deviceCategoryGrid;
     private GridView devicesGridView;
 
     @Override
@@ -19,15 +18,8 @@ public class AllDevices extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.all_devices);
         setTitle("All Devices");
-        DeviceDBHelper db=new DeviceDBHelper(this);
-        db.emptyDB(); //clear out for testing
         devicesGridView=(GridView)findViewById(R.id.deviceCategoryGrid);
-        UdpBroadcast deviceBroadcast=new UdpBroadcast();
-        ProgressDialog progressDialog=new ProgressDialog(this);
-        progressDialog.setMessage("Broadcasting for devices");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources(),null);//will block until devices have been found
+        Broadcast.broadcastForDevices(this, devicesGridView, getResources(), null); //will block until gridview filled
 
     }
 
@@ -35,13 +27,7 @@ public class AllDevices extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         devicesGridView.setAdapter(null);
-        UdpBroadcast deviceBroadcast=new UdpBroadcast();
-        ProgressDialog progressDialog=new ProgressDialog(this);
-        progressDialog.setMessage("Broadcasting for devices");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources(),null);//will block until devices have been found
-
+        Broadcast.broadcastForDevices(this, devicesGridView, getResources(), null); //will block until gridview filled
     }
 
     @Override
@@ -54,7 +40,7 @@ public class AllDevices extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.actionRefresh:
-                AllDevices.this.onStart();
+                Broadcast.broadcastForDevices(this, devicesGridView, getResources(), null); //will block until gridview filled
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -1,43 +1,64 @@
 package com.iotmanager;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
  * Created by connorstein on 15-07-23.
  */
 public class ResponseParser {
+    private static final String TAG="Connors Debug";
 
-    //Removes duplicate responses
-    //Parses responses for NAME, IP, MAC
-    //Returns arraylist of arraylists where list 0: names, list 1: ips, list 3: mac addresses list 4 rooms, list 5 types
-    public static ArrayList<ArrayList<String>> getDistinctDeviceInformation(ArrayList<String> deviceResponses){
-        ArrayList<String> deviceNames=new ArrayList<String>();
-        ArrayList<String> deviceIPs=new ArrayList<String>();
-        ArrayList<String> deviceMACs=new ArrayList<String>();
-        ArrayList<String> deviceRooms=new ArrayList<String>();
-        ArrayList<String> deviceTypes=new ArrayList<String>();
-        Set<String> distinctDeviceResponses=new HashSet<>();
-        distinctDeviceResponses.addAll(deviceResponses);
-        deviceResponses.clear();
-        deviceResponses.addAll(distinctDeviceResponses);
-        for (String deviceResponse: deviceResponses){
-            deviceNames.add(getDeviceName(deviceResponse));
-            deviceIPs.add(getDeviceIP(deviceResponse));
-            deviceMACs.add(getDeviceMAC(deviceResponse));
-            deviceRooms.add(getDeviceRoom(deviceResponse));
-            deviceTypes.add(getDeviceType(deviceResponse));
-        }
-        ArrayList<ArrayList<String>> devicesInformation=new ArrayList<ArrayList<String>>();
-        devicesInformation.add(deviceNames);
-        devicesInformation.add(deviceIPs);
-        devicesInformation.add(deviceMACs);
-        devicesInformation.add(deviceRooms);
-        devicesInformation.add(deviceTypes);
-        return devicesInformation;
+    public static Device createDeviceFromResponse(String response){
+        return new Device(getDeviceName(response),getDeviceIP(response),getDeviceMAC(response),getDeviceRoom(response),getDeviceType(response));
     }
 
+    public static void removeDuplicates(ArrayList<Device> devices){
+        Set<Device>uniqueDevices=new HashSet<>(devices);
+        devices.clear();
+        devices.addAll(uniqueDevices);
+    }
+
+    public static void filterByRoom(ArrayList<Device> devices, String room){
+        Log.i(TAG,"Filtering by room");
+        for(Iterator<Device> it=devices.iterator();it.hasNext();){
+            Device device=it.next();
+            if(!device.getRoom().trim().equals(room.trim())){
+                Log.i(TAG,"Removing device");
+                it.remove();
+            }
+        }
+    }
+
+    public static Intent createIntentForDeviceConfiguration(Device device, Context context){
+        Intent i=null;
+        Log.i(TAG,"Creating intent: ");
+        device.log();
+        switch(device.getType()){
+            case "Temperature":
+                i=new Intent(context, TemperatureConfiguration.class);
+                break;
+            case "Lighting":
+                i=new Intent(context, LightingConfiguration.class);
+                break;
+            case "Camera":
+                i=new Intent(context, CameraConfiguration.class);
+                break;
+            default:
+                Log.i(TAG, "Type not supported");
+        }
+
+        i.putExtra("Device",device);
+        return i;
+    }
     //Takes "Name:...IP:...MAC:..." response and extracts the NAME
     //Assume name does not have IP or MAC in it...
     public static String getDeviceName(String deviceResponse){

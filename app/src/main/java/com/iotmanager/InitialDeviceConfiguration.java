@@ -77,7 +77,8 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
                 if(nameResponse.equals(RESPONSE_NAME_SUCCESS)&&typeResponse.equals(RESPONSE_TYPE_SUCCESS)&&roomResponse.equals(RESPONSE_ROOM_SUCCESS)){
                     Intent availableNetworksIntent= new Intent(InitialDeviceConfiguration.this,AvailableNetworks.class);
                     //Only add to database if it has been successfully configured on the firmware side
-                    if(deviceDBHelper.addDevice(name,room,type,macResponse)==-1){
+                    Device device=new Device(name,null,macResponse,room,type); //no ip yet (still default)
+                    if(deviceDBHelper.addDevice(device)==-1){
                         Toast.makeText(InitialDeviceConfiguration.this,"That device configuration already exists",Toast.LENGTH_SHORT).show();
                         return;
                     }

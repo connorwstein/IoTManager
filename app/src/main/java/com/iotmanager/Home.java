@@ -21,10 +21,9 @@ import java.util.List;
 public class Home extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private WifiManager manager;
-    private ArrayAdapter<String> adapter;
     private DeviceDBHelper deviceDBHelper;
     private GridView nearbyDevices;
-
+    private String currentRoom;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,29 +32,17 @@ public class Home extends AppCompatActivity {
         nearbyDevices=(GridView)findViewById(R.id.nearbyDevices);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         deviceDBHelper.dumpDBtoLog();
-        String currentRoom=getRoom();
+        currentRoom=getRoom();
         if(currentRoom!=null){
-            setTitle("Room: " +currentRoom);
+            setTitle("Current room: " +currentRoom);
         }
         else{
             setTitle("No Configured Devices");
         }
         nearbyDevices.setAdapter(null);
-        UdpBroadcast deviceBroadcast=new UdpBroadcast();
-        ProgressDialog progressDialog=new ProgressDialog(this);
-        progressDialog.setMessage("Broadcasting for devices");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-        deviceBroadcast.execute(this, progressDialog, nearbyDevices, getResources(),currentRoom);//will block until devices have been found
-
-
-//        adapter=new ArrayAdapter<String>(
-//                this,
-//                R.layout.list,
-//                getNearbyDevices()
-//        );
-//        nearbyDevices.setAdapter(adapter);
+        Broadcast.broadcastForDevices(this, nearbyDevices, getResources(), currentRoom); //will block until gridview filled
     }
+
     private String getRoom(){
         boolean scanSuccess=manager.startScan();
         if(!scanSuccess){
@@ -135,9 +122,7 @@ public class Home extends AppCompatActivity {
 
         switch(item.getItemId()) {
             case R.id.actionRefresh:
-                adapter.clear();
-                adapter.addAll(getNearbyDevices());
-                adapter.notifyDataSetChanged();
+                Broadcast.broadcastForDevices(this, nearbyDevices, getResources(), currentRoom); //will block until gridview filled
                 return true;
             case R.id.all:
                 startActivity(new Intent(Home.this, AllDevices.class));

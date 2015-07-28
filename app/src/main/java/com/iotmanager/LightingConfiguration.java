@@ -22,7 +22,7 @@ public class LightingConfiguration extends GenericConfiguration {
         setContentView(R.layout.activity_lighting_configuration);
         getDeviceInformation();
         initViews();
-        deviceCommunicationHandler=new DeviceCommunicationHandler(ip,DEFAULT_DEVICE_TCP_PORT,this);
+        deviceCommunicationHandler=new DeviceCommunicationHandler(device.getIp(),DEFAULT_DEVICE_TCP_PORT,this);
         getLightStatus();
         lightStatus.setText(currentLightStatus);
         lightingOnOff.setOnClickListener(new View.OnClickListener() {
@@ -34,7 +34,7 @@ public class LightingConfiguration extends GenericConfiguration {
     }
 
     private void initViews(){
-        setTitle(name);
+        setTitle(device.getName());
         lightStatus=(TextView)findViewById(R.id.lightStatus);
         lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
     }

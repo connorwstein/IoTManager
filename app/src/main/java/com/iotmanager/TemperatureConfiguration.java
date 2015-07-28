@@ -25,11 +25,11 @@ public class TemperatureConfiguration extends GenericConfiguration{
         setContentView(R.layout.activity_temperature_configuration);
         getDeviceInformation();
         initViews();
-        deviceCommunicationHandler=new DeviceCommunicationHandler(ip,DEFAULT_DEVICE_TCP_PORT,this);
+        deviceCommunicationHandler=new DeviceCommunicationHandler(device.getIp(),DEFAULT_DEVICE_TCP_PORT,this);
         getTemperatureAndHumidity();
     }
     private void initViews(){
-        setTitle(name);
+        setTitle(device.getName());
         temperature=(TextView)findViewById(R.id.temperature);
         humidity=(TextView)findViewById(R.id.humidity);
 

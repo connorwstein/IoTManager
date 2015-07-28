@@ -38,17 +38,21 @@ public class ImageAdapter extends BaseAdapter {
     private ArrayList<String> deviceTypes;
 
     // Constructor
-    public ImageAdapter(Context c,Resources r, ArrayList<String> deviceNames,ArrayList<String> deviceTypes){
-        context=c;
-        resources=r;
-        this.deviceNames=deviceNames;
-        this.deviceTypes=deviceTypes;
+    public ImageAdapter(Context c,Resources r, ArrayList<Device> devices){
+        this.context=c;
+        this.resources=r;
+        this.deviceNames=new ArrayList<>();
+        this.deviceTypes=new ArrayList<>();
+        for(Device device:devices){
+            this.deviceNames.add(device.getName());
+            this.deviceTypes.add(device.getType());
+        }
     }
 
     @Override
     public int getCount() {
         return deviceNames.size();
-        }
+    }
 
     @Override
     public Object getItem(int position) {

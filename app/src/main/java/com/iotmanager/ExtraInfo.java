@@ -15,18 +15,19 @@ public class ExtraInfo extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private TextView ip;
     private TextView mac;
-
+    private Device device;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_extra_info);
         Intent i=this.getIntent();
+        this.device=(Device)i.getSerializableExtra("Device");
         Log.i(TAG, "Extra info");
-        setTitle(i.getStringExtra("NAME"));
+        setTitle(this.device.getName());
         ip=(TextView)findViewById(R.id.ipAddress);
         mac=(TextView)findViewById(R.id.macAddress);
-        ip.setText(i.getStringExtra("IP"));
-        mac.setText(i.getStringExtra("MAC"));
+        ip.setText(this.device.getIp());
+        mac.setText(this.device.getMac());
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.iotmanager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -26,20 +27,12 @@ import static com.iotmanager.Constants.RESPONSE_ROOM_SUCCESS;
 public abstract class GenericConfiguration extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     public DeviceCommunicationHandler deviceCommunicationHandler;
-    public String ip;
-    public String mac;
-    public String name;
-    public String type;
-    public String room;
+    public Device device;
     private DeviceDBHelper deviceDBHelper=new DeviceDBHelper(this);
 
     public void getDeviceInformation(){
         Intent deviceInformation=getIntent();
-        name=deviceInformation.getStringExtra("NAME");
-        ip=deviceInformation.getStringExtra("IP");
-        mac=deviceInformation.getStringExtra("MAC");
-        type=deviceInformation.getStringExtra("TYPE");
-        room=deviceInformation.getStringExtra("ROOM");
+        this.device=(Device)deviceInformation.getSerializableExtra("Device");
     }
 
     public void renameDevice(){
@@ -69,21 +62,23 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         if (response.equals(RESPONSE_NAME_SUCCESS)) {
             Toast.makeText(this, "Device renamed to "+newName, Toast.LENGTH_SHORT).show();
             deviceDBHelper.dumpDBtoLog();
-            int id=deviceDBHelper.getIDSpecificDevice(name,room,type,mac);
+            int id=deviceDBHelper.getID(device); //get old id;
+            this.device.setName(newName); //modify device
             if(id==-1){
                 //device is not in the database, but should be (can happen when flashing and clearing the db)
                 //just add it with the new name
-                Log.i(TAG,"Device not in db, adding "+name+", "+room+", "+type);
-                deviceDBHelper.addDevice(newName,room,type,mac);
+                Log.i(TAG,"Device not in db, adding ");
+                this.device.log();
+                deviceDBHelper.addDevice(this.device);
                 deviceDBHelper.dumpDBtoLog();
             }
             else{
-                Log.i(TAG,"Device in db, updating "+name+", "+room+", "+type);
-                deviceDBHelper.updateDevice(id, newName, room, type,mac);
+                Log.i(TAG,"Device in db, updating ");
+                this.device.log();
+                deviceDBHelper.updateDevice(id, device);
                 deviceDBHelper.dumpDBtoLog();
             }
-            name=newName;
-            setTitle(name);
+            setTitle(this.device.getName());
             returnToHomeAfterConfigChange();
         }
         else{
@@ -116,15 +111,15 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_ROOM+newRoom);
         if (response.equals(RESPONSE_ROOM_SUCCESS)) {
             Toast.makeText(this, "Device room changed to "+newRoom, Toast.LENGTH_SHORT).show();
-            int id=deviceDBHelper.getIDSpecificDevice(name,room,type,mac);
+            int id=deviceDBHelper.getID(this.device);
+            this.device.setRoom(newRoom);
             if(id==-1){
                 //device is not in the database, but should be (can happen when flashing and clearing the db
-                deviceDBHelper.addDevice(name,newRoom,type,mac);
+                deviceDBHelper.addDevice(this.device);
             }
             else{
-                deviceDBHelper.updateDevice(id, name, newRoom, type,mac);
+                deviceDBHelper.updateDevice(id, this.device);
             }
-            room=newRoom;
             returnToHomeAfterConfigChange();
         }
         else{
@@ -150,9 +145,11 @@ public abstract class GenericConfiguration extends AppCompatActivity {
                 .setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deviceCommunicationHandler.sendDataNoResponse(COMMAND_TYPE + items[which].toString());
-                        deviceDBHelper.updateDevice(deviceDBHelper.getIDSpecificDevice(name,room,type,mac),name,items[which].toString(),type,mac);
-                        type=items[which].toString();
+                        String newType=items[which].toString();
+                        deviceCommunicationHandler.sendDataNoResponse(COMMAND_TYPE + newType);
+                        int id=deviceDBHelper.getID(device);
+                        GenericConfiguration.this.device.setType(newType);
+                        deviceDBHelper.updateDevice(id,GenericConfiguration.this.device);
                         Intent homeIntent=new Intent(GenericConfiguration.this,Home.class);
                         startActivity(homeIntent);
                         dialog.cancel();
@@ -168,15 +165,13 @@ public abstract class GenericConfiguration extends AppCompatActivity {
 
     public void changeNetwork(){
         Intent changeNetworkIntent = new Intent(GenericConfiguration.this,AvailableNetworks.class);
-        changeNetworkIntent.putExtra("New IP",ip);
+        changeNetworkIntent.putExtra("New IP",this.device.getIp());
         startActivity(changeNetworkIntent);
     }
 
     public void showExtraInfo(){
         Intent extraInfoIntent = new Intent(GenericConfiguration.this,ExtraInfo.class);
-        extraInfoIntent.putExtra("IP",ip);
-        extraInfoIntent.putExtra("MAC", mac);
-        extraInfoIntent.putExtra("NAME",name);
+        extraInfoIntent.putExtra("Device",this.device);
         startActivity(extraInfoIntent);
     }
     @Override

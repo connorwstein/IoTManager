@@ -120,7 +120,7 @@ public class CameraConfiguration extends GenericConfiguration {
         setContentView(R.layout.activity_camera_configuration);
         getDeviceInformation();
         initViews();
-        deviceCommunicationHandler=new DeviceCommunicationHandler(ip,DEFAULT_DEVICE_TCP_PORT,this);
+        deviceCommunicationHandler=new DeviceCommunicationHandler(device.getIp(),DEFAULT_DEVICE_TCP_PORT,this);
         takePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -203,7 +203,7 @@ public class CameraConfiguration extends GenericConfiguration {
     }
 
     private void initViews(){
-        setTitle(name);
+        setTitle(device.getName());
         takePicture=(Button)findViewById(R.id.cameraTakePicture);
         emailPicture=(Button)findViewById(R.id.cameraEmailPicture);
         cameraPicture=(ImageView)findViewById(R.id.cameraPicture);
@@ -265,7 +265,7 @@ public class CameraConfiguration extends GenericConfiguration {
                 pictureBytes=msg.getData().getByteArray("Image");
           }
         };
-        getPictureTask.execute(size,p,ip.toString(),cameraPicture,deviceCommunicationHandler,handler,defaultText);
+        getPictureTask.execute(size,p,device.getIp(),cameraPicture,deviceCommunicationHandler,handler,defaultText);
     }
 
 }

@@ -20,6 +20,7 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
     private static final String TAG="Connors Debug";
     private static final String TEXT_TYPE = " text";
     private static final String COMMA_SEP = ", ";
+    //Note the DB does not store IP address as this may change due to DHCP
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE IF NOT EXISTS " + DevicesDB.TABLE_NAME + " (" +
                     DevicesDB.COLUMN_ID + " INTEGER PRIMARY KEY, " +
@@ -57,7 +58,11 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         //Log.i(TAG, "Database opened");
     }
 
-    public int addDevice(String name, String room, String type, String mac){
+    public int addDevice(Device device){
+        String name=device.getName();
+        String room=device.getRoom();
+        String type=device.getType();
+        String mac=device.getMac();
         SQLiteDatabase db=this.getWritableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
                 +DevicesDB.COLUMN_NAME +"="+"'"+name.trim()+"'"+" AND "
@@ -80,12 +85,16 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         return 0;
     }
 
-    public int updateDevice(int id, String updatedName, String updatedRoom, String updatedType, String updatedMac){
+    public int updateDevice(int idOldDevice,Device updatedDevice){
+        String updatedName=updatedDevice.getName();
+        String updatedRoom=updatedDevice.getRoom();
+        String updatedType=updatedDevice.getType();
+        String updatedMac=updatedDevice.getMac();
         SQLiteDatabase db=this.getWritableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
-                +DevicesDB.COLUMN_ID +"="+id,null);
+                +DevicesDB.COLUMN_ID +"="+idOldDevice,null);
         if(!c.moveToFirst()){
-            Log.i(TAG,"No such device: "+id+", can not change to "+updatedName.trim()+", "+updatedRoom.trim()+", "+updatedType.trim()+", "+updatedMac);
+            Log.i(TAG,"No such device: "+idOldDevice+", can not change to "+updatedName.trim()+", "+updatedRoom.trim()+", "+updatedType.trim()+", "+updatedMac);
             //dumpDBtoLog();
             return -1;
         }
@@ -95,7 +104,7 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
             values.put(DevicesDB.COLUMN_ROOM, updatedRoom.trim());
             values.put(DevicesDB.COLUMN_TYPE, updatedType.trim());
             values.put(DevicesDB.COLUMN_MAC, updatedMac.trim());
-            db.update(DevicesDB.TABLE_NAME, values, DevicesDB.COLUMN_ID + "=" + id, null);
+            db.update(DevicesDB.TABLE_NAME, values, DevicesDB.COLUMN_ID + "=" + idOldDevice, null);
             return 0;
         }
     }
@@ -105,10 +114,17 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_ENTRIES);
         db.close();
     }
-    public void deleteDevice(String name){
+    public void deleteDevice(Device device){
+        String name=device.getName();
+        String room=device.getRoom();
+        String type=device.getType();
+        String mac=device.getMac();
         SQLiteDatabase db=this.getWritableDatabase();
         try{
-            db.delete(DevicesDB.TABLE_NAME, DevicesDB.COLUMN_NAME + "=" + "'" + name.trim() + "'", null);
+            db.delete(DevicesDB.TABLE_NAME, DevicesDB.COLUMN_NAME + "=" + "'" + name.trim() + "'"+" AND "+
+                                            DevicesDB.COLUMN_ROOM + "=" + "'" + room.trim() + "'"+" AND "+
+                                            DevicesDB.COLUMN_TYPE + "=" + "'" + type.trim() + "'"+" AND "+
+                                            DevicesDB.COLUMN_MAC + "=" + "'" + mac.trim() + "'", null);
         }
         catch(SQLiteException e){
             Log.i(TAG,"No columns available to delete");
@@ -117,7 +133,11 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public int getIDSpecificDevice(String name, String room, String type, String mac){
+    public int getID(Device device){
+        String name =device.getName();
+        String room = device.getRoom();
+        String type = device.getType();
+        String mac =device.getMac();
         SQLiteDatabase db=this.getReadableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
                 +DevicesDB.COLUMN_NAME +"="+"'"+name.trim()+"'"+" AND "
@@ -147,28 +167,6 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    //Allows multiple devices with the same name (can differentiate in terms of room)
-    public List<Integer> getIDDevices(String name){
-        SQLiteDatabase db=this.getReadableDatabase();
-        List<Integer> results=new ArrayList<Integer>();
-        Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "+DevicesDB.COLUMN_NAME+"="+"'"+name.trim()+"'",null);
-        if(c.moveToFirst()==false){
-            Log.i(TAG, "No devices with name: "+name.trim());
-            results.add(-1);
-            return results;
-        }
-        int rowCount=0;
-        do{
-            rowCount++;
-            results.add(Integer.parseInt(c.getString(0)));
-        }
-        while(c.moveToNext());
-
-        if(rowCount>1){
-            Log.i(TAG,"Multiple devices with this name");
-        }
-        return results;
-    }
     public void dumpDBtoLog(){
         SQLiteDatabase db=this.getReadableDatabase();
         Cursor c=db.rawQuery("SELECT * FROM " + DevicesDB.TABLE_NAME + ";", null);
