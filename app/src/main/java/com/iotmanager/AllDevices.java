@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.GridView;
 
 
@@ -26,7 +27,7 @@ public class AllDevices extends AppCompatActivity {
         progressDialog.setMessage("Broadcasting for devices");
         progressDialog.setCancelable(false);
         progressDialog.show();
-        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources());//will block until devices have been found
+        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources(),null);//will block until devices have been found
 
     }
 
@@ -39,7 +40,7 @@ public class AllDevices extends AppCompatActivity {
         progressDialog.setMessage("Broadcasting for devices");
         progressDialog.setCancelable(false);
         progressDialog.show();
-        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources());//will block until devices have been found
+        deviceBroadcast.execute(this, progressDialog, devicesGridView, getResources(),null);//will block until devices have been found
 
     }
 
@@ -49,6 +50,15 @@ public class AllDevices extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_all_devices, menu);
         return true;
     }
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.actionRefresh:
+                AllDevices.this.onStart();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
 }

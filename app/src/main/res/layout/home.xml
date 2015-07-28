@@ -7,10 +7,10 @@
     tools:context="com.iotmanager.AllDevices"
     android:background="#009688">
 
-    <ListView
+    <GridView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/nearbyDevices"></ListView>
+        android:id="@+id/nearbyDevices"></GridView>
 
 
 

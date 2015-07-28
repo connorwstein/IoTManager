@@ -33,24 +33,13 @@ public class DeviceCommunicationHandler {
     private byte[] readBuffer;
     private static final String TAG = "Connors Debug";
     private Context context;
-    private boolean isPicture = false; //if this is true, the entire buffer will be returned (including null bytes)
 
-    public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context, int readBufSize) {
-        this.deviceIP = deviceIP;
-        this.devicePort = devicePort;
-        readBuffer = new byte[readBufSize];
-        this.context = context;
-    }
     public DeviceCommunicationHandler(String deviceIP, int devicePort, Context context) {
         this.deviceIP = deviceIP;
         this.devicePort = devicePort;
-        readBuffer = new byte[DEFAULT_READ_BUF_SIZE];
+        this.readBuffer = new byte[DEFAULT_READ_BUF_SIZE];
         this.context = context;
     }
-    public void setPictureBoolean(boolean picture) {
-        isPicture= picture;
-    }
-
     public void setIP(String newIP) {
         this.deviceIP = newIP;
     }
@@ -180,8 +169,6 @@ public class DeviceCommunicationHandler {
         return socket;
     }
 
-
-
     private String getStringFromReadBuffer() {
         if (readBuffer[0] == '\0') {
             //No response from device
@@ -189,18 +176,9 @@ public class DeviceCommunicationHandler {
         }
         String result = null;
         try {
-            if (isPicture) {
-                //use string builder when looping, much faster than concatenating
-                StringBuilder sb=new StringBuilder();
-                for (byte b : readBuffer) {
-                    sb.append(String.format("%02X", b));
-                }
-                result=sb.toString();
-            } else {
                 int i = 0;
                 while (readBuffer[i++] != '\0') ;
                 result = new String(readBuffer, 0, i - 1, "UTF-8");
-            }
 
         } catch (UnsupportedEncodingException e) {
             Log.i(TAG, "Exception " + e.getMessage());

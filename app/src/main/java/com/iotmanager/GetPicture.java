@@ -4,8 +4,13 @@ import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -36,7 +41,10 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
     private int size;
     private PrintWriter out;
     private ImageView image;
+    private byte[] pictureBytes;
     private DeviceCommunicationHandler deviceCommunicationHandler;
+    private TextView defaultText;
+    private Handler handler;
     @Override
     protected Integer doInBackground(Object... params) {
             size=(int)params[0];
@@ -44,6 +52,8 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
             ip=(String)params[2];
             image=(ImageView)params[3];
             deviceCommunicationHandler=(DeviceCommunicationHandler) params[4];
+            handler=(Handler)params[5];
+            defaultText=(TextView)params[6];
             readBuffer=new byte[2*size];
             if(size>MAX_PICTURE_SIZE){
                 Log.i(TAG,"Maximum picture size exceeded");
@@ -91,23 +101,33 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
             Log.i(TAG,"Error recieving picture data");
         }
         else{
-            createJPEG(readBuffer);
+            createJPEG();
         }
     }
-    private void createJPEG(byte[] rawData) {
+    private void createJPEG() {
 
         int i=2*size-1;
         while(i>=0&&readBuffer[i]!=-1){
             i--;
         }
-        if(i==0){
+        if(i==0||!String.format("%02X%02X",readBuffer[i],readBuffer[i+1]).equals("FFD9")){
             Log.i(TAG,"No FFD9 received");
             return;
         }
-        Log.i(TAG,"End check: "+String.format("%02X%02X",readBuffer[i],readBuffer[i+1]));
-        Log.i(TAG,"Start check "+String.format("%02X%02X",readBuffer[5],readBuffer[6]));
+        Log.i(TAG, "End check: " + String.format("%02X%02X", readBuffer[i], readBuffer[i + 1])); //FFD9
+        Log.i(TAG,"Start check "+String.format("%02X%02X",readBuffer[5],readBuffer[6])); //FFD8
+        int imageLength=(i+1)-5+1;//size of FFD8....FFD9 i.e. just the image itself
         Bitmap imageBitmap= BitmapFactory.decodeByteArray(readBuffer, 5, (i+2)-5, null);
+        image.setScaleType(ImageView.ScaleType.FIT_XY);
         image.setImageBitmap(imageBitmap);
+        defaultText.setVisibility(View.INVISIBLE);
+        pictureBytes=new byte[imageLength];
+        System.arraycopy(readBuffer, 5, this.pictureBytes, 0, imageLength);
+        Message m=new Message();
+        Bundle b=new Bundle();
+        b.putByteArray("Image", pictureBytes);
+        m.setData(b);
+        handler.sendMessage(m);
         deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
     }
 }

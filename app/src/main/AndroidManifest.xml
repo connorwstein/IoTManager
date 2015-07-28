@@ -57,14 +57,12 @@
         <activity
             android:name=".TemperatureConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_temperature_configuration"
-            android:parentActivityName=".Home" >
+            android:label="@string/title_activity_temperature_configuration">
         </activity>
         <activity
             android:name=".LightingConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_lighting_configuration"
-            android:parentActivityName=".Home" >
+            android:label="@string/title_activity_lighting_configuration">
         </activity>
         <activity
             android:name=".AllDevices"
@@ -75,8 +73,7 @@
         <activity
             android:name=".CameraConfiguration"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_camera_configuration"
-            android:parentActivityName=".Home">
+            android:label="@string/title_activity_camera_configuration">
         </activity>
         <activity
             android:name=".ExtraInfo"

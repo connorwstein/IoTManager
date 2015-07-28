@@ -45,13 +45,15 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
     private GridView devicesGridView;
     private Resources resources;
     private DeviceDBHelper deviceDBHelper;
-
+    private String roomFilter;
     @Override
     protected Boolean doInBackground(Object... args) {
         context=(Context)args[0];
         progressDialog=(ProgressDialog)args[1];
         devicesGridView=(GridView)args[2];
         resources=(Resources) args[3];
+        roomFilter=(String)args[4];
+
         broadcastMessage="Hello ESP Devices?";
         deviceResponses=new ArrayList<String>();
 
@@ -117,6 +119,9 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
                 deviceDBHelper.addDevice(name, room, type,mac);
             }
         }
+        if(roomFilter!=null){
+            filterByRoom(deviceInformation,roomFilter);
+        }
         deviceDBHelper.dumpDBtoLog();
         devicesGridView.setAdapter(new ImageAdapter(context, resources,deviceInformation.get(0),deviceInformation.get(4)));
         devicesGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -132,6 +137,19 @@ public class UdpBroadcast extends AsyncTask<Object,Void,Boolean> {
                     Log.i(TAG,"Error with device information");
             }
         });
+    }
+
+    private void filterByRoom(ArrayList<ArrayList<String>>deviceInformation, String room){
+
+        for(int i=0;i<deviceInformation.get(0).size();i++){
+            if(!deviceInformation.get(3).get(i).equals(room)){
+                deviceInformation.get(0).remove(i);
+                deviceInformation.get(1).remove(i);
+                deviceInformation.get(2).remove(i);
+                deviceInformation.get(3).remove(i);
+                deviceInformation.get(4).remove(i);
+            }
+        }
     }
     private Intent createIntentWithDeviceInformation(final ArrayList<ArrayList<String>>deviceInformation, int position){
         Log.i(TAG, "Create Device info intent");

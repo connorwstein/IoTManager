@@ -1,5 +1,6 @@
 package com.iotmanager;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -18,21 +20,35 @@ import java.util.List;
 
 public class Home extends AppCompatActivity {
     private static final String TAG="Connors Debug";
-
-
-
     private WifiManager manager;
-    private ListView nearbyDevices;
     private ArrayAdapter<String> adapter;
     private DeviceDBHelper deviceDBHelper;
+    private GridView nearbyDevices;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
         deviceDBHelper=new DeviceDBHelper(Home.this);
-        nearbyDevices=(ListView)findViewById(R.id.nearbyDevices);
+        nearbyDevices=(GridView)findViewById(R.id.nearbyDevices);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
-        setTitle("Room: " +getRoom());
+        deviceDBHelper.dumpDBtoLog();
+        String currentRoom=getRoom();
+        if(currentRoom!=null){
+            setTitle("Room: " +currentRoom);
+        }
+        else{
+            setTitle("No Configured Devices");
+        }
+        nearbyDevices.setAdapter(null);
+        UdpBroadcast deviceBroadcast=new UdpBroadcast();
+        ProgressDialog progressDialog=new ProgressDialog(this);
+        progressDialog.setMessage("Broadcasting for devices");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        deviceBroadcast.execute(this, progressDialog, nearbyDevices, getResources(),currentRoom);//will block until devices have been found
+
+
 //        adapter=new ArrayAdapter<String>(
 //                this,
 //                R.layout.list,
@@ -52,6 +68,10 @@ public class Home extends AppCompatActivity {
             if(ssid.contains("ESP")&&ssid.length()==21){ //length ensures that it is a locator device with ESP_MACADDRESS.. and not ESP_somethingelse
                 String mac=getMacFromSSID(ssid);
                 String room=deviceDBHelper.getRoomFromMac(mac);
+                if(room==null){
+                    Log.i(TAG,"Detected mac not in the db");
+                    continue;
+                }
                 Log.i(TAG,"MAC Found: "+mac+" in room "+room);
                 if(rooms.containsKey(room)){
                     rooms.put(room,rooms.get(room)+1);
@@ -60,6 +80,9 @@ public class Home extends AppCompatActivity {
                     rooms.put(room,1);
                 }
             }
+        }
+        if(rooms.size()==0){
+            return null;
         }
         deviceDBHelper.dumpDBtoLog();
         HashMap.Entry<String,Integer>maxEntry=null;
@@ -85,7 +108,7 @@ public class Home extends AppCompatActivity {
             Log.i(TAG, "Device: " + ssid + " RSSI: " + device.level);
             if(ssid.contains("ESP")){
                 String mac=getMacFromSSID(ssid);
-                ssids.add(ssid + " " +device.level+" MAC from ssid: "+mac+"Room from db lookup: "+deviceDBHelper.getRoomFromMac(mac));
+                ssids.add(ssid + " " + device.level + " MAC from ssid: " + mac + "Room from db lookup: " + deviceDBHelper.getRoomFromMac(mac));
             }
         }
         deviceDBHelper.dumpDBtoLog();
@@ -118,6 +141,9 @@ public class Home extends AppCompatActivity {
                 return true;
             case R.id.all:
                 startActivity(new Intent(Home.this, AllDevices.class));
+                return true;
+            case R.id.availableDevices:
+                startActivity(new Intent(Home.this,AvailableDevices.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
