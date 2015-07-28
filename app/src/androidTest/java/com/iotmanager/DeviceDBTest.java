@@ -24,20 +24,22 @@ public class DeviceDBTest extends AndroidTestCase {
     public void testDatabase(){
         deviceDBHelper.emptyDB();
         //Add a device then make sure its in the database by checking the ID, test with trailing white space (database should trim it)
-        deviceDBHelper.addDevice("MyDev ", "Kitchen ", "Temperature","ABCD");
-        assertEquals(deviceDBHelper.getIDDevices("MyDev").get(0) == -1, false); //ensure non-negative id
-        assertEquals(deviceDBHelper.getIDSpecificDevice("MyDev", "Kitchen", "Temperature","ABCD")==-1,false);
+        Device testDev=new Device("My Dev",null,"ABCD","Kitchen","Temperature");
+        deviceDBHelper.addDevice(testDev);
+        assertEquals(deviceDBHelper.getID(testDev) == -1, false); //ensure non-negative id
         //Try to add a device that already exists
-        assertEquals(deviceDBHelper.addDevice("MyDev", "Kitchen", "Temperature","ABCD"), -1);
+        assertEquals(deviceDBHelper.addDevice(testDev), -1);
         //Update device
-        int id=deviceDBHelper.getIDSpecificDevice("MyDev","Kitchen","Temperature","ABCD");
-        assertEquals(deviceDBHelper.updateDevice(id, " MyUpdatedDev", "Living Room ", "Camera","EFGH")==0,true);
-        assertEquals(deviceDBHelper.getIDDevices("MyDev").get(0)==-1,true);
-        assertEquals(deviceDBHelper.getIDSpecificDevice("MyDev","Kitchen","Temperature","ABCD")==-1,true); //should no longer be this device
+        int id=deviceDBHelper.getID(testDev);
+        testDev.setName("UpdatedDev");
+        testDev.setRoom("Living");
+        testDev.setType("Camera");
+        testDev.setMac("EFGH");
+        assertEquals(deviceDBHelper.updateDevice(id, testDev) == 0, true);
+        assertEquals(deviceDBHelper.getID(new Device("My Dev",null,"ABCD","Kitchen","Temperature"))==-1,true); //ensure old device no longer exists
         //Test deleting the device
-        deviceDBHelper.deleteDevice("MyUpdatedDev");
-        assertEquals(deviceDBHelper.getIDDevices("MyUpdatedDev").get(0) == -1, true); //Make sure its gone
-        assertEquals(deviceDBHelper.getIDSpecificDevice("MyUpdatedDev","Living Room","Camera","EFGH")==-1,true);
+        deviceDBHelper.deleteDevice(testDev);
+        assertEquals(deviceDBHelper.getID(testDev) == -1, true); //Make sure its gone
         deviceDBHelper.dumpDBtoLog();
     }
 
