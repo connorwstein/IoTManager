@@ -36,6 +36,7 @@ public class DeviceDBTest extends AndroidTestCase {
         testDev.setType("Camera");
         testDev.setMac("EFGH");
         assertEquals(deviceDBHelper.updateDevice(id, testDev) == 0, true);
+        assertEquals(deviceDBHelper.getID(testDev)!=-1,true);
         assertEquals(deviceDBHelper.getID(new Device("My Dev",null,"ABCD","Kitchen","Temperature"))==-1,true); //ensure old device no longer exists
         //Test deleting the device
         deviceDBHelper.deleteDevice(testDev);

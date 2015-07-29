@@ -9,9 +9,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
@@ -50,10 +54,33 @@ public class CameraConfiguration extends GenericConfiguration {
     private Handler handler;
     private TextView defaultText;
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_camera_configuration);
+        getDeviceInformation();
+        initViews();
+        deviceCommunicationHandler=new DeviceCommunicationHandler(device.getIp(),DEFAULT_DEVICE_TCP_PORT,this);
+        takePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pg.show();
+                pg.setCancelable(false);
+                takePicture();
+            }
+        });
+        emailPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emailPicture();
+            }
+        });
+
+    }
+    @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         if(menu.findItem(10)==null){
-            menu.add(0,10,0,"Change compression size"); //arbitrary id of 10, just used to check if item already exists in menu
+            menu.add(0, 10, 0, "Change compression size"); //arbitrary id of 10, just used to check if item already exists in menu
             //solves bug where menu item keeps getting added
         }
         return true;
@@ -92,7 +119,7 @@ public class CameraConfiguration extends GenericConfiguration {
                                 Toast.makeText(CameraConfiguration.this, "Device failed to change compression ratio, try again.", Toast.LENGTH_SHORT).show();
 
                             } else if (response.equals(RESPONSE_CAMERA_CHANGE_COMPRESSION_SUCCESS)) {
-                                Toast.makeText(CameraConfiguration.this, "Compression ratio changed to "+value, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(CameraConfiguration.this, "Compression ratio changed to " + value, Toast.LENGTH_SHORT).show();
 
                                 Log.i(TAG, "Compression ratio changed");
                             } else {
@@ -114,103 +141,16 @@ public class CameraConfiguration extends GenericConfiguration {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera_configuration);
-        getDeviceInformation();
-        initViews();
-        deviceCommunicationHandler=new DeviceCommunicationHandler(device.getIp(),DEFAULT_DEVICE_TCP_PORT,this);
-        takePicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                takePicture();
-            }
-        });
-        emailPicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emailPicture();
-            }
-        });
-
-    }
-    private void emailPicture(){
-        DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
-        Calendar cal = Calendar.getInstance();
-        String datetime=dateFormat.format(cal.getTime());
-        Log.i(TAG,"Datetime "+datetime);
-        Log.i(TAG,"Picture bytes 0: "+pictureBytes[0]);
-        if(pictureBytes!=null){
-            Log.i(TAG,"Image: "+pictureBytes);
-        }
-        else{
-            Log.i(TAG,"Picture bytes are null");
-            return;
-        }
-        String filename="IMG_"+datetime;
-        final File file = new File(CameraConfiguration.this.getFilesDir(),filename);
-        FileOutputStream fos;
-
-        try {
-            fos = new FileOutputStream(file);
-            fos.write(pictureBytes);
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        byte[]results=new byte[100];
-        try{
-            FileInputStream fin=new FileInputStream(file);
-            fin.read(results);
-        }
-       catch(Exception e){
-           Log.i(TAG,"File not found");
-       }
-        Log.i(TAG,"Test readback "+String.format("%02X%02X",results[0],results[1]));
-
-        final EditText emailAddress=new EditText(CameraConfiguration.this);
-        emailAddress.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        AlertDialog.Builder builder= new AlertDialog.Builder(CameraConfiguration.this)
-                .setMessage("Enter email address")
-                .setView(emailAddress)
-                .setPositiveButton("OK",new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which){
-                        Intent i = new Intent(Intent.ACTION_SEND);
-                        i.setType("message/rfc822");
-                        i.putExtra(Intent.EXTRA_EMAIL, new String[]{emailAddress.getText().toString()});
-                        i.putExtra(Intent.EXTRA_SUBJECT, "Image from my cam");
-                        i.putExtra(Intent.EXTRA_TEXT   , "Hello world");
-//                        Uri uri = Uri.fromFile(file);
-//                        i.putExtra(Intent.EXTRA_STREAM, uri);
-                        try {
-                            startActivity(Intent.createChooser(i, "Send mail..."));
-                        } catch (android.content.ActivityNotFoundException ex) {
-                            Toast.makeText(CameraConfiguration.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-                        }
-                        file.delete();
-                    }
-                })
-                .setNegativeButton("Cancel",new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which){
-                        file.delete();
-                        dialog.cancel();
-                    }
-                });
-        builder.show();
-    }
 
     private void initViews(){
         setTitle(device.getName());
         takePicture=(Button)findViewById(R.id.cameraTakePicture);
         emailPicture=(Button)findViewById(R.id.cameraEmailPicture);
         cameraPicture=(ImageView)findViewById(R.id.cameraPicture);
-        cameraPicture.setBackgroundColor(Color.parseColor("#FFFFFF"));
+        cameraPicture.setBackgroundColor(Color.parseColor("#ABABAB"));
         defaultText=(TextView)findViewById(R.id.defaultCameraText);
         pg=new ProgressDialog(this);
-        pg.setTitle("Taking picture...");
+        pg.setMessage("Taking picture...");
     }
 
     private void takePicture(){
@@ -218,6 +158,8 @@ public class CameraConfiguration extends GenericConfiguration {
         Log.i(TAG, "Response Take Picture: " + response);
         if(response==null){
             Log.i(TAG,"Error receiving response from device");
+            Toast.makeText(CameraConfiguration.this, "Did not receive the whole picture. Try again.", Toast.LENGTH_SHORT);
+            pg.dismiss();
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
             return;
         }
@@ -228,7 +170,7 @@ public class CameraConfiguration extends GenericConfiguration {
         else if(response.equals(RESPONSE_TAKE_PICTURE_FAIL)){
             Log.i(TAG,"Device unable to take a picture");
             Toast.makeText(CameraConfiguration.this, "Device unable to take picture", Toast.LENGTH_SHORT).show();
-
+            pg.dismiss();
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
         }
         else{
@@ -248,24 +190,95 @@ public class CameraConfiguration extends GenericConfiguration {
         else{
             Log.i(TAG,"Error receiving response from device");
             Toast.makeText(CameraConfiguration.this,"Error getting picture size from device",Toast.LENGTH_SHORT).show();
+            pg.dismiss();
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
         }
     }
     private void getPicture(int size){
-
-        ProgressDialog p=new ProgressDialog(this);
-        p.setMessage("Taking picture...");
-        p.setIndeterminate(false);
-        p.show();
         GetPicture getPictureTask=new GetPicture();
         handler=new Handler(){
           @Override
             public void handleMessage(Message msg){
               Log.i(TAG,"Getting picture bytes");
-                pictureBytes=msg.getData().getByteArray("Image");
+              pictureBytes=msg.getData().getByteArray("Image");
           }
         };
-        getPictureTask.execute(size,p,device.getIp(),cameraPicture,deviceCommunicationHandler,handler,defaultText);
+        getPictureTask.execute(size, pg, device.getIp(), cameraPicture, deviceCommunicationHandler, handler, defaultText, CameraConfiguration.this);
     }
 
+    private void emailPicture(){
+        if(pictureBytes!=null){
+            Log.i(TAG,"Image: "+pictureBytes);
+        }
+        else{
+            Log.i(TAG,"Picture bytes are null");
+            Toast.makeText(CameraConfiguration.this,"Take a picture first!",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final EditText emailAddress=new EditText(CameraConfiguration.this);
+        emailAddress.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        AlertDialog.Builder builder= new AlertDialog.Builder(CameraConfiguration.this)
+                .setMessage("Enter email address")
+                .setView(emailAddress)
+                .setPositiveButton("OK",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        String filename=createImageFileName();
+                        cleanOutOldImages();
+                        File file=createImageFile(filename);
+                        Intent i=createEmailIntentWithPictureAttachment(emailAddress.getText().toString(),file);
+                        try {
+                            startActivity(Intent.createChooser(i, "Send mail..."));
+                        } catch (android.content.ActivityNotFoundException ex) {
+                            Toast.makeText(CameraConfiguration.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+                        }
+                        Log.i(TAG,"Deleting file");
+                    }
+                })
+                .setNegativeButton("Cancel",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
+    }
+    private void cleanOutOldImages(){
+        String[] children = CameraConfiguration.this.getExternalFilesDir(null).list();
+        for (int i = 0; i < children.length; i++) {
+            Log.i(TAG,"Deleting: "+children[i]);
+            new File(CameraConfiguration.this.getExternalFilesDir(null), children[i]).delete();
+        }
+    }
+    private String createImageFileName(){
+        DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+        String filename="IMG_"+dateFormat.format(Calendar.getInstance().getTime())+".jpg";
+        return filename;
+    }
+    private File createImageFile(String filename){
+        //NOTE MUST WRITE TO EXTERNAL STORAGE OTHERWISE GMAIL WILL NOT SEND ATTACHMENT
+        File file = new File(CameraConfiguration.this.getExternalFilesDir(null),filename);
+        Log.i(TAG,"Camera image file path: "+file.getAbsolutePath());
+        file.setReadable(true);
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(file);
+            fos.write(pictureBytes);
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    private Intent createEmailIntentWithPictureAttachment(String emailAddress,File file){
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("vnd.android.cursor.dir/email");
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.putExtra(Intent.EXTRA_EMAIL, new String[]{emailAddress});
+        i.putExtra(Intent.EXTRA_SUBJECT, "Image from my cam");
+        i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+        return i;
+    }
 }

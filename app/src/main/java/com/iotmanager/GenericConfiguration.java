@@ -61,7 +61,8 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_NAME+newName);
         if (response.equals(RESPONSE_NAME_SUCCESS)) {
             Toast.makeText(this, "Device renamed to "+newName, Toast.LENGTH_SHORT).show();
-            deviceDBHelper.dumpDBtoLog();
+            //deviceDBHelper.dumpDBtoLog();
+            Log.i(TAG,"Device "+this.device.getName()+" rename: "+newName);
             int id=deviceDBHelper.getID(device); //get old id;
             this.device.setName(newName); //modify device
             if(id==-1){

@@ -1,6 +1,7 @@
 package com.iotmanager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,20 +13,33 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+
+import static com.iotmanager.Constants.DEFAULT_DEVICE_BROADCAST_IP;
+import static com.iotmanager.Constants.DEFAULT_DEVICE_UDP_PORT;
 
 /**
  * Created by connorstein on 15-06-08.
  */
 public class DeviceCommunicationHandler {
+
+    //UDP
+    private static final int MAX_NUM_RECEIVE_PACKETS=10;
+    private static final int MAX_NUM_SEND_PACKETS=5;
+    private static final int UDP_SOCKET_TIMEOUT = 100;
+    private static final int RECEIVE_BUFFER_SIZE=1024;
+
+    //TCP
     private static final int SOCKET_TIMEOUT = 5000;
     private static final int DEFAULT_READ_BUF_SIZE=1024;
-
     private String deviceIP;
     private int devicePort;
     private PrintWriter out;
@@ -115,6 +129,95 @@ public class DeviceCommunicationHandler {
     }
 
 
+
+    //Returns Device objects based on which devices respond to the broadcast message sent
+    //Used for determining which devices are on the network
+    public static void broadcastForDevices(final String broadcastMessage,final Handler callback){
+        //Log.i(TAG,"Broadcasting");
+        Thread broadcastForDevices=new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    DatagramSocket udpBroadcastSocket=null;
+                    try{
+                        udpBroadcastSocket= new DatagramSocket();
+                       // Log.i(TAG, "Created datagram socket");
+                    }
+                    catch(Exception e){
+                        Log.i(TAG,"Exception "+e.getMessage());
+                    }
+                    ArrayList<Device>detectedDevices=processDeviceResponses(sendBroadcastPackets(udpBroadcastSocket,broadcastMessage));
+                    Bundle b=new Bundle();
+                    b.putSerializable("Devices",detectedDevices);
+                    Message m=new Message();
+                    m.setData(b);
+                    callback.sendMessage(m);
+                }
+        });
+        broadcastForDevices.start();
+    }
+
+    private static ArrayList<Device> processDeviceResponses(ArrayList<String>deviceResponses){
+        final ArrayList<Device> devices=new ArrayList<>();
+        for(String response:deviceResponses){
+            devices.add(ResponseParser.createDeviceFromResponse(response));
+        }
+        ResponseParser.removeDuplicates(devices);
+        return devices;
+    }
+    //Returns responses from devices (unprocessed)
+    private static ArrayList<String> sendBroadcastPackets(DatagramSocket udpBroadcastSocket, String broadcastMessage){
+        //sent MAX_NUM_SEND_PACKETS and assume responses will occur
+        //to at least one
+        //For each sent packet, attempt to receive MAX_NUM_RECEIVE_PACKETS
+        //Gather all responses and remove duplicates if necessary
+        ArrayList<String>deviceResponses=null;
+        int sentPackets=0;
+        while(sentPackets<MAX_NUM_SEND_PACKETS) {
+            try {
+                byte sendBuffer[] = broadcastMessage.getBytes();
+                sentPackets++;
+                DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, InetAddress.getByName(DEFAULT_DEVICE_BROADCAST_IP), DEFAULT_DEVICE_UDP_PORT);
+                udpBroadcastSocket.setSoTimeout(UDP_SOCKET_TIMEOUT);
+                udpBroadcastSocket.setBroadcast(true);
+                udpBroadcastSocket.send(sendPacket);
+                deviceResponses=receiveMultiplePackets(udpBroadcastSocket); //receiveMultiplePackets allocates memory for deviceResponses
+            } catch (Exception e) {
+                Log.i(TAG, "Exception has occured: " + e.getMessage());
+            }
+        }
+        return deviceResponses;
+    }
+
+    //Tries to receive MAX_NUM_RECEIVE_PACKETS and returns device responses
+    private static ArrayList<String> receiveMultiplePackets(DatagramSocket udpBroadcastSocket){
+        ArrayList<String>deviceResponses=new ArrayList<>();
+        int i;
+        for(i=0;i<MAX_NUM_RECEIVE_PACKETS;i++){
+            String responsePacketData=null;
+            byte receiveBuffer[] = new byte[RECEIVE_BUFFER_SIZE];
+            DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+            try{
+                udpBroadcastSocket.receive(receivePacket);
+            }
+            catch(IOException e){
+                //Log.i(TAG,"IO exception receiving packet "+i);
+                continue;
+            }
+            // Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
+            responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
+            //Log.i(TAG, "Received: " + responsePacketData);
+            if(responsePacketData.contains("IP:")&&responsePacketData.contains("MAC:")&&responsePacketData.contains("NAME:")
+                    && responsePacketData.contains("ROOM:")&&responsePacketData.contains("TYPE:")){
+                deviceResponses.add(responsePacketData);
+            }
+            else{
+                Log.i(TAG,"Invalid Packet: "+responsePacketData);
+            }
+
+        }
+        return deviceResponses;
+    }
+
     public String sendDataGetResponse(final String data) {
         //Open a tcp connection with the device and send the data
         //must be in separate thread to avoid networkonmain thread error
@@ -154,6 +257,8 @@ public class DeviceCommunicationHandler {
         //block until thread is finished
         return getStringFromReadBuffer();
     }
+
+
 
     private void socketWrite(Socket socket, String data) throws IOException {
         out = new PrintWriter(socket.getOutputStream());

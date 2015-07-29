@@ -28,11 +28,15 @@ public class ResponseParser {
     }
 
     public static void filterByRoom(ArrayList<Device> devices, String room){
-        Log.i(TAG,"Filtering by room");
+        if(room==null){
+            return;
+        }
+        Log.i(TAG,"Filtering by room: "+room);
         for(Iterator<Device> it=devices.iterator();it.hasNext();){
             Device device=it.next();
             if(!device.getRoom().trim().equals(room.trim())){
-                Log.i(TAG,"Removing device");
+                Log.i(TAG,"Removing device: ");
+                device.log();
                 it.remove();
             }
         }
@@ -40,8 +44,6 @@ public class ResponseParser {
 
     public static Intent createIntentForDeviceConfiguration(Device device, Context context){
         Intent i=null;
-        Log.i(TAG,"Creating intent: ");
-        device.log();
         switch(device.getType()){
             case "Temperature":
                 i=new Intent(context, TemperatureConfiguration.class);

@@ -1,10 +1,12 @@
 package com.iotmanager;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -33,7 +35,7 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
     private static final int SOCKET_TIMEOUT=5000;
     private static final int MAX_PICTURE_SIZE=14000;
     private static final String TAG = "Connors Debug";
-    private byte[] readBuffer;
+    private byte[] readBuffer=null;
     private String ip;
     private int port=80;
     private BufferedInputStream in;
@@ -45,6 +47,7 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
     private DeviceCommunicationHandler deviceCommunicationHandler;
     private TextView defaultText;
     private Handler handler;
+    private Context context;
     @Override
     protected Integer doInBackground(Object... params) {
             size=(int)params[0];
@@ -54,6 +57,7 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
             deviceCommunicationHandler=(DeviceCommunicationHandler) params[4];
             handler=(Handler)params[5];
             defaultText=(TextView)params[6];
+            context=(Context)params[7];
             readBuffer=new byte[2*size];
             if(size>MAX_PICTURE_SIZE){
                 Log.i(TAG,"Maximum picture size exceeded");
@@ -70,7 +74,7 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
                 out.flush();
                 in = new BufferedInputStream(socket.getInputStream(),readBuffer.length);
                 int read=0;
-                while(read<=size){
+                while(read<size){
                     read+=in.read(readBuffer,read,MAXIMUM_ESP_PACKET);
                     Log.i(TAG,"Read: "+read);
                 }
@@ -98,6 +102,7 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
         pd.dismiss();
         if(error==-1){
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
+            Toast.makeText(context, "Error receiving picture, make sure compression ratio is high enough.", Toast.LENGTH_SHORT);
             Log.i(TAG,"Error recieving picture data");
         }
         else{
@@ -110,25 +115,34 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
         while(i>=0&&readBuffer[i]!=-1){
             i--;
         }
-        if(i==0||!String.format("%02X%02X",readBuffer[i],readBuffer[i+1]).equals("FFD9")){
-            Log.i(TAG,"No FFD9 received");
-            return;
+        try {
+            if (i == 0 || !String.format("%02X%02X", readBuffer[i], readBuffer[i + 1]).equals("FFD9")) {
+                Log.i(TAG, "No FFD9 received");
+                Toast.makeText(context, "Did not receive the whole picture. Try again.", Toast.LENGTH_SHORT);
+                return;
+            }
+            Log.i(TAG,"Environment.getExternal.. : "+ context.getExternalFilesDir(null).getAbsolutePath());
+            Log.i(TAG, "End check: " + String.format("%02X%02X", readBuffer[i], readBuffer[i + 1])); //FFD9
+            Log.i(TAG, "Start check " + String.format("%02X%02X", readBuffer[5], readBuffer[6])); //FFD8
+            int imageLength = (i + 1) - 5 + 1;//size of FFD8....FFD9 i.e. just the image itself
+            Bitmap imageBitmap = BitmapFactory.decodeByteArray(readBuffer, 5, (i + 2) - 5, null);
+            image.setScaleType(ImageView.ScaleType.FIT_XY);
+            image.setImageBitmap(imageBitmap);
+            defaultText.setVisibility(View.INVISIBLE);
+            pictureBytes = new byte[imageLength];
+            System.arraycopy(readBuffer, 5, this.pictureBytes, 0, imageLength);
+
+            Message m = new Message();
+            Bundle b = new Bundle();
+            b.putByteArray("Image", pictureBytes);
+            m.setData(b);
+            handler.sendMessage(m);
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
         }
-        Log.i(TAG, "End check: " + String.format("%02X%02X", readBuffer[i], readBuffer[i + 1])); //FFD9
-        Log.i(TAG,"Start check "+String.format("%02X%02X",readBuffer[5],readBuffer[6])); //FFD8
-        int imageLength=(i+1)-5+1;//size of FFD8....FFD9 i.e. just the image itself
-        Bitmap imageBitmap= BitmapFactory.decodeByteArray(readBuffer, 5, (i+2)-5, null);
-        image.setScaleType(ImageView.ScaleType.FIT_XY);
-        image.setImageBitmap(imageBitmap);
-        defaultText.setVisibility(View.INVISIBLE);
-        pictureBytes=new byte[imageLength];
-        System.arraycopy(readBuffer, 5, this.pictureBytes, 0, imageLength);
-        Message m=new Message();
-        Bundle b=new Bundle();
-        b.putByteArray("Image", pictureBytes);
-        m.setData(b);
-        handler.sendMessage(m);
-        deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
+        catch(Exception e){
+            Log.i(TAG,"Exception read buffer is null");
+            deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
+        }
     }
 }
 

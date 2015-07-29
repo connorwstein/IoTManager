@@ -71,7 +71,7 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
                 +DevicesDB.COLUMN_MAC +"="+"'"+mac.trim()+"'",null);
 
         if(c.moveToFirst()){
-            Log.i(TAG,"Device already exists: "+c.getString(0)+", "+c.getString(1)+", "+c.getString(2)+", "+c.getString(3));
+            Log.i(TAG, "Device already exists: " + c.getString(0) + ", " + c.getString(1) + ", " + c.getString(2) + ", " + c.getString(3));
             return -1;
         }
         ContentValues values= new ContentValues();
@@ -146,7 +146,7 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
                 +DevicesDB.COLUMN_MAC +"="+"'"+mac.trim()+"'",null);
 
         if(!c.moveToFirst()){
-            Log.i(TAG,"No such device exists: "+name.trim()+", "+room.trim()+", "+type.trim());
+            Log.i(TAG,"No such device exists: "+name.trim()+", "+room.trim()+", "+type.trim()+", "+mac.trim());
             //dumpDBtoLog();
             return -1;
         }
@@ -154,8 +154,27 @@ public class DeviceDBHelper extends SQLiteOpenHelper {
             return Integer.parseInt(c.getString(0));
         }
     }
+    public Device getDevice(int id){
+        SQLiteDatabase db=this.getReadableDatabase();
+        Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "
+                +DevicesDB.COLUMN_ID +"="+id,null);
+        if(!c.moveToFirst()){
+            Log.i(TAG,"No device with id "+ id);
+            return null;
+        }
+        else{
+            return new Device(
+                    c.getString(c.getColumnIndex(DevicesDB.COLUMN_NAME)),
+                    null,
+                    c.getString(c.getColumnIndex(DevicesDB.COLUMN_MAC)),
+                    c.getString(c.getColumnIndex(DevicesDB.COLUMN_ROOM)),
+                    c.getString(c.getColumnIndex(DevicesDB.COLUMN_TYPE))
+            );
+        }
+    }
     public String getRoomFromMac(String mac){
         SQLiteDatabase db=this.getReadableDatabase();
+        Log.i(TAG,"Getting room from mac "+mac.trim());
         Cursor c=db.rawQuery("SELECT * FROM "+DevicesDB.TABLE_NAME+" WHERE "+DevicesDB.COLUMN_MAC+"="+"'"+mac.trim()+"'",null);
         String result=null;
         if(c.moveToFirst()){

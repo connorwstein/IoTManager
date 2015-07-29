@@ -5,7 +5,8 @@ package com.iotmanager;
  * All commands for communication with the ESP devices
  */
 public final class Constants {
-
+    public static final String HELLO_DEVICES="Hello ESP Devices?";
+    public static final String LOCATION_MODE="Devices Low Power";
     public static final String DEFAULT_DEVICE_BROADCAST_IP="255.255.255.255";
     public static final int DEFAULT_DEVICE_TCP_PORT=80;
     public static final int DEFAULT_DEVICE_UDP_PORT=1025;

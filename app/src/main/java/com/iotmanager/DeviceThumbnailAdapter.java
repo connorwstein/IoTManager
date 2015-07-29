@@ -25,7 +25,7 @@ import java.util.ArrayList;
 /**
  * Created by connorstein on 15-06-02.
  */
-public class ImageAdapter extends BaseAdapter {
+public class DeviceThumbnailAdapter extends BaseAdapter {
     private static final int ROUNDED_CORNERS_IMAGE_FACTOR=100;
     private static final String TAG="Connors Debug";
 
@@ -38,7 +38,7 @@ public class ImageAdapter extends BaseAdapter {
     private ArrayList<String> deviceTypes;
 
     // Constructor
-    public ImageAdapter(Context c,Resources r, ArrayList<Device> devices){
+    public DeviceThumbnailAdapter(Context c,Resources r, ArrayList<Device> devices){
         this.context=c;
         this.resources=r;
         this.deviceNames=new ArrayList<>();
@@ -66,7 +66,7 @@ public class ImageAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View v;
+        View v=null;
 
         LayoutInflater inflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if(convertView==null) {
