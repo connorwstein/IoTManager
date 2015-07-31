@@ -102,7 +102,7 @@ public class GetPicture extends AsyncTask<Object,Integer,Integer> {
         pd.dismiss();
         if(error==-1){
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
-            Toast.makeText(context, "Error receiving picture, make sure compression ratio is high enough.", Toast.LENGTH_SHORT);
+            Toast.makeText(context, "Error receiving picture, make sure compression ratio is high enough.", Toast.LENGTH_SHORT).show();
             Log.i(TAG,"Error recieving picture data");
         }
         else{

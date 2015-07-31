@@ -75,7 +75,7 @@ public class Home extends AppCompatActivity {
                         setTitle("Current room: " +currentRoom);
                     }
                     else{
-                        setTitle("No Configured Devices");
+                        setTitle("Indeterminate Room");
                     }
                     broadcast(HELLO_DEVICES);
                 }
@@ -98,8 +98,12 @@ public class Home extends AppCompatActivity {
     }
     public void handlePostBroadcast(final ArrayList<Device> devices){
 
-        if (devices.size()==0||currentRoom==null) {
-            Toast.makeText(Home.this, "No devices in this room", Toast.LENGTH_SHORT).show();
+        if (devices.size()==0) {
+            Toast.makeText(Home.this, "No devices in this room responded", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        else if(currentRoom==null){
+            Toast.makeText(Home.this,"Unable to determine room", Toast.LENGTH_SHORT).show();
             return;
         }
         Log.i(TAG, "---------Start devices before filtering --------");

@@ -23,7 +23,7 @@
         android:textSize="20sp"
         android:gravity="center"
         android:background="@drawable/rounded_button"
-        android:textColor="#FFFFFF"
+        android:textColor="#000000"
         android:id="@+id/defaultCameraText"/>
     <Button
         android:layout_width="150dp"
@@ -32,7 +32,7 @@
         android:id="@+id/cameraTakePicture"
         android:layout_below="@id/cameraPicture"
 
-        android:textColor="#FFFFFF"
+        android:textColor="#000000"
         android:layout_marginTop="30dp"
         android:background="@drawable/rounded_button"/>
     <Button
@@ -41,7 +41,7 @@
         android:layout_marginTop="30dp"
         android:layout_marginLeft="180dp"
         android:text="EMAIL PICTURE"
-        android:textColor="#FFFFFF"
+        android:textColor="#000000"
         android:id="@+id/cameraEmailPicture"
         android:layout_below="@id/cameraPicture"
         android:background="@drawable/rounded_button"/>

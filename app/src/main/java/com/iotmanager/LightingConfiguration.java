@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import static com.iotmanager.Constants.DEFAULT_DEVICE_TCP_PORT;
@@ -12,8 +13,9 @@ import static com.iotmanager.Constants.DEFAULT_DEVICE_TCP_PORT;
 public class LightingConfiguration extends GenericConfiguration {
     private static final String TAG="Connors Debug";
     private TextView lightStatus;
-    private String currentLightStatus;
+    private int currentLightStatus;
     private Button lightingOnOff;
+    private SeekBar lightDimmer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,24 +23,59 @@ public class LightingConfiguration extends GenericConfiguration {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lighting_configuration);
         getDeviceInformation();
-        initViews();
         deviceCommunicationHandler=new DeviceCommunicationHandler(device.getIp(),DEFAULT_DEVICE_TCP_PORT,this);
+        initViews();
         getLightStatus();
-        lightStatus.setText(currentLightStatus);
-        lightingOnOff.setOnClickListener(new View.OnClickListener() {
+        updateTitle();
+//       // lightStatus.setText(currentLightStatus);
+//        lightingOnOff.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                updateLightStatus();
+//            }
+//        });
+        lightDimmer.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onClick(View v) {
-                updateLightStatus();
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.i(TAG,"Dimmer set: "+progress);
+                deviceCommunicationHandler.sendDataNoResponse(COMMAND_LIGHTING_SET + progress);
+                currentLightStatus=progress;
+                updateTitle();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                Log.i(TAG,"Start tracking");
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Log.i(TAG,"Stop tracking");
+
             }
         });
     }
 
     private void initViews(){
-        setTitle(device.getName());
-        lightStatus=(TextView)findViewById(R.id.lightStatus);
-        lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
-    }
+//        lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
+        lightDimmer=(SeekBar)findViewById(R.id.lightingDimmer);
 
+    }
+    private void updateTitle(){
+        if(currentLightStatus==100){
+            setTitle(device.getName()+": "+"On");
+        }
+        else if(currentLightStatus==0){
+            setTitle(device.getName()+": "+"Off");
+        }
+        else if(currentLightStatus==-1){
+            setTitle(device.getName()+": "+"Not Available");
+        }
+        else{
+            setTitle(device.getName()+": "+currentLightStatus+"%");
+        }
+    }
     @Override
     protected void onResume(){
         Log.i(TAG, "On resume");
@@ -47,19 +84,21 @@ public class LightingConfiguration extends GenericConfiguration {
 
     private void getLightStatus(){
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_LIGHTING_GET);
+        //respond with a number 0 == OFF 100== ON
         if(response!=null){
-            currentLightStatus=response;
-            lightStatus.setText(currentLightStatus);
+            try{
+                currentLightStatus=Integer.parseInt(response);
+                lightDimmer.setProgress(currentLightStatus);
+            }
+            catch(NumberFormatException e){
+                Log.i(TAG,"Numer format exception - device did not send a number as a light value");
+                currentLightStatus=-1;
+            }
         }
         else{
-            currentLightStatus="Not Available";
-            lightStatus.setText(currentLightStatus);
+            currentLightStatus=-1;
         }
     }
-    private void updateLightStatus(){
-        Log.i(TAG,"Update light status");
-        deviceCommunicationHandler.sendDataNoResponse(COMMAND_LIGHTING_SET);
-        getLightStatus();
-    }
+
 
 }

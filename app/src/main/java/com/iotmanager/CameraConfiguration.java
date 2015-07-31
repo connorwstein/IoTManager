@@ -83,6 +83,10 @@ public class CameraConfiguration extends GenericConfiguration {
             menu.add(0, 10, 0, "Change compression size"); //arbitrary id of 10, just used to check if item already exists in menu
             //solves bug where menu item keeps getting added
         }
+        if(menu.findItem(11)==null){
+            menu.add(0, 11, 0, "Change image dimensions"); //arbitrary id of 10, just used to check if item already exists in menu
+            //solves bug where menu item keeps getting added
+        }
         return true;
     }
     @Override
@@ -138,6 +142,35 @@ public class CameraConfiguration extends GenericConfiguration {
             });
 
         }
+        else if(item.getItemId()==11){
+            final CharSequence[] items={"640x480","320x240","160x120"};
+            AlertDialog.Builder builder = new AlertDialog.Builder(CameraConfiguration.this)
+                    .setTitle("Select Image Dimensions")
+                    .setItems(items, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String response = deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_CHANGE_IMAGE_SIZE + which);
+                            if (response == null) {
+                                Toast.makeText(CameraConfiguration.this, "Error communicating with the device", Toast.LENGTH_SHORT).show();
+                                return;
+                            } else if (response.equals(RESPONSE_CAMERA_CHANGE_IMAGE_SIZE_FAIL)) {
+                                Toast.makeText(CameraConfiguration.this, "Camera failed to change image size", Toast.LENGTH_SHORT).show();
+                                return;
+                            } else if (response.equals(RESPONSE_CAMERA_CHANGE_IMAGE_SIZE_SUCCESS)) {
+                                Toast.makeText(CameraConfiguration.this, "Image size changed to "+items[which], Toast.LENGTH_SHORT).show();
+                                Intent homeIntent = new Intent(CameraConfiguration.this, AllDevices.class);
+                                startActivity(homeIntent);
+                            }
+                            dialog.cancel();
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+            builder.create().show();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -147,7 +180,7 @@ public class CameraConfiguration extends GenericConfiguration {
         takePicture=(Button)findViewById(R.id.cameraTakePicture);
         emailPicture=(Button)findViewById(R.id.cameraEmailPicture);
         cameraPicture=(ImageView)findViewById(R.id.cameraPicture);
-        cameraPicture.setBackgroundColor(Color.parseColor("#ABABAB"));
+        cameraPicture.setBackgroundColor(Color.parseColor("#cceae7"));
         defaultText=(TextView)findViewById(R.id.defaultCameraText);
         pg=new ProgressDialog(this);
         pg.setMessage("Taking picture...");

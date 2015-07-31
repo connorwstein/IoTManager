@@ -17,9 +17,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.PortUnreachableException;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.nio.channels.IllegalBlockingModeException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
@@ -32,10 +35,10 @@ import static com.iotmanager.Constants.DEFAULT_DEVICE_UDP_PORT;
 public class DeviceCommunicationHandler {
 
     //UDP
-    private static final int MAX_NUM_RECEIVE_PACKETS=10;
-    private static final int MAX_NUM_SEND_PACKETS=5;
-    private static final int UDP_SOCKET_TIMEOUT = 100;
-    private static final int RECEIVE_BUFFER_SIZE=1024;
+    private static final int MAX_NUM_RECEIVE_PACKETS=6;
+    private static final int MAX_NUM_SEND_PACKETS=6;
+    private static final int UDP_SOCKET_TIMEOUT = 400;
+    private static final int RECEIVE_BUFFER_SIZE=200;
 
     //TCP
     private static final int SOCKET_TIMEOUT = 5000;
@@ -170,21 +173,47 @@ public class DeviceCommunicationHandler {
         //to at least one
         //For each sent packet, attempt to receive MAX_NUM_RECEIVE_PACKETS
         //Gather all responses and remove duplicates if necessary
-        ArrayList<String>deviceResponses=null;
+        Log.i(TAG,"Sending broadcast packets");
+        ArrayList<String>deviceResponses=new ArrayList<>();
+        try {
+            udpBroadcastSocket.setSoTimeout(UDP_SOCKET_TIMEOUT);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
         int sentPackets=0;
         while(sentPackets<MAX_NUM_SEND_PACKETS) {
             try {
                 byte sendBuffer[] = broadcastMessage.getBytes();
                 sentPackets++;
                 DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, InetAddress.getByName(DEFAULT_DEVICE_BROADCAST_IP), DEFAULT_DEVICE_UDP_PORT);
-                udpBroadcastSocket.setSoTimeout(UDP_SOCKET_TIMEOUT);
+                byte receiveBuffer[] = new byte[RECEIVE_BUFFER_SIZE];
+                DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+                String responsePacketData=null;
                 udpBroadcastSocket.setBroadcast(true);
+                //Log.i(TAG, "Sent broadcast packets");
                 udpBroadcastSocket.send(sendPacket);
-                deviceResponses=receiveMultiplePackets(udpBroadcastSocket); //receiveMultiplePackets allocates memory for deviceResponses
-            } catch (Exception e) {
-                Log.i(TAG, "Exception has occured: " + e.getMessage());
+                udpBroadcastSocket.receive(receivePacket);
+                responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
+                Log.i(TAG, "Received: " + responsePacketData);
+                deviceResponses.add(responsePacketData);
+                if(responsePacketData.contains("IP:")&&responsePacketData.contains("MAC:")&&responsePacketData.contains("NAME:")
+                        && responsePacketData.contains("ROOM:")&&responsePacketData.contains("TYPE:")){
+                    deviceResponses.add(responsePacketData);
+                }
+                else{
+                    Log.i(TAG,"Invalid Packet: "+responsePacketData);
+                }
+            } catch (SocketTimeoutException e) {
+                Log.i(TAG, "Socket timeout");
+            }
+            catch (IOException e) {
+                Log.i(TAG, "IO exception");
             }
         }
+
+        udpBroadcastSocket.close();
+//        deviceResponses=receiveMultiplePackets(udpBroadcastSocket); //receiveMultiplePackets allocates memory for deviceResponses
+
         return deviceResponses;
     }
 
@@ -192,6 +221,7 @@ public class DeviceCommunicationHandler {
     private static ArrayList<String> receiveMultiplePackets(DatagramSocket udpBroadcastSocket){
         ArrayList<String>deviceResponses=new ArrayList<>();
         int i;
+        Log.i(TAG,"Receiving broadcast packets");
         for(i=0;i<MAX_NUM_RECEIVE_PACKETS;i++){
             String responsePacketData=null;
             byte receiveBuffer[] = new byte[RECEIVE_BUFFER_SIZE];
@@ -199,13 +229,27 @@ public class DeviceCommunicationHandler {
             try{
                 udpBroadcastSocket.receive(receivePacket);
             }
-            catch(IOException e){
-                //Log.i(TAG,"IO exception receiving packet "+i);
+            catch(IllegalBlockingModeException e){
+                Log.i(TAG,"Illegal blocking mode exception receiving packet "+i);
                 continue;
             }
+            catch(PortUnreachableException e){
+                Log.i(TAG,"Port unreachable receiving packet "+i);
+                continue;
+            }
+            catch(SocketTimeoutException e){
+                Log.i(TAG,"Socket timeout exception receiving packet "+i);
+                continue;
+            }
+            catch(IOException e){
+                Log.i(TAG,"IO exception receiving packet "+i);
+                continue;
+            }
+
+            //udpBroadcastSocket.close();
             // Log.i(TAG, "Packet received, length: "+receivePacket.getLength());
             responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
-            //Log.i(TAG, "Received: " + responsePacketData);
+            Log.i(TAG, "Received: " + responsePacketData);
             if(responsePacketData.contains("IP:")&&responsePacketData.contains("MAC:")&&responsePacketData.contains("NAME:")
                     && responsePacketData.contains("ROOM:")&&responsePacketData.contains("TYPE:")){
                 deviceResponses.add(responsePacketData);

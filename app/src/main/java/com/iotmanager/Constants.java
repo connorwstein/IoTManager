@@ -22,13 +22,18 @@ public final class Constants {
     public static final String COMMAND_ROOM="Room:";
     public static final String RESPONSE_ROOM_SUCCESS="Room Set";
     public static final String RESPONSE_FAIL="Failed";
-    public static final String COMMAND_LIGHTING_SET="Lighting Set";
+//    public static final String COMMAND_LIGHTING_SET="Lighting Set";
+    public static final String COMMAND_LIGHTING_SET="Lighting Set:";
     public static final String COMMAND_LIGHTING_GET="Lighting Get";
+//    public static final String COMMAND_LIGHTING_GET="Lighting Get";
     public static final String COMMAND_RUN_AP="Run AP";
     public static final String COMMAND_CAMERA_TAKE_PICTURE="Camera Take Picture";
     public static final String COMMAND_CAMERA_CHANGE_COMPRESSION="Camera Compression Ratio:";
     public static final String RESPONSE_CAMERA_CHANGE_COMPRESSION_SUCCESS="Camera Compression Ratio Set";
     public static final String RESPONSE_CAMERA_CHANGE_COMPRESSION_FAIL="Camera Compression Ratio Fail";
+    public static final String COMMAND_CAMERA_CHANGE_IMAGE_SIZE="Camera Image Size Set:";
+    public static final String RESPONSE_CAMERA_CHANGE_IMAGE_SIZE_SUCCESS="Camera Image Size Set";
+    public static final String RESPONSE_CAMERA_CHANGE_IMAGE_SIZE_FAIL="Camera Image Size Set Fail";
 
     public static final String RESPONSE_TAKE_PICTURE_SUCCESS="Picture Taken";
     public static final String RESPONSE_TAKE_PICTURE_FAIL="Picture Take Fail";
