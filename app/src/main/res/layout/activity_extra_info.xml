@@ -37,4 +37,21 @@
         android:id="@+id/macAddress"
         android:layout_below="@id/ipAddress"
         android:layout_toRightOf="@id/macAddressLabel"/>
+    <TextView
+        android:layout_width="200dp"
+        android:layout_height="30dp"
+        android:textColor="#FFFFFF"
+        android:textSize="18dp"
+        android:text="Room:"
+        android:id="@+id/roomLabel"
+        android:layout_below="@id/macAddressLabel"/>
+    <TextView
+        android:layout_width="200dp"
+        android:layout_height="30dp"
+        android:textColor="#FFFFFF"
+        android:textSize="18dp"
+        android:id="@+id/room"
+        android:layout_below="@id/macAddressLabel"
+        android:layout_centerHorizontal="true"
+        />
 </RelativeLayout>

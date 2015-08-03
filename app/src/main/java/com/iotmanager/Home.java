@@ -35,12 +35,13 @@ public class Home extends AppCompatActivity {
     private GridView nearbyDevices;
     private DeviceThumbnailAdapter adapter;
     private String currentRoom;
-
+    private static final int RSSI_THRESHOLD=-60;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
         deviceDBHelper=new DeviceDBHelper(Home.this);
+        //deviceDBHelper.emptyDB();
         nearbyDevices=(GridView)findViewById(R.id.nearbyDevices);
         manager=(WifiManager) getSystemService(Context.WIFI_SERVICE);
         deviceDBHelper.dumpDBtoLog();
@@ -154,10 +155,10 @@ public class Home extends AppCompatActivity {
                     continue;
                 }
                 Log.i(TAG,"MAC Found: "+mac+" in room "+room+" RSSI: "+device.level);
-                if(rooms.containsKey(room)&&device.level>-60){
+                if(rooms.containsKey(room)&&device.level>RSSI_THRESHOLD){
                     rooms.put(room,rooms.get(room)+1);
                 }
-                else if(device.level>-60){
+                else if(device.level>RSSI_THRESHOLD){
                     rooms.put(room,1);
                 }
             }

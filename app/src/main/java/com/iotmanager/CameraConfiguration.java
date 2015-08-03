@@ -1,21 +1,12 @@
 package com.iotmanager;
 
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
@@ -30,14 +21,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 
 import static com.iotmanager.Constants.*;
@@ -53,6 +39,7 @@ public class CameraConfiguration extends GenericConfiguration {
     private byte[] pictureBytes=null;
     private Handler handler;
     private TextView defaultText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,16 +65,16 @@ public class CameraConfiguration extends GenericConfiguration {
     }
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        if(menu.findItem(10)==null){
+
+        if (menu.findItem(10) == null) {
             menu.add(0, 10, 0, "Change compression size"); //arbitrary id of 10, just used to check if item already exists in menu
             //solves bug where menu item keeps getting added
         }
-        if(menu.findItem(11)==null){
+        if (menu.findItem(11) == null) {
             menu.add(0, 11, 0, "Change image dimensions"); //arbitrary id of 10, just used to check if item already exists in menu
             //solves bug where menu item keeps getting added
         }
-        return true;
+        return super.onPrepareOptionsMenu(menu);
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -230,11 +217,11 @@ public class CameraConfiguration extends GenericConfiguration {
     private void getPicture(int size){
         GetPicture getPictureTask=new GetPicture();
         handler=new Handler(){
-          @Override
+            @Override
             public void handleMessage(Message msg){
-              Log.i(TAG,"Getting picture bytes");
-              pictureBytes=msg.getData().getByteArray("Image");
-          }
+                Log.i(TAG,"Getting picture bytes");
+                pictureBytes=msg.getData().getByteArray("Image");
+            }
         };
         getPictureTask.execute(size, pg, device.getIp(), cameraPicture, deviceCommunicationHandler, handler, defaultText, CameraConfiguration.this);
     }
@@ -315,3 +302,460 @@ public class CameraConfiguration extends GenericConfiguration {
         return i;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

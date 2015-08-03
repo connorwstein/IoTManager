@@ -66,8 +66,7 @@
         <activity
             android:name=".AllDevices"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/title_activity_nearby_devices"
-            android:parentActivityName=".Home">
+            android:label="@string/title_activity_nearby_devices">
         </activity>
         <activity
             android:name=".CameraConfiguration"

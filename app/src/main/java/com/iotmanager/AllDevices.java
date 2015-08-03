@@ -44,6 +44,7 @@ public class AllDevices extends AppCompatActivity {
             device.log();
             if (deviceDBHelper.getID(device) == -1) {
                 //if the device does not already exist in the database, add it
+                Log.i(TAG,"Adding device to db");
                 deviceDBHelper.addDevice(device);
             }
         }
@@ -90,6 +91,9 @@ public class AllDevices extends AppCompatActivity {
         switch(item.getItemId()){
             case R.id.actionRefresh:
                 broadcast(HELLO_DEVICES);
+                return true;
+            case R.id.add:
+                startActivity(new Intent(AllDevices.this,AvailableDevices.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

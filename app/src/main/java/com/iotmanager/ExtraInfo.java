@@ -16,6 +16,7 @@ public class ExtraInfo extends AppCompatActivity {
     private TextView ip;
     private TextView mac;
     private Device device;
+    private TextView room;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +29,8 @@ public class ExtraInfo extends AppCompatActivity {
         mac=(TextView)findViewById(R.id.macAddress);
         ip.setText(this.device.getIp());
         mac.setText(this.device.getMac());
+        room=(TextView)findViewById(R.id.room);
+        room.setText(this.device.getRoom());
     }
 
     @Override
