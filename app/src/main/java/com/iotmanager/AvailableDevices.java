@@ -30,7 +30,7 @@ import java.util.List;
  * Displays all available devices for initial configuration
  * Must be detectable by wifi
  * Assumes that devices have been flashed with our firmware and
- * will be broadcasting an SSID of ESP_XXX where XXX is the last three bytes of its mac address (6 letters)
+ * will be broadcasting an SSID of ESP_XXX where XXX is the mac address of the device
  */
 public class AvailableDevices extends AppCompatActivity {
     private static final String TAG="Connors Debug";
@@ -100,6 +100,8 @@ public class AvailableDevices extends AppCompatActivity {
                     }
                 });
                 if (network.isEnterprise()) {
+                    //Enterprise networks (i.e. wpa.mcgill.ca) require username and password
+                    //it seems that the Wifi Manager android class does not support connecting to this type of network
                     progressDialog.dismiss();
                     Toast.makeText(listView.getContext(), "No support for enterprise networks", Toast.LENGTH_LONG).show();
                     return;
@@ -134,6 +136,7 @@ public class AvailableDevices extends AppCompatActivity {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this)
                         .setMessage("I have configured this device before...")
+                        //If you have configured the device before (i.e. set its name, room, etc) just connect it to a network
                         .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -142,6 +145,7 @@ public class AvailableDevices extends AppCompatActivity {
                                 dialog.cancel();
                             }
                         })
+                        //First time configuration --> need to name the device, set its type room etc.
                         .setNegativeButton("NO", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent initialDeviceConfigurationIntent=new Intent(AvailableDevices.this,InitialDeviceConfiguration.class);

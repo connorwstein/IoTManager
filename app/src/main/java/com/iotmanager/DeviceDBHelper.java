@@ -15,6 +15,9 @@ import java.util.List;
 
 /**
  * Created by connorstein on 15-07-17.
+ * Handles all database transactions for the devices.
+ * Note the use of .trim() when working with strings to remove whitespace, all information stored in the database should have no leading or trailing whitespace
+ * All tests for the database are in the DeviceDBTest class
  */
 public class DeviceDBHelper extends SQLiteOpenHelper {
     private static final String TAG="Connors Debug";

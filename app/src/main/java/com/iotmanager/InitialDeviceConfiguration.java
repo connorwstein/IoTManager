@@ -21,6 +21,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+/**
+ *
+ */
 public class InitialDeviceConfiguration extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private static final String DEVICE_NAME_PLACEHOLDER="Connect Device";
@@ -112,6 +115,7 @@ public class InitialDeviceConfiguration extends AppCompatActivity {
         types.add("Temperature");
         types.add("Lighting");
         types.add("Camera");
+        types.add("Heater");
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(
                 this,
                 R.layout.spinner_layout,

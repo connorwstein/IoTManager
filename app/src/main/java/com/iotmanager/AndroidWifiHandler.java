@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Created by connorstein on 15-05-31.
- * Class for managing wifi connections of the android device itself.
+ * Managing wifi connections of the android device itself.
  *
  */
 public class AndroidWifiHandler{

@@ -9,15 +9,6 @@
     android:background="#009688">
 
 
-
-    <!--<Button-->
-        <!--android:layout_width="500dp"-->
-        <!--android:layout_height="50dp"-->
-        <!--android:text="ON/OFF"-->
-        <!--android:id="@+id/lightingOnOff"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:background="@drawable/rounded_button"/>-->
-
     <com.iotmanager.VerticalSeekBar
         android:id="@+id/lightingDimmer"
         android:layout_width="400dp"

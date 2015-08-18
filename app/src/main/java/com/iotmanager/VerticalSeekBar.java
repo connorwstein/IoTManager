@@ -9,6 +9,10 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.SeekBar;
 
+/**
+ * Seems crazy that android does not support a vertical seekbar...but http://stackoverflow.com/questions/4892179/how-can-i-get-a-working-vertical-seekbar-in-android/7341546#7341546
+ *
+ */
 public class VerticalSeekBar extends SeekBar {
 
     public VerticalSeekBar(Context context) {

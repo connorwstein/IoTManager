@@ -13,6 +13,7 @@ import java.util.Set;
 
 /**
  * Created by connorstein on 15-07-23.
+ * Parser for string responses from the devices, used in the UDP broadcast i.e. the discovery process
  */
 public class ResponseParser {
     private static final String TAG="Connors Debug";
@@ -53,6 +54,9 @@ public class ResponseParser {
                 break;
             case "Camera":
                 i=new Intent(context, CameraConfiguration.class);
+                break;
+            case "Heater":
+                i=new Intent(context, HeaterConfiguration.class);
                 break;
             default:
                 Log.i(TAG, "Type not supported");

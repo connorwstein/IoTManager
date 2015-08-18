@@ -15,7 +15,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+/**
+ * Temperature configuration class for http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
+ */
 public class TemperatureConfiguration extends GenericConfiguration{
+
     private static final String TAG="Connors Debug";
     private String currentTemperature;
     private String currentHumidity;
@@ -63,7 +67,6 @@ public class TemperatureConfiguration extends GenericConfiguration{
         temperatureCircle=(ImageView)findViewById(R.id.temperatureCircle);
         ((GradientDrawable)temperatureCircle.getBackground()).setColor(Color.parseColor("#FF6666"));
 
-
         temperatureCircleBorder=(ImageView)findViewById(R.id.temperatureCircleBorder);
         ((GradientDrawable)temperatureCircleBorder.getBackground()).setColor(Color.parseColor("#FFFFFF"));
 
@@ -83,7 +86,6 @@ public class TemperatureConfiguration extends GenericConfiguration{
             String[] tempAndHum=response.split("\\s");
             currentHumidity=tempAndHum[0].substring(0,tempAndHum[0].length()-1)+"."+tempAndHum[0].substring(tempAndHum[0].length()-1);
             currentTemperature=tempAndHum[1].substring(0,tempAndHum[1].length()-1)+"."+tempAndHum[1].substring(tempAndHum[1].length()-1);
-
         }
         else{
             currentTemperature="Not Available";

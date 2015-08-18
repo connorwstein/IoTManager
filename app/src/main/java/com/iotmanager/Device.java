@@ -7,6 +7,8 @@ import java.io.Serializable;
 
 /**
  * Created by connorstein on 15-07-28.
+ * Represents a device
+ * Implements serializable so that Device objects can be passed between activities
  */
 public class Device implements Serializable{
     private static final String TAG="Connors Debug";
@@ -23,7 +25,7 @@ public class Device implements Serializable{
         this.room=room;
         this.type=type;
     }
-
+    //Print device to log
     public void log(){
         Log.i(TAG, "Device: ("+this.name+", "+this.ip+", "+this.mac+", "+this.room+", "+this.type+")");
     }
@@ -59,6 +61,8 @@ public class Device implements Serializable{
         return this.type;
     }
 
+    //hashCode() and equals(Object) are used for the room location in Home.java
+    //needed to compare devices
     public int hashCode(){
         //Not very efficient (single bucket), but not a big deal since there is only a few devices
         return 1;

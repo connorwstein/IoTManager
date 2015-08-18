@@ -26,6 +26,7 @@ import static com.iotmanager.Constants.RESPONSE_ROOM_SUCCESS;
  */
 public abstract class GenericConfiguration extends AppCompatActivity {
     private static final String TAG="Connors Debug";
+    private static final CharSequence[] DEVICE_TYPES={"Temperature","Lighting","Camera","Heater"};
     public DeviceCommunicationHandler deviceCommunicationHandler;
     public Device device;
     private DeviceDBHelper deviceDBHelper=new DeviceDBHelper(this);
@@ -140,13 +141,12 @@ public abstract class GenericConfiguration extends AppCompatActivity {
     }
 
     public void changeType(){
-        final CharSequence[] items={"Temperature","Lighting","Camera"};
         AlertDialog.Builder builder = new AlertDialog.Builder(GenericConfiguration.this)
                 .setTitle("Select New Type")
-                .setItems(items, new DialogInterface.OnClickListener() {
+                .setItems(DEVICE_TYPES, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String newType=items[which].toString();
+                        String newType=DEVICE_TYPES[which].toString();
                         deviceCommunicationHandler.sendDataNoResponse(COMMAND_TYPE + newType);
                         int id=deviceDBHelper.getID(device);
                         GenericConfiguration.this.device.setType(newType);
@@ -175,6 +175,7 @@ public abstract class GenericConfiguration extends AppCompatActivity {
         extraInfoIntent.putExtra("Device",this.device);
         startActivity(extraInfoIntent);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -199,10 +200,44 @@ public abstract class GenericConfiguration extends AppCompatActivity {
             case R.id.extraInfo:
                 showExtraInfo();
                 break;
+            case R.id.locator_power_settings:
+                sendPowerSettings();
+                break;
 
         }
         return super.onOptionsItemSelected(item);
     }
+
+    void sendPowerSettings(){
+        final EditText power=new EditText(GenericConfiguration.this);
+        power.setInputType(InputType.TYPE_CLASS_TEXT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(GenericConfiguration.this)
+                .setMessage("Enter power settings max[0-82];min[0-82] i.e. 40;0 ")
+                .setView(power)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String power_setting = power.getText().toString();
+                        String response = deviceCommunicationHandler.sendDataGetResponse("Power:" + power_setting);
+                        if (response == null || response.equals("Power Set Fail")) {
+                            Toast.makeText(GenericConfiguration.this, "Power set failed", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        else if (response.equals("Power Set")) {
+                            Toast.makeText(GenericConfiguration.this, "Power set", Toast.LENGTH_SHORT).show();
+                        }
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

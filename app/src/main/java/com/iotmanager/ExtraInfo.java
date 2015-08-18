@@ -10,7 +10,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-
+/**
+ * Simple class to display additional information about each device
+ */
 public class ExtraInfo extends AppCompatActivity {
     private static final String TAG="Connors Debug";
     private TextView ip;

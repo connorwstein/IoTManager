@@ -4,6 +4,8 @@ import android.provider.BaseColumns;
 
 /**
  * Created by connorstein on 15-07-17.
+ * Table and column names for the database
+ *
  */
 public final class DevicesDBContract {
 

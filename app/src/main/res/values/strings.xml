@@ -27,4 +27,6 @@
     <string name="title_activity_nearby_devices">NearbyDevices</string>
     <string name="title_activity_camera_configuration">CameraConfiguration</string>
     <string name="title_activity_extra_info">ExtraInfo</string>
+    <string name="title_activity_heater_configuration">HeaterConfiguration</string>
+    <string name="title_activity_power_settings">PowerSettings</string>
 </resources>

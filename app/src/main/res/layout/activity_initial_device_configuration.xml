@@ -9,7 +9,7 @@
 
     <Button
         android:layout_width="300dp"
-        android:layout_height="100dp"
+        android:layout_height="90dp"
         android:text="Submit"
         android:textSize="40sp"
         android:textAllCaps="false"
@@ -21,7 +21,7 @@
 
     <EditText
         android:layout_width="300dp"
-        android:layout_height="100dp"
+        android:layout_height="90dp"
         android:id="@+id/nameDevice"
         android:inputType="textNoSuggestions"
         android:hint="Name"
@@ -34,7 +34,7 @@
 
     <EditText
         android:layout_width="300dp"
-        android:layout_height="100dp"
+        android:layout_height="90dp"
         android:id="@+id/roomDevice"
         android:inputType="textNoSuggestions"
         android:hint="Room"
@@ -47,7 +47,7 @@
 
     <Spinner
         android:layout_width="300dp"
-        android:layout_height="100dp"
+        android:layout_height="90dp"
         android:id="@+id/deviceType"
         android:contentDescription="Type"
         android:layout_marginBottom="20dp"

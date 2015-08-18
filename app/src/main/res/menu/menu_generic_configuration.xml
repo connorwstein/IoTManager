@@ -26,4 +26,8 @@
         android:title="@string/extra_info"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item android:id="@+id/locator_power_settings"
+        android:title="Power"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
 </menu>

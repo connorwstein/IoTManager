@@ -32,16 +32,17 @@ import static com.iotmanager.Constants.DEFAULT_DEVICE_UDP_PORT;
 
 /**
  * Created by connorstein on 15-06-08.
+ * Handles communication between android phone and esp devices
  */
 public class DeviceCommunicationHandler {
 
     //UDP
-    private static final int MAX_NUM_SEND_PACKETS=1;
-    private static final int UDP_SOCKET_TIMEOUT = 1;
-    private static final int RECEIVE_BUFFER_SIZE=200;
-    private static final int UDP_COLLECT_RESPONSES_TIME=1500;
+    private static final int MAX_NUM_SEND_PACKETS=2; //When sending a UDP broadcast send this many number of packets
+    private static final int UDP_SOCKET_TIMEOUT = 1; //Timeout for each socket.receive() call (receive is called many times, trying to capture as many responses from the devices as possible)
+    private static final int RECEIVE_BUFFER_SIZE=200; //Maximum response from esp is this many bytes
+    private static final int UDP_COLLECT_RESPONSES_TIME=3000; //in ms, this is the total collect time of the responses, for example if every socket.receive() call timed out @1ms, socket.receive() would be called 3000 times.
     //TCP
-    private static final int SOCKET_TIMEOUT = 5000;
+    private static final int SOCKET_TIMEOUT = 3000;
     private static final int DEFAULT_READ_BUF_SIZE=1024;
     private String deviceIP;
     private int devicePort;
@@ -99,7 +100,6 @@ public class DeviceCommunicationHandler {
         //block until thread is finished
     }
 
-
     private void flushReadBuffer() {
         int i;
         for (i = 0; i < readBuffer.length; i++) {
@@ -131,8 +131,6 @@ public class DeviceCommunicationHandler {
         return message.getData().getString(key);
     }
 
-
-
     //Returns Device objects based on which devices respond to the broadcast message sent
     //Used for determining which devices are on the network
     public static void broadcastForDevices(final String broadcastMessage,final Handler callback){
@@ -159,6 +157,7 @@ public class DeviceCommunicationHandler {
         broadcastForDevices.start();
     }
 
+    //Convert the raw strings from deviceResponses to Device objects, using the ResponseParser class
     private static ArrayList<Device> processDeviceResponses(ArrayList<String>deviceResponses){
         final ArrayList<Device> devices=new ArrayList<>();
         for(String response:deviceResponses){
@@ -167,12 +166,11 @@ public class DeviceCommunicationHandler {
         ResponseParser.removeDuplicates(devices);
         return devices;
     }
+
     //Returns responses from devices (unprocessed)
     private static ArrayList<String> sendBroadcastPackets(DatagramSocket udpBroadcastSocket, String broadcastMessage){
         //sent MAX_NUM_SEND_PACKETS and assume responses will occur
         //to at least one
-        //For each sent packet, attempt to receive MAX_NUM_RECEIVE_PACKETS
-        //Gather all responses and remove duplicates if necessary
         Log.i(TAG,"Sending broadcast packets");
         ArrayList<String>deviceResponses=new ArrayList<>();
         try {
@@ -200,7 +198,14 @@ public class DeviceCommunicationHandler {
         return deviceResponses;
     }
 
-    //Tries to receive MAX_NUM_RECEIVE_PACKETS and returns device responses
+    /**
+     * After the broadcast packets have been sent out, this method will receive for a total time of UDP_COLLECT_RESPONSES_TIME.
+     * The reasoning here is that if a device does respond, it will respond right away, so we want to call receive() many times with very short timeouts on each
+     * call (hence the UDP_SOCKET_TIMEOUT value). Otherwise a lot of time is wasted waiting for the receive call to timeout, when you could be capturing responses
+     * from other devices. Note that devices may response multiple times
+     * @param udpBroadcastSocket socket to broadcast on
+     * @return raw string responses from the devices
+     */
     private static ArrayList<String> receiveMultiplePackets(DatagramSocket udpBroadcastSocket){
         ArrayList<String>deviceResponses=new ArrayList<>();
         long timeBeforeReceivePackets =System.currentTimeMillis();
@@ -222,7 +227,7 @@ public class DeviceCommunicationHandler {
             }
             catch(SocketTimeoutException e){
                 //Log.i(TAG,"Socket timeout exception receiving packet ");
-                currentTime=System.currentTimeMillis();
+                currentTime=System.currentTimeMillis(); //make sure currentTime is still updated, in case of exception on udpBroadcastSocket.receive()
                 continue;
             }
             catch(IOException e){
@@ -231,6 +236,7 @@ public class DeviceCommunicationHandler {
             }
             String responsePacketData= new String(receivePacket.getData(), 0, receivePacket.getLength());
             Log.i(TAG, "Received: " + responsePacketData);
+            //Ensure valid packet was received
             if(responsePacketData.contains("IP:")&&responsePacketData.contains("MAC:")&&responsePacketData.contains("NAME:")
                     && responsePacketData.contains("ROOM:")&&responsePacketData.contains("TYPE:")){
                 deviceResponses.add(responsePacketData);
@@ -270,7 +276,6 @@ public class DeviceCommunicationHandler {
                     return;
                 }
                 handler.sendMessage(createMessage("Exception", "None"));
-
             }
         });
         sendDataGetResponse.start();
@@ -282,8 +287,6 @@ public class DeviceCommunicationHandler {
         //block until thread is finished
         return getStringFromReadBuffer();
     }
-
-
 
     private void socketWrite(Socket socket, String data) throws IOException {
         out = new PrintWriter(socket.getOutputStream());

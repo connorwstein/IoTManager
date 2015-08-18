@@ -35,7 +35,7 @@ public class Home extends AppCompatActivity {
     private GridView nearbyDevices;
     private DeviceThumbnailAdapter adapter;
     private String currentRoom;
-    private static final int RSSI_THRESHOLD=-60;
+    private static final int RSSI_THRESHOLD=-55;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,12 +51,12 @@ public class Home extends AppCompatActivity {
 
     //Broadcast again in the onstart method so that if the user click back it
     //will broadcast again
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.i(TAG, "Sending low power mode");
-        getNearbyDevices();
-    }
+//    @Override
+//    protected void onRestart() {
+//        super.onRestart();
+//        Log.i(TAG, "Sending low power mode");
+//        getNearbyDevices();
+//    }
     private void getNearbyDevices(){
         broadcast(LOCATION_MODE);
     }

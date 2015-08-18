@@ -10,11 +10,12 @@ import android.widget.TextView;
 
 import static com.iotmanager.Constants.DEFAULT_DEVICE_TCP_PORT;
 
+/**
+ * Dimmer class, only works with the dimmer hardware
+ */
 public class LightingConfiguration extends GenericConfiguration {
     private static final String TAG="Connors Debug";
-    private TextView lightStatus;
     private int currentLightStatus;
-    private Button lightingOnOff;
     private SeekBar lightDimmer;
 
     @Override
@@ -27,13 +28,7 @@ public class LightingConfiguration extends GenericConfiguration {
         initViews();
         getLightStatus();
         updateTitle();
-//       // lightStatus.setText(currentLightStatus);
-//        lightingOnOff.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                updateLightStatus();
-//            }
-//        });
+
         lightDimmer.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -58,9 +53,7 @@ public class LightingConfiguration extends GenericConfiguration {
     }
 
     private void initViews(){
-//        lightingOnOff=(Button)findViewById(R.id.lightingOnOff);
         lightDimmer=(SeekBar)findViewById(R.id.lightingDimmer);
-
     }
     private void updateTitle(){
         if(currentLightStatus==100){

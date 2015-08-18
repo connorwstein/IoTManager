@@ -8,9 +8,9 @@
     android:background="#009688">
 
     <ImageView
-        android:layout_width="350dp"
-        android:layout_marginTop="20dp"
-        android:layout_height="350dp"
+        android:layout_width="300dp"
+        android:layout_marginTop="10dp"
+        android:layout_height="300dp"
         android:id="@+id/cameraPicture"
         android:layout_centerHorizontal="true"
        />
@@ -18,7 +18,7 @@
         android:layout_width="250dp"
         android:layout_height="50dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="160dp"
+        android:layout_marginTop="120dp"
         android:text="Ready to take a picture!"
         android:textSize="20sp"
         android:gravity="center"
@@ -26,7 +26,7 @@
         android:textColor="#000000"
         android:id="@+id/defaultCameraText"/>
     <Button
-        android:layout_width="150dp"
+        android:layout_width="120dp"
         android:layout_height="80dp"
         android:text="TAKE PICTURE"
         android:id="@+id/cameraTakePicture"
@@ -36,10 +36,10 @@
         android:layout_marginTop="30dp"
         android:background="@drawable/rounded_button"/>
     <Button
-        android:layout_width="150dp"
+        android:layout_width="120dp"
         android:layout_height="80dp"
         android:layout_marginTop="30dp"
-        android:layout_marginLeft="180dp"
+        android:layout_marginLeft="170dp"
         android:text="EMAIL PICTURE"
         android:textColor="#000000"
         android:id="@+id/cameraEmailPicture"

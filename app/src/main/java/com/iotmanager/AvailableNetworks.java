@@ -129,7 +129,13 @@ public class AvailableNetworks extends AppCompatActivity {
         });
     }
 
-   private void setNetworkPasswordThenSend(final Network network,Context context){
+    /**
+     * Asks the user to enter a password and then sends that information to the device (telling it to connect)
+     * Note unable to verify if the correct password has been sent
+     * @param network Network to connect to
+     * @param context
+     */
+   private void setNetworkPasswordThenSend(final Network network, Context context){
        final EditText passwordInput=new EditText(context);
        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
        AlertDialog.Builder builder = new AlertDialog.Builder(context)
@@ -144,7 +150,7 @@ public class AvailableNetworks extends AppCompatActivity {
                         }
                         network.setPassword(passwordInput.getText().toString());
                         deviceCommunicationHandler.sendDataNoResponse(COMMAND_CONNECT + network.ssid + ";" + network.password);
-                        //Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AvailableNetworks.this,"Sent connect request",Toast.LENGTH_SHORT).show();
                         AlertDialog.Builder builder=new AlertDialog.Builder(AvailableNetworks.this)
                                 .setMessage("Now connect the phone to the same network as the device if you see no errors below. Reconnect to the device again if failed to send network information.")
                                 .setPositiveButton("OK", new DialogInterface.OnClickListener(){
@@ -154,8 +160,6 @@ public class AvailableNetworks extends AppCompatActivity {
                                             }
                                         });
                         builder.show();
-//                        Intent mainActivityIntent=new Intent(AvailableNetworks.this,Home.class);
-//                        startActivity(mainActivityIntent);
                         dialog.cancel();
 
                     }
@@ -168,12 +172,18 @@ public class AvailableNetworks extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     *
+     * @return A list of the ssids (no duplicates and none with the ESP prefix)
+     */
     private List<String> getAllSSIDs(){
         List<ScanResult> networks=manager.getScanResults();
         List <String> ssids=new ArrayList<String>();
         for(int i=0;i<networks.size();i++){
             String ssid=networks.get(i).SSID;
-            if(!ssid.contains("ESP")){ //Dont allow connections between devices
+            if(!ssid.contains("ESP")&&!ssids.contains(ssid)){
+            //Dont allow connections between devices
+            //Ensure no duplicate networks are displayed
                 ssids.add(networks.get(i).SSID);
             }
         }

@@ -24,15 +24,17 @@ import java.util.ArrayList;
 
 /**
  * Created by connorstein on 15-06-02.
+ * Creates the device thumbnail icons (i.e. fills a gridview with a textview and imageview viewgroup)
  */
 public class DeviceThumbnailAdapter extends BaseAdapter {
     private static final int ROUNDED_CORNERS_IMAGE_FACTOR=100;
+    private static final int ROUNDED_CORNERS_IMAGE_FACTOR_HEATER_ICON=40; //heater icon is slightly different dimensions and requires a different rounding factor
     private static final String TAG="Connors Debug";
 
     private Context context;
     private Resources resources;
     public Integer[] imageIDs={
-            R.drawable.lights,R.drawable.thermometer, R.drawable.camera
+            R.drawable.lights,R.drawable.thermometer, R.drawable.camera, R.drawable.heater
     };
     private ArrayList<String> deviceNames;
     private ArrayList<String> deviceTypes;
@@ -76,15 +78,31 @@ public class DeviceThumbnailAdapter extends BaseAdapter {
             ImageView imageView = (ImageView) v.findViewById(R.id.grid_image);
             textView.setText(deviceNames.get(position));
             Bitmap bitmap = null;
-            switch (deviceTypes.get(position)) {
+            String type=deviceTypes.get(position);
+            switch (type) {
                 case "Lighting":
-                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[0]));
+                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[0]),type);
                     break;
                 case "Temperature":
-                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[1]));
+                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[1]),type);
                     break;
                 case "Camera":
-                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[2]));
+                    bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[2]),type);
+                    break;
+                case "Heater":
+                    //NOTE THIS WAS ONLY FOR THE DEMO (LIMITED HARDWARE AVAILABLE) to resolve just remove the if and keep the else case
+                    //Dirtiest hack known to man
+                    //Only one actual light with dimming hardware available
+                    //Heaters are being represented by lights for the demo
+                    //So in order to have lights that turn only on and off like the heater representations
+                    //Just name the extra heaters as "lights" and display the icon for light
+                    if(deviceNames.get(position).contains("Light")){
+                        bitmap=getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[0]),"Lighting");
+                    }
+                    else {
+                        bitmap = getRoundedCornerBitmap(BitmapFactory.decodeResource(context.getResources(), imageIDs[3]), type);
+
+                    }
                     break;
             }
             imageView.setImageBitmap(bitmap);
@@ -97,7 +115,7 @@ public class DeviceThumbnailAdapter extends BaseAdapter {
     }
 
     //Rounded corner method from http://ruibm.com/2009/06/16/rounded-corner-bitmaps-on-android/
-    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap) {
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, String type) {
         Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
                 bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
@@ -105,7 +123,15 @@ public class DeviceThumbnailAdapter extends BaseAdapter {
         final Paint paint = new Paint();
         final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
         final RectF rectF = new RectF(rect);
-        final float roundPx = ROUNDED_CORNERS_IMAGE_FACTOR;
+        final float roundPx;
+        //Heater icon is slightly different size and requires different rounding
+        if(type.equals("Heater")){
+            roundPx = ROUNDED_CORNERS_IMAGE_FACTOR_HEATER_ICON;
+        }
+        else{
+            roundPx = ROUNDED_CORNERS_IMAGE_FACTOR;
+
+        }
 
         paint.setAntiAlias(true);
         canvas.drawARGB(0, 0, 0, 0);

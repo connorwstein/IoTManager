@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,10 +27,18 @@ import java.util.Calendar;
 
 import static com.iotmanager.Constants.*;
 
-
+/**
+ * Configuration specific for the Link Sprite Camera (https://www.sparkfun.com/products/retired/10061)
+ * Provide functionality of taking pictures and emailing them
+ * Note that you likely have to reduce image dimensions and/or compression size to take a picture (should probably update the defaults)
+ */
 public class CameraConfiguration extends GenericConfiguration {
     private static final String TAG="Connors Debug";
-    private static final int MAX_IMAGE_SIZE=14000;
+    private static final int COMPRESSION_SIZE_MENU_ID=10; //arbitrary id number, just used to add to the menu defined in GenericConfiguration
+    private static final int IMAGE_DIMENSIONS_MENU_ID=11; //again arbitrary id number
+    private static final int MAX_COMPRESSION_SIZE=255;
+    private static final CharSequence[] ALLOWED_IMAGE_DIMENSIONS={"640x480","320x240","160x120"};
+
     private Button takePicture;
     private ImageView cameraPicture;
     private ProgressDialog pg;
@@ -51,6 +58,8 @@ public class CameraConfiguration extends GenericConfiguration {
             @Override
             public void onClick(View v) {
                 pg.show();
+                //set to false so that user cannot keep hitting the take picture button
+                //Camera needs time between take picture commands
                 pg.setCancelable(false);
                 takePicture();
             }
@@ -65,20 +74,18 @@ public class CameraConfiguration extends GenericConfiguration {
     }
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-
-        if (menu.findItem(10) == null) {
-            menu.add(0, 10, 0, "Change compression size"); //arbitrary id of 10, just used to check if item already exists in menu
-            //solves bug where menu item keeps getting added
+        if (menu.findItem(COMPRESSION_SIZE_MENU_ID) == null) {
+            menu.add(0, COMPRESSION_SIZE_MENU_ID, 0, "Change compression size"); //arbitrary id of 10, just used to check if item already exists in menu
+            //check if null to solve bug where menu item keeps getting added
         }
-        if (menu.findItem(11) == null) {
-            menu.add(0, 11, 0, "Change image dimensions"); //arbitrary id of 10, just used to check if item already exists in menu
-            //solves bug where menu item keeps getting added
+        if (menu.findItem(IMAGE_DIMENSIONS_MENU_ID) == null) {
+            menu.add(0, IMAGE_DIMENSIONS_MENU_ID, 0, "Change image dimensions"); //arbitrary id of 11, just used to check if item already exists in menu
         }
         return super.onPrepareOptionsMenu(menu);
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==10){
+        if(item.getItemId()==COMPRESSION_SIZE_MENU_ID){
             //Possible compression 0-255
             final EditText compressionValue=new EditText(CameraConfiguration.this);
             AlertDialog.Builder builder=new AlertDialog.Builder(CameraConfiguration.this)
@@ -97,9 +104,11 @@ public class CameraConfiguration extends GenericConfiguration {
                 @Override
                 public void onClick(View v) {
                     String enteredValue = compressionValue.getText().toString();
+
                     try {
                         int value = Integer.parseInt(enteredValue);
-                        if (!enteredValue.equals("") && value >= 0 && value <= 255) {
+                        //ensure a correct value was entered [0-255]
+                        if (!enteredValue.equals("") && value >= 0 && value <= MAX_COMPRESSION_SIZE) {
                             String response = deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_CHANGE_COMPRESSION + enteredValue);
                             if (response == null) {
                                 Log.i(TAG, "Error communicating with device");
@@ -111,11 +120,9 @@ public class CameraConfiguration extends GenericConfiguration {
 
                             } else if (response.equals(RESPONSE_CAMERA_CHANGE_COMPRESSION_SUCCESS)) {
                                 Toast.makeText(CameraConfiguration.this, "Compression ratio changed to " + value, Toast.LENGTH_SHORT).show();
-
                                 Log.i(TAG, "Compression ratio changed");
                             } else {
                                 Toast.makeText(CameraConfiguration.this, "Device firmware malfunction, try again", Toast.LENGTH_SHORT).show();
-
                                 Log.i(TAG, "Junk response from device");
                             }
                             dialog.cancel();
@@ -129,11 +136,10 @@ public class CameraConfiguration extends GenericConfiguration {
             });
 
         }
-        else if(item.getItemId()==11){
-            final CharSequence[] items={"640x480","320x240","160x120"};
+        else if(item.getItemId()==IMAGE_DIMENSIONS_MENU_ID){
             AlertDialog.Builder builder = new AlertDialog.Builder(CameraConfiguration.this)
                     .setTitle("Select Image Dimensions")
-                    .setItems(items, new DialogInterface.OnClickListener() {
+                    .setItems(ALLOWED_IMAGE_DIMENSIONS, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             String response = deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_CHANGE_IMAGE_SIZE + which);
@@ -144,7 +150,7 @@ public class CameraConfiguration extends GenericConfiguration {
                                 Toast.makeText(CameraConfiguration.this, "Camera failed to change image size", Toast.LENGTH_SHORT).show();
                                 return;
                             } else if (response.equals(RESPONSE_CAMERA_CHANGE_IMAGE_SIZE_SUCCESS)) {
-                                Toast.makeText(CameraConfiguration.this, "Image size changed to "+items[which], Toast.LENGTH_SHORT).show();
+                                Toast.makeText(CameraConfiguration.this, "Image size changed to "+ALLOWED_IMAGE_DIMENSIONS[which], Toast.LENGTH_SHORT).show();
                                 Intent homeIntent = new Intent(CameraConfiguration.this, AllDevices.class);
                                 startActivity(homeIntent);
                             }
@@ -161,18 +167,26 @@ public class CameraConfiguration extends GenericConfiguration {
         return super.onOptionsItemSelected(item);
     }
 
-
+    /**
+     * Initialize all views
+     */
     private void initViews(){
         setTitle(device.getName());
         takePicture=(Button)findViewById(R.id.cameraTakePicture);
         emailPicture=(Button)findViewById(R.id.cameraEmailPicture);
         cameraPicture=(ImageView)findViewById(R.id.cameraPicture);
-        cameraPicture.setBackgroundColor(Color.parseColor("#cceae7"));
+        cameraPicture.setBackgroundColor(getResources().getColor(R.color.lightblue));
         defaultText=(TextView)findViewById(R.id.defaultCameraText);
         pg=new ProgressDialog(this);
         pg.setMessage("Taking picture...");
     }
 
+    /**
+     * Sends take picture response and if successful, starts a chain of helper methods to obtain and display the image.
+     * Note that if the take picture fails for any reason, we must send the stop picture command
+     * so that the next time an image is taken it will be a new one (i.e. if stop picture is not called, the
+     * camera will keep sending the bytes of the same image)
+     */
     private void takePicture(){
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_TAKE_PICTURE);
         Log.i(TAG, "Response Take Picture: " + response);
@@ -185,6 +199,8 @@ public class CameraConfiguration extends GenericConfiguration {
         }
         if(response.equals(RESPONSE_TAKE_PICTURE_SUCCESS)){
             Log.i(TAG, response);
+            //Now camera has taken the picture, get the size of the image to know
+            //how large to make the buffer when obtaining the actual image bytes
             getPictureSize();
         }
         else if(response.equals(RESPONSE_TAKE_PICTURE_FAIL)){
@@ -196,11 +212,14 @@ public class CameraConfiguration extends GenericConfiguration {
         else{
             Log.i(TAG,"Firmware malfunction, received junk response");
             Toast.makeText(CameraConfiguration.this, "Device firmware malfunction, received junk response", Toast.LENGTH_SHORT).show();
-
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
-
         }
     }
+
+    /**
+     * Gets the size of the picture taken and if successful asks the camera to send the raw bytes of the image
+     * The response from the device is the size of the image in bytes
+     */
     private void getPictureSize(){
         String response=deviceCommunicationHandler.sendDataGetResponse(COMMAND_CAMERA_GET_SIZE);
         Log.i(TAG, "Response Get Picture Size " + response);
@@ -214,8 +233,15 @@ public class CameraConfiguration extends GenericConfiguration {
             deviceCommunicationHandler.sendDataNoResponse(COMMAND_CAMERA_STOP_PICTURE);
         }
     }
+
+    /**
+     * Starts the async task GetPicture which handles the socket communciation with the device obtains the images bytes
+     * @param size Size of picture in bytes
+     */
     private void getPicture(int size){
+        //Use an async task to get the picture bytes
         GetPicture getPictureTask=new GetPicture();
+        //When the bytes have been obtained set the pictureBytes array (used for emailing the picture)
         handler=new Handler(){
             @Override
             public void handleMessage(Message msg){
@@ -226,6 +252,13 @@ public class CameraConfiguration extends GenericConfiguration {
         getPictureTask.execute(size, pg, device.getIp(), cameraPicture, deviceCommunicationHandler, handler, defaultText, CameraConfiguration.this);
     }
 
+    /**
+     * Emails a picture (using androids email client)
+     * Picture is first written to external storage with filename IMG_yyyy_mm_dd_hh_mm_ss
+     * then attached to the email.
+     * It will stay in external storage until the next image is taken, when the next image is taken cleanOutOldImages() is called
+     * Do not want to save all the images otherwise it would eat up external storage without the user knowing
+     */
     private void emailPicture(){
         if(pictureBytes!=null){
             Log.i(TAG,"Image: "+pictureBytes);
@@ -264,6 +297,7 @@ public class CameraConfiguration extends GenericConfiguration {
                 });
         builder.show();
     }
+
     private void cleanOutOldImages(){
         String[] children = CameraConfiguration.this.getExternalFilesDir(null).list();
         for (int i = 0; i < children.length; i++) {
@@ -271,11 +305,13 @@ public class CameraConfiguration extends GenericConfiguration {
             new File(CameraConfiguration.this.getExternalFilesDir(null), children[i]).delete();
         }
     }
+
     private String createImageFileName(){
         DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
         String filename="IMG_"+dateFormat.format(Calendar.getInstance().getTime())+".jpg";
         return filename;
     }
+
     private File createImageFile(String filename){
         //NOTE MUST WRITE TO EXTERNAL STORAGE OTHERWISE GMAIL WILL NOT SEND ATTACHMENT
         File file = new File(CameraConfiguration.this.getExternalFilesDir(null),filename);
